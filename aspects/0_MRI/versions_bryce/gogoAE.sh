@@ -1,1 +1,0 @@
-sbatch goAE.sh
