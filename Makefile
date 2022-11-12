@@ -38,7 +38,7 @@ concat:
 
 predict:
 	CUDA_VISIBLE_DEVICES=2 \
-	python aspects/0_MRI/predictions/V2.py \
-		--config /home/tbarba/projects/MultiModalBrainSurvival/config/config_rna_train.json \
+	python aspects/0_MRI/predictions/train_V3.py \
+		--config outputs/UNet/UNet_4blocks_TCGA_Feat4/config/config_prediction.json \
 		 > outputs/UNet/UNet_4blocks_TCGA_Feat4/config/surv.log 2>&1
 
