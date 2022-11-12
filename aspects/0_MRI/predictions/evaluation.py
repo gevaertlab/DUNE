@@ -5,7 +5,6 @@ import pandas as pd
 from lifelines.utils import concordance_index
 
 
-
 def cox_loss(cox_scores, times, status):
     '''
 
@@ -14,17 +13,17 @@ def cox_loss(cox_scores, times, status):
     :param status: event status (1 for death, 0 for censor), size batch_size
     :return: loss of size 1, the sum of cox losses for the batch
     '''
-            
+
     times, sorted_indices = torch.sort(-times)
     cox_scores = cox_scores[sorted_indices]
     status = status[sorted_indices]
-    cox_scores = cox_scores -torch.max(cox_scores)
+    cox_scores = cox_scores - torch.max(cox_scores)
     exp_scores = torch.exp(cox_scores)
     loss = cox_scores - torch.log(torch.cumsum(exp_scores, dim=0)+1e-5)
     loss = - loss * status
 
-
     return loss.mean()
+
 
 def get_survival_CI(output_list, ids_list, survival_months, vital_status):
 
@@ -53,7 +52,6 @@ def get_survival_CI(output_list, ids_list, survival_months, vital_status):
                                   'vital_status': vital_status_list})
 
     return CI, pandas_output
-
 
 
 def evaluate(model, val_dataloader, task, variable, device, epoch):
@@ -100,7 +98,7 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
             f"epoch {epoch} | CI {case_CI:.3f} | loss {np.mean(loss_list):.3f}")
 
         val_loss = np.mean(loss_list)
-        metrics_dict = {"loss":val_loss, "concordance":case_CI}
+        metrics_dict = {"loss": val_loss, "concordance": case_CI}
 
     elif task == "classification":
         labels_list = []
@@ -124,8 +122,6 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
         val_acc = accuracy_score(labels_list, output_list > .5)
 
         print(f"epoch {epoch} | acc {val_acc:.3f}")
-        metrics_dict = {"loss":val_loss, "accuracy":val_acc}
+        metrics_dict = {"loss": val_loss, "accuracy": val_acc}
 
     return metrics_dict
-
-

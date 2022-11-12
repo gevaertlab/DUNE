@@ -35,7 +35,6 @@ class UNet3D(nn.Module):
         self.upconv4 = nn.ConvTranspose3d(
             features * 16, features * 8, kernel_size=2, stride=2
         )
-
         self.decoder4 = UNet3D._block(
             (features * 8) * 2, features * 8, name="dec4")
         self.upconv3 = nn.ConvTranspose3d(
