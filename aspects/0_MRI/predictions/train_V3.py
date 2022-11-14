@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader, RandomSampler
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from models import MROnlyModel
 from datasets import MRDataset
 from evaluation import evaluate, cox_loss

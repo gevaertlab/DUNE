@@ -3,6 +3,7 @@ from torch.nn import CrossEntropyLoss
 import numpy as np
 import pandas as pd
 from lifelines.utils import concordance_index
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
 
 def cox_loss(cox_scores, times, status):
@@ -123,5 +124,6 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
 
         print(f"epoch {epoch} | acc {val_acc:.3f}")
         metrics_dict = {"loss": val_loss, "accuracy": val_acc}
+
 
     return metrics_dict

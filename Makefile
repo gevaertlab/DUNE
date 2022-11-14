@@ -39,6 +39,6 @@ concat:
 predict:
 	CUDA_VISIBLE_DEVICES=2 \
 	python aspects/0_MRI/predictions/train_V3.py \
-		--config outputs/UNet/UNet_4blocks_TCGA_Feat4/config/config_prediction.json \
-		 > outputs/UNet/UNet_4blocks_TCGA_Feat4/config/surv.log 2>&1
+		--config outputs/UNet/UNet_4blocks_UK_Feat4/config/sex_pred.json \
+		 > outputs/UNet/UNet_4blocks_UK_Feat4/config/surv.log 2>&1
 
