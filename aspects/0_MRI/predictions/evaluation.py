@@ -1,5 +1,5 @@
 import torch
-from torch.nn import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss, MSELoss
 import numpy as np
 import pandas as pd
 from lifelines.utils import concordance_index
@@ -124,6 +124,30 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
 
         print(f"epoch {epoch} | acc {val_acc:.3f}")
         metrics_dict = {"loss": val_loss, "accuracy": val_acc}
+
+
+    elif task == "regression":
+        labels_list = []
+        for _, batch_dict in enumerate(val_dataloader):
+            inputs = batch_dict['mr_data'].to(device)
+            labels = batch_dict[variable].to(device).float()
+            with torch.no_grad():
+                outputs = model.forward(inputs)
+                loss = MSELoss()(outputs.view(-1), labels)
+
+            loss_list.append(loss.item())
+            output_list.append(outputs.detach().cpu().numpy())
+            case_list.append(batch_dict['case'])
+            labels_list.append(labels.detach().cpu().numpy())
+
+        case_list = [c for c_b in case_list for c in c_b]
+        labels_list = np.array([v for v_b in labels_list for v in v_b])
+        output_list = np.concatenate(output_list, axis=0)
+
+        val_loss = np.mean(loss_list)
+
+        print(f"epoch {epoch}")
+        metrics_dict = {"loss": val_loss}
 
 
     return metrics_dict

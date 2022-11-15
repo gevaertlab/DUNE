@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import matplotlib.pyplot as plt
-from torch.nn import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss, MSELoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader, RandomSampler
 from models import MROnlyModel
@@ -46,12 +46,20 @@ def train_model(model, dataloaders, optimizer, device, log_interval, config, out
                 optimizer.step()
                 vital_sum = vital_status.sum().item()
 
-
             elif task == "classification":
                 labels = batch[variable].to(device).float()
                 optimizer.zero_grad()
                 outputs = model(inputs)
                 loss = CrossEntropyLoss()(outputs.view(-1), labels)
+                loss.backward()
+                optimizer.step()
+                labels_sum = labels.sum().item()
+
+            elif task == "regression":
+                labels = batch[variable].to(device).float()
+                optimizer.zero_grad()
+                outputs = model(inputs)
+                loss = MSELoss()(outputs.view(-1), labels)
                 loss.backward()
                 optimizer.step()
                 labels_sum = labels.sum().item()

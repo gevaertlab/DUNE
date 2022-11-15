@@ -22,23 +22,25 @@ train_histo:
 training:
 	CUDA_VISIBLE_DEVICES=0,1,2 \
 	python aspects/0_MRI/autoencoder/training.py \
-		--config "outputs/UNet/UNet_4blocks_TCGA_Feat4/config/config.json" \
-		> outputs/UNet/UNet_4blocks_TCGA_Feat4/config/file.log 2>&1
+		--config "outputs/UNet/UNet_5blocks_TCGA_Feat4/config/config.json" \
+		> outputs/UNet/UNet_5blocks_TCGA_Feat4/file.log 2>&1
 
 feature_extraction:
 	CUDA_VISIBLE_DEVICES=0,1,2 \
-	python aspects/0_MRI/autoencoder/feature_extraction.py -m UNet_4blocks_TCGA_Feat4 
+	python aspects/0_MRI/autoencoder/feature_extraction.py -m UNet_5blocks_TCGA_Feat4 
 
-
-# CONCAT SURVIVAL AND FEATURE DATA
 concat:
 	python scripts/concat_features.py \
 		--metadata survival/uk_metadata.csv \
-		--features_dir outputs/UNet/UNet3D_4blocks_UK_Feat4/results/features \
+		--features_dir outputs/UNet/UNet3D_5blocks_UK_Feat4/results/features \
+
+univariate:
+	Rscript aspects/0_MRI/predictions/univariate.r \
+		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/UNet_5blocks_UK_Feat4/config/univariate.json
 
 predict:
 	CUDA_VISIBLE_DEVICES=2 \
 	python aspects/0_MRI/predictions/train_V3.py \
-		--config outputs/UNet/UNet_4blocks_UK_Feat4/config/sex_pred.json \
-		 > outputs/UNet/UNet_4blocks_UK_Feat4/config/surv.log 2>&1
+		--config outputs/UNet/UNet_5blocks_UK_Feat4/config/age_pred.json \
+		 > outputs/UNet/UNet_5blocks_UK_Feat4/surv.log 2>&1
 
