@@ -20,10 +20,10 @@ train_histo:
 
 # BRAIN AUTOENCODER
 training:
-	CUDA_VISIBLE_DEVICES=0,1,2 \
+	CUDA_VISIBLE_DEVICES=0,2,3 \
 	python aspects/0_MRI/autoencoder/training.py \
-		--config "outputs/UNet/UNet_5blocks_TCGA_Feat4/config/config.json" \
-		> outputs/UNet/UNet_5blocks_TCGA_Feat4/file.log 2>&1
+		--config "outputs/UNet/testUnet/config/ae.json" \
+		> outputs/UNet/testUnet/file.log 2>&1
 
 feature_extraction:
 	CUDA_VISIBLE_DEVICES=0,1,2 \

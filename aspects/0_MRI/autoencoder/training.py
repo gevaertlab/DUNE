@@ -4,7 +4,6 @@
 
 
 """
-
 import os
 from datetime import datetime, date
 import humanfriendly
@@ -89,7 +88,7 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 
 
 def main(
-    data_path, dataset, output_dir, learning_rate, modalities, features, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.9):
+    data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.9):
 
     # PRINT LOG
     print(f"Dataset = {dataset}")
@@ -105,7 +104,8 @@ def main(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize a model of our autoEncoder class on the device
-    net = UNet3D(in_channels=len(modalities), out_channels=len(modalities), init_features=features)
+    net = UNet3D(in_channels=len(modalities), out_channels=len(modalities), init_features=features, num_blocks=num_blocks)
+
 
     # Allocate model on several GPUs
     net = nn.DataParallel(net)
@@ -157,7 +157,7 @@ def main(
             outputs, bottleneck = net(images)
 
             if idx == 1:
-                print(f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])}")
+                print(f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])}features.")
 
             if criterion_name == "SSIM":
                 criterion = ssim_func
@@ -194,7 +194,6 @@ def main(
         reconstruct_image(net, device, output_dir, testLoader)
         report = update_report(output_dir, model_name, quick, totalData, modalities, features, batch_size,
                                criterion_name, learning_rate, num_epochs, epoch, train_epoch_metrics, test_epoch_metrics)
-        # update_curves(train_metrics, test_metrics, criterion_name, output_dir)
         update_curves(report, criterion_name, output_dir)
 
 

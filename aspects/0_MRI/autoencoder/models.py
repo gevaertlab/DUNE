@@ -7,81 +7,70 @@ from torch.utils.data import Dataset
 
 
 class UNet3D(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1, init_features=32):
+    def __init__(self, in_channels=1, out_channels=1, init_features=32, num_blocks=5):
         super(UNet3D, self).__init__()
 
-        features = init_features
-        self.encoder1 = UNet3D._block(in_channels, features, name="enc1")
-        self.pool1 = nn.MaxPool3d(kernel_size=2, stride=2)
-        self.encoder2 = UNet3D._block(features, features * 2, name="enc2")
-        self.pool2 = nn.MaxPool3d(kernel_size=2, stride=2)
-        self.encoder3 = UNet3D._block(features * 2, features * 4, name="enc3")
-        self.pool3 = nn.MaxPool3d(kernel_size=2, stride=2)
-        self.encoder4 = UNet3D._block(features * 4, features * 8, name="enc4")
-        self.pool4 = nn.MaxPool3d(kernel_size=2, stride=2)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.num_blocks = num_blocks
+        
+        # ENCODER BLOCKS
+        feature_list = [init_features*(2**n) for n in range(num_blocks)]
+        self.enc_blocks = nn.ModuleList()
+        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
+        for i, n in enumerate(feature_list):
+            if i ==0:
+                enc_block = UNet3D._block(self.in_channels, n, name=f"enc{i}")
+            else:
+                enc_block = UNet3D._block(feature_list[i-1], n, name=f"enc{i}")
 
-        self.encoder5 = UNet3D._block(features * 8, features * 16, name="enc4")
-        self.pool5 = nn.MaxPool3d(kernel_size=2, stride=2)
+            self.enc_blocks.append(enc_block)
+        
+        # BOTTLENECK EXTRACTION
+        bottleneck_features= 2*n
+        self.bottleneck = UNet3D._block(n, bottleneck_features, name="bottleneck")
 
-        self.bottleneck = UNet3D._block(
-            features * 16, features * 32, name="bottleneck")
+        # DECODER BLOCKS
+        feature_list = feature_list[::-1]
+        self.dec_blocks = nn.ModuleList()
+        self.transposers = nn.ModuleList()
+        for i, n in enumerate(feature_list):
+            if i==0:
+                upconv = nn.ConvTranspose3d(bottleneck_features, n, kernel_size=2, stride=2)
+                dec_block = UNet3D._block(bottleneck_features, n, name=f"dec{i}")
+            else: 
+                upconv = nn.ConvTranspose3d(feature_list[i-1], n, kernel_size=2, stride=2)
+                dec_block = UNet3D._block(feature_list[i-1], n, name=f"dec{i}")
+            
+            self.transposers.append(upconv)
+            self.dec_blocks.append(dec_block)
 
-        self.upconv5 = nn.ConvTranspose3d(
-            features * 32, features * 16, kernel_size=2, stride=2
-        )
-
-        self.decoder5 = UNet3D._block(
-            (features * 16) * 2, features * 16, name="dec4")
-        self.upconv4 = nn.ConvTranspose3d(
-            features * 16, features * 8, kernel_size=2, stride=2
-        )
-        self.decoder4 = UNet3D._block(
-            (features * 8) * 2, features * 8, name="dec4")
-        self.upconv3 = nn.ConvTranspose3d(
-            features * 8, features * 4, kernel_size=2, stride=2
-        )
-        self.decoder3 = UNet3D._block(
-            (features * 4) * 2, features * 4, name="dec3")
-        self.upconv2 = nn.ConvTranspose3d(
-            features * 4, features * 2, kernel_size=2, stride=2
-        )
-        self.decoder2 = UNet3D._block(
-            (features * 2) * 2, features * 2, name="dec2")
-        self.upconv1 = nn.ConvTranspose3d(
-            features * 2, features, kernel_size=2, stride=2
-        )
-        self.decoder1 = UNet3D._block(features * 2, features, name="dec1")
-
-        self.conv = nn.Conv3d(
-            in_channels=features, out_channels=out_channels, kernel_size=1
-        )
+        # FINAL CONVOLUTION
+        self.last_conv = nn.Conv3d(n, out_channels=out_channels, kernel_size=1)
 
     def forward(self, x):
-        enc1 = self.encoder1(x)
-        enc2 = self.encoder2(self.pool1(enc1))
-        enc3 = self.encoder3(self.pool2(enc2))
-        enc4 = self.encoder4(self.pool3(enc3))
-        enc5 = self.encoder5(self.pool4(enc4))
+        ## ENCODER
+        encodings = []
+        for k in range(self.num_blocks):
+            enc = self.enc_blocks[k](x)
+            x = self.pool(enc)
+            encodings.append(enc)
+            
+        ## BOTTLENECK
+        bottleneck = self.bottleneck(x)
 
-        bottleneck = self.bottleneck(self.pool5(enc5))
+        ## DECODER
+        encodings.reverse()
+        for k in range(self.num_blocks):   
+            if k==0:
+                dec = self.transposers[k](bottleneck, output_size= encodings[k].shape)
+            else:
+                dec = self.transposers[k](dec, output_size= encodings[k].shape)
 
-        dec5 = self.upconv5(bottleneck, output_size=enc5.shape)
-        dec5 = torch.cat((dec5, enc5), dim=1)
-        dec5 = self.decoder5(dec5)
-        dec4 = self.upconv4(dec5, output_size=enc4.shape)
-        dec4 = torch.cat((dec4, enc4), dim=1)
-        dec4 = self.decoder4(dec4)
-        dec3 = self.upconv3(dec4, output_size=enc3.shape)
-        dec3 = torch.cat((dec3, enc3), dim=1)
-        dec3 = self.decoder3(dec3)
-        dec2 = self.upconv2(dec3, output_size=enc2.shape)
-        dec2 = torch.cat((dec2, enc2), dim=1)
-        dec2 = self.decoder2(dec2)
-        dec1 = self.upconv1(dec2, output_size=enc1.shape)
-        dec1 = torch.cat((dec1, enc1), dim=1)
-        dec1 = self.decoder1(dec1)
+            dec = torch.cat((dec, encodings[k]), dim=1)
+            dec = self.dec_blocks[k](dec)
 
-        return torch.sigmoid(self.conv(dec1)), bottleneck
+        return torch.sigmoid(self.last_conv(dec)), bottleneck
 
     @staticmethod
     def _block(in_channels, features, name):
@@ -116,7 +105,7 @@ class UNet3D(nn.Module):
             )
         )
 
-
+        
 class convAE(nn.Module):
     def __init__(self, in_c, out_c, num_feat, num_blocks):
         super().__init__()
@@ -186,4 +175,10 @@ class convAE(nn.Module):
         decoded_img = self.decoder(coded_img, indexes, shapes)
 
         return decoded_img, code
+
+
+
+
+
+
 
