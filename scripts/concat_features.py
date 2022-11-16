@@ -43,10 +43,6 @@ def main():
         features["case"] = features["case"].astype(int)
         features = features.drop(["Unnamed: 0", "_"], axis=1).set_index("case")
 
-        print(features.head())
-        print(metadata.head())
-
-
         merged = metadata.merge(features, how="inner", left_index=True, right_index= True)
         merged.index = merged.index.rename("case")
 
@@ -60,9 +56,7 @@ def main():
     train.to_csv(args.features_dir + '/concat_train.csv', index=True)
     val.to_csv(args.features_dir + '/concat_val.csv', index=True)
     test.to_csv(args.features_dir + '/concat_test.csv', index=True)
-
-
-    # final.to_csv(os.path.join(args.features_dir, "fulldata_surv.csv"), index=True)
+    
     print("Finished.")
 
 if __name__ == "__main__":

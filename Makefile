@@ -19,28 +19,31 @@ train_histo:
 
 
 # BRAIN AUTOENCODER
+
+MODEL=UNet_6blocks_UK_Feat4
 training:
-	CUDA_VISIBLE_DEVICES=0,2,3 \
+	CUDA_VISIBLE_DEVICES=0,1 \
 	python aspects/0_MRI/autoencoder/training.py \
-		--config "outputs/UNet/testUnet/config/ae.json" \
-		> outputs/UNet/testUnet/file.log 2>&1
+		--config "outputs/UNet/$(MODEL)/config/ae.json" \
+		> outputs/UNet/$(MODEL)/file.log 2>&1
 
 feature_extraction:
-	CUDA_VISIBLE_DEVICES=0,1,2 \
-	python aspects/0_MRI/autoencoder/feature_extraction.py -m UNet_5blocks_TCGA_Feat4 
+	CUDA_VISIBLE_DEVICES=2 \
+	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) -b 6
 
 concat:
 	python scripts/concat_features.py \
 		--metadata survival/uk_metadata.csv \
-		--features_dir outputs/UNet/UNet3D_5blocks_UK_Feat4/results/features \
+		--features_dir outputs/UNet/$(MODEL)/autoencoding/features \
 
 univariate:
 	Rscript aspects/0_MRI/predictions/univariate.r \
-		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/UNet_5blocks_UK_Feat4/config/univariate.json
+		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/$(MODEL)/config/univariate.json
 
 predict:
 	CUDA_VISIBLE_DEVICES=2 \
 	python aspects/0_MRI/predictions/train_V3.py \
-		--config outputs/UNet/UNet_5blocks_UK_Feat4/config/age_pred.json \
-		 > outputs/UNet/UNet_5blocks_UK_Feat4/surv.log 2>&1
+		--config outputs/UNet/$(MODEL)/config/univariate.json \
+		 > outputs/UNet/$(MODEL)/surv.log 2>&1
+
 

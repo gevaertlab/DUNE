@@ -49,17 +49,17 @@ class UNet3D(nn.Module):
         self.last_conv = nn.Conv3d(n, out_channels=out_channels, kernel_size=1)
 
     def forward(self, x):
-        ## ENCODER
+        ## ENCODING
         encodings = []
         for k in range(self.num_blocks):
             enc = self.enc_blocks[k](x)
             x = self.pool(enc)
             encodings.append(enc)
             
-        ## BOTTLENECK
+        ## REPRESENTATION EXTRACTION
         bottleneck = self.bottleneck(x)
 
-        ## DECODER
+        ## DECODING
         encodings.reverse()
         for k in range(self.num_blocks):   
             if k==0:
@@ -105,7 +105,7 @@ class UNet3D(nn.Module):
             )
         )
 
-        
+
 class convAE(nn.Module):
     def __init__(self, in_c, out_c, num_feat, num_blocks):
         super().__init__()

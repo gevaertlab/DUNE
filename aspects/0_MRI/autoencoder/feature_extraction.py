@@ -13,6 +13,7 @@ def parse_arguments():
     parser.add_argument("-m", "--model_name", type=str, help='model name')
     parser.add_argument("-d", "--model_dir", type=str, default = "outputs/UNet", help='model path')
     parser.add_argument("-n", "--num_mod", type=int, default = 2, help='number of modalities')
+    parser.add_argument("-b", "--num_blocks", type=int, default = 6, help='number of conv blocks')
 
     args = parser.parse_args()
 
@@ -21,12 +22,12 @@ def parse_arguments():
     return args
 
 
-def import_model(model_dir, num_mod, device):
+def import_model(model_dir, num_mod, num_blocks, device):
 
-    # model_dir = f"outputs/training/{model_name}"
-    model_path = os.path.join(model_dir, "exported_data/model.pth")
+    model_path = os.path.join(model_dir, "autoencoding/exported_data/model.pth")
 
-    model = UNet3D(in_channels=num_mod, out_channels=num_mod, init_features=4)
+    model = UNet3D(in_channels=num_mod, out_channels=num_mod,
+                   init_features=4, num_blocks=num_blocks)
     model = nn.DataParallel(model)
     model = model.to(device)
     model.load_state_dict(torch.load(model_path))
@@ -61,15 +62,15 @@ def main():
     os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
     args = parse_arguments()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = import_model(args.model_dir, args.num_mod, device)
+    net = import_model(args.model_dir, args.num_mod, args.num_blocks, device)
 
-    trainLoader = torch.load(f'{args.model_dir}/exported_data/trainLoader.pth')
-    testLoader = torch.load(f'{args.model_dir}/exported_data/testLoader.pth')
+    trainLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/trainLoader.pth')
+    testLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/testLoader.pth')
     dict_loaders = {"train": trainLoader, "test": testLoader}
 
     # feature extraction
 
-    os.makedirs(f"{args.model_dir}/results/features", exist_ok=True)
+    os.makedirs(f"{args.model_dir}/autoencoding/features", exist_ok=True)
     for dataset in ["train", "test"]:
         print(f"extracting features for dataset : {dataset}")
         results = extract_features(
@@ -78,7 +79,7 @@ def main():
 
         feature_dict = pd.DataFrame.from_dict(results, orient="index")
         feature_dict.to_csv(
-            f"{args.model_dir}/results/features/{dataset}_features.csv", index=True)
+            f"{args.model_dir}/autoencoding/features/{dataset}_features.csv", index=True)
 
 
 

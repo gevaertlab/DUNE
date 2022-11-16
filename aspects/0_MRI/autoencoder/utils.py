@@ -8,11 +8,7 @@ import matplotlib.pyplot as plt
 def create_dependencies(output_dir, model_name):
 
     output_dir = os.path.join(output_dir, model_name)
-    dirs = ["exported_data", "results"]
-
-    os.makedirs(output_dir, exist_ok=True)
-    for dir in dirs:
-        os.makedirs(os.path.join(output_dir, dir), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, "autoencoding","exported_data"), exist_ok=True)
 
     return output_dir
 
@@ -59,7 +55,7 @@ def update_curves(report, criterion_name, output_dir):
         ax[i].set_xlabel('Epochs')
         ax[i].set_ylabel(metric)
         ax[0].legend()
-    fig.savefig(f"{output_dir}/results/curves.png")
+    fig.savefig(f"{output_dir}/autoencoding/curves.png")
 
 
 
@@ -68,7 +64,7 @@ def update_report(
     num_epochs, epoch, train_epoch_metrics, test_epoch_metrics
 ):
 
-    report_path = f"{output_dir}/results/report.csv"
+    report_path = f"{output_dir}/autoencoding/report.csv"
 
     if os.path.exists(report_path):
         report = pd.read_csv(report_path)

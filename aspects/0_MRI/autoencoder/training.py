@@ -82,7 +82,7 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
         concat = torch.cat([orig, reconstructed])
 
         save_image(torchvision.utils.make_grid(
-            concat, nrow=nmod), f'{output_dir}/results/reconstructions.png'
+            concat, nrow=nmod), f'{output_dir}/autoencoding/reconstructions.png'
         )
         break
 
@@ -111,10 +111,10 @@ def main(
     net = nn.DataParallel(net)
     net = net.to(device)
 
-    if os.path.exists(output_dir + "/exported_data/model.pth"):
+    if os.path.exists(output_dir + "/autoencoding/exported_data/model.pth"):
         print("Loading backup version of the model...")
         net.load_state_dict(torch.load(
-            output_dir + "/exported_data/model.pth"))
+            output_dir + "/autoencoding/exported_data/model.pth"))
 
     # Optimizer and losses
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
@@ -140,8 +140,8 @@ def main(
         f"There are {len(trainLoader)*batch_size} training samples and {len(testLoader)*batch_size} test samples.")
 
     # Saving datasets
-    torch.save(trainLoader, f'{output_dir}/exported_data/trainLoader.pth')
-    torch.save(testLoader, f'{output_dir}/exported_data/testLoader.pth')
+    torch.save(trainLoader, f'{output_dir}/autoencoding/exported_data/trainLoader.pth')
+    torch.save(testLoader, f'{output_dir}/autoencoding/exported_data/testLoader.pth')
 
     # Train loop
     train_metrics = {"loss": [], "ssim": [], "psnr": [], "mse": []}
@@ -157,7 +157,7 @@ def main(
             outputs, bottleneck = net(images)
 
             if idx == 1:
-                print(f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])}features.")
+                print(f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])} features.")
 
             if criterion_name == "SSIM":
                 criterion = ssim_func
@@ -188,7 +188,7 @@ def main(
         # Print epoch num and corresponding loss
         print(f"Autoencoder train loss = {train_epoch_metrics['loss']:6f}")
         print(f"Autoencoder test loss = {test_epoch_metrics['loss']:6f}")
-        torch.save(net.state_dict(), output_dir+"/exported_data/model.pth")
+        torch.save(net.state_dict(), output_dir+"/autoencoding/exported_data/model.pth")
 
         # Export results
         reconstruct_image(net, device, output_dir, testLoader)

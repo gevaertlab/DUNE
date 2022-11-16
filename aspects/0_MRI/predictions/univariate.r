@@ -66,12 +66,12 @@ opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 config = fromJSON(file = opt$config)
 
-
-
 #####
-
-
-df <- data.table::fread(config$train_csv_path) %>%
+DATA = paste(config$model_path, config$train_csv_path, sep = "")
+config$output_path = paste(config$model_path, config$output_path, sep = "")
+TAF::mkdir(config$output_path)
+    
+df <- data.table::fread(DATA) %>%
 # df <- data.table::fread(inn) %>%
     as_tibble() %>%
     select(-case)
@@ -80,8 +80,6 @@ umap <- umap(df %>% select(num_range("", 0:20000)))
 labels <- df %>%
     select(!num_range("", 0:20000)) %>%
     mutate(across(where(~ all(unique(.[!is.na(.)]) %in% c("0", "1"))), as.factor))
-
-
 
 results = list()
 for (var in colnames(labels)) {
@@ -97,6 +95,6 @@ for (var in colnames(labels)) {
 }
 write_csv(
     as.data.frame(results),
-    file = paste(paste(config$output_path, "/0-results.csv", sep = ""))
+    file = paste(paste(config$output_path, "/0-univariate_results.csv", sep = ""))
 )
 
