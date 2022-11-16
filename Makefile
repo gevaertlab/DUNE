@@ -27,11 +27,10 @@ training:
 		--config "outputs/UNet/$(MODEL)/config/ae.json" \
 		> outputs/UNet/$(MODEL)/file.log 2>&1
 
-feature_extraction:
+extract_concat:
 	CUDA_VISIBLE_DEVICES=2 \
-	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) -b 6
-
-concat:
+	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) -b 6 ; \
+	
 	python scripts/concat_features.py \
 		--metadata survival/uk_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features \
