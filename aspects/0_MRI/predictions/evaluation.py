@@ -105,10 +105,14 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
         labels_list = []
         for _, batch_dict in enumerate(val_dataloader):
             inputs = batch_dict['mr_data'].to(device)
-            labels = batch_dict[variable].to(device).float()
+            labels = batch_dict[variable].type(torch.LongTensor).to(device)
             with torch.no_grad():
                 outputs = model.forward(inputs)
-                loss = CrossEntropyLoss()(outputs.view(-1), labels)
+                loss = CrossEntropyLoss()(outputs, labels)
+
+                print("\noutputs", outputs)
+                print("labs", labels)
+
 
             loss_list.append(loss.item())
             output_list.append(outputs.detach().cpu().numpy())
@@ -142,12 +146,13 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
 
         case_list = [c for c_b in case_list for c in c_b]
         labels_list = np.array([v for v_b in labels_list for v in v_b])
+
+
         output_list = np.concatenate(output_list, axis=0)
 
         val_loss = np.mean(loss_list)
 
-        print(f"epoch {epoch}")
-        metrics_dict = {"loss": val_loss}
+        metrics_dict = {"loss": val_loss,  "accuracy": 1}
 
 
     return metrics_dict

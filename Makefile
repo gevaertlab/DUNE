@@ -28,11 +28,11 @@ training:
 		> outputs/UNet/$(MODEL)/file.log 2>&1
 
 extract_concat:
-	CUDA_VISIBLE_DEVICES=2 \
+	CUDA_VISIBLE_DEVICES=0,1 \
 	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) -b 6 ; \
 	
 	python scripts/concat_features.py \
-		--metadata survival/uk_metadata.csv \
+		--metadata survival/uk_metadata2.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features \
 
 univariate:
@@ -40,9 +40,9 @@ univariate:
 		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/$(MODEL)/config/univariate.json
 
 predict:
-	CUDA_VISIBLE_DEVICES=2 \
+	CUDA_VISIBLE_DEVICES=0 \
 	python aspects/0_MRI/predictions/train_V3.py \
-		--config outputs/UNet/$(MODEL)/config/univariate.json \
-		 > outputs/UNet/$(MODEL)/surv.log 2>&1
+		--config outputs/UNet/$(MODEL)/config/height_pred.json \
+		 > outputs/UNet/$(MODEL)/predictions/height/log.log 2>&1
 
 

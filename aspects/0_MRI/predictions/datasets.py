@@ -38,10 +38,13 @@ class MRDataset(Dataset):
         print("imported !")
         for _, row in data.iterrows():
 
-            mr_data = row[[x for x in row.keys() if x not in ["case","sex", "age","survival_months","vital_status"]]].values.astype(np.float32)
+            mr_data = row[[x for x in row.keys() if x.isdigit()]].values.astype(np.float32)
             mr_data = torch.tensor(mr_data, dtype=torch.float32)
 
-            row = row[[x for x in row.keys() if x in ["case","sex", "age","survival_months","vital_status"]]].to_dict()
+
+            row = row[[x for x in row.keys() if not x.isdigit()]].to_dict()
+
+
             row['mr_data'] = mr_data
             try:
                 row['vital_status'] = np.float32(row['vital_status'])

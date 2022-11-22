@@ -16,7 +16,6 @@ def parse_arguments():
     parser.add_argument("-b", "--num_blocks", type=int, default = 6, help='number of conv blocks')
 
     args = parser.parse_args()
-
     args.model_dir = os.path.join(args.model_dir, args.model_name)
 
     return args
@@ -40,7 +39,6 @@ def extract_features(net, val_dataloader, device):
     net.eval()
     results = {}
 
-
     for b_idx, (imgs, cases) in enumerate(val_dataloader):
         imgs = imgs.to(device)
         with torch.no_grad():
@@ -49,9 +47,7 @@ def extract_features(net, val_dataloader, device):
 
         for i, case in enumerate(cases):
             # try:
-            case_features = extracted_features[i,
-                                                :, :, :, :].reshape(-1).numpy()
-
+            case_features = extracted_features[i,:, :, :, :].reshape(-1).numpy()
 
             results[case] = case_features
 
@@ -69,18 +65,15 @@ def main():
     dict_loaders = {"train": trainLoader, "test": testLoader}
 
     # feature extraction
-
     os.makedirs(f"{args.model_dir}/autoencoding/features", exist_ok=True)
     for dataset in ["train", "test"]:
         print(f"extracting features for dataset : {dataset}")
         results = extract_features(
             net, dict_loaders[dataset], device)
 
-
         feature_dict = pd.DataFrame.from_dict(results, orient="index")
         feature_dict.to_csv(
             f"{args.model_dir}/autoencoding/features/{dataset}_features.csv", index=True)
-
 
 
 if __name__ == "__main__":

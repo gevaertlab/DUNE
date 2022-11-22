@@ -1,0 +1,14 @@
+31 sex
+21022 age
+25010 brain volume
+25009 brain volume normalised
+12144 Height
+191 date des dernieres nouvelles
+400000 date Deces
+
+
+6138 Qualifications
+845 Age full time education
+1940 Irritability
+20122 Bipolar disorder status
+20126 Bipolar and major depression status

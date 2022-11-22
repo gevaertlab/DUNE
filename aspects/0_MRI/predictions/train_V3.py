@@ -17,8 +17,6 @@ from utils import create_dependencies,parse_arguments, update_report, update_cur
 plt.switch_backend('agg')
 
 
-
-
 def train_model(model, dataloaders, optimizer, device, log_interval, config, output_dir):
 
     num_epochs = config["num_epochs"]
@@ -47,10 +45,11 @@ def train_model(model, dataloaders, optimizer, device, log_interval, config, out
                 vital_sum = vital_status.sum().item()
 
             elif task == "classification":
-                labels = batch[variable].to(device).float()
+                labels = batch[variable].type(torch.LongTensor).to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                loss = CrossEntropyLoss()(outputs.view(-1), labels)
+                print(outputs)
+                loss = CrossEntropyLoss()(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 labels_sum = labels.sum().item()
@@ -78,7 +77,6 @@ def train_model(model, dataloaders, optimizer, device, log_interval, config, out
             else:
                 train_metrics[m].append(train_epoch_metrics[m])
                 val_metrics[m].append(val_epoch_metrics[m])
-
 
         if val_epoch_metrics['loss'] < best_val_loss:
             best_epoch = epoch 
@@ -115,7 +113,7 @@ def main():
     torch.multiprocessing.set_sharing_strategy('file_system')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = MROnlyModel(10240, config['hidden_layer_size'])
+    model = MROnlyModel(config['num_features'], config['hidden_layer_size'], config['num_classes'])
 
     # Create training and validation datasets
     image_datasets = {}
