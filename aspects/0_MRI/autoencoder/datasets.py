@@ -49,7 +49,6 @@ class BrainImages(Dataset):
             filepath = [os.path.join(folderpath, f) for f in os.listdir(
                 folderpath) if mod in f.lower()][0]
             self.imgAddresses.append(filepath)
-
         case = self.folders[idx]
         imgsPre = []
         for i in range(0, self.n_mod):
@@ -61,7 +60,7 @@ class BrainImages(Dataset):
 
             imgsPre.append(temp.copy())
 
-        imgsPre = np.array(imgsPre)
+        imgsPre = np.array(imgsPre, dtype=np.uint8)
         imgsPre = torch.tensor(imgsPre)
 
         centerZ, centerY, centerX = BrainImages.find_brain_center(imgsPre)
@@ -94,5 +93,5 @@ class BrainImages(Dataset):
                         :] = transforms.ToTensor()(t)
 
         imgs = imgsPil[:, :, :, :]
-
+        
         return imgs, case

@@ -85,12 +85,12 @@ results = list()
 for (var in colnames(labels)) {
     isFactor <- is.factor(labels %>% select(var) %>% pull())
     if (isFactor) {
-        res = grouped_wilcox(variable = var, df = df)
+        # res = grouped_wilcox(variable = var, df = df)
     } else {
-        res = grouped_spearman(variable = var, df = df)
+        # res = grouped_spearman(variable = var, df = df)
     }
-    names(res) = var
-    results = append(results, res)
+    # names(res) = var
+    # results = append(results, res)
     draw_umap(umap=umap, labels=labels, var = var)
 }
 write_csv(

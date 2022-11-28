@@ -3,12 +3,11 @@ from torch.nn import CrossEntropyLoss, MSELoss
 import numpy as np
 import pandas as pd
 from lifelines.utils import concordance_index
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score
 
 
 def cox_loss(cox_scores, times, status):
     '''
-
     :param cox_scores: cox scores, size (batch_size)
     :param times: event times (either death or censor), size batch_size
     :param status: event status (1 for death, 0 for censor), size batch_size
@@ -153,6 +152,9 @@ def evaluate(model, val_dataloader, task, variable, device, epoch):
         val_loss = np.mean(loss_list)
 
         metrics_dict = {"loss": val_loss,  "accuracy": 1}
+    
+    else:
+        metrics_dict=None
 
 
     return metrics_dict

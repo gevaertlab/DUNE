@@ -1,9 +1,6 @@
-from torchvision import models
-import torch.nn as nn
 import torch
-import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
+
 
 class MROnlyModel(nn.Module):
     def __init__(self, num_features=10240, hidden_layer_size=2048, num_classes=1):

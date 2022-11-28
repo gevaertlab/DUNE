@@ -2,8 +2,8 @@
 
 
 
-
 """
+
 import os
 from datetime import datetime, date
 import humanfriendly
@@ -23,6 +23,7 @@ from models import UNet3D
 from datasets import BrainImages
 from utils import *
 matplotlib.use('Agg')
+
 
 
 def evaluate(model, testLoader, criterion_name, ssim_func, mse_func, device):
@@ -88,7 +89,7 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 
 
 def main(
-    data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.9):
+    data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.8):
 
     # PRINT LOG
     print(f"Dataset = {dataset}")
@@ -204,3 +205,40 @@ if __name__ == "__main__":
     main(**config)
     execution_time = humanfriendly.format_timespan(datetime.now() - start)
     print(f"\nFinished in {execution_time}.")
+
+
+
+# # %%
+# os.chdir("/home/tbarba/projects/MultiModalBrainSurvival/")
+# dataset= "UKBIOBANK"
+# batch_size= 15
+# modalities= [
+# "t1",
+# "FLAIR"
+# ]
+# features=4
+# num_blocks=6
+# min_dims= [
+# 145,
+# 175,
+# 148
+# ]
+# num_epochs= 1000
+# criterion_name= "SSIM"
+# learning_rate= 1e-4
+# num_workers= 20
+# data_path= "./data/data_fusion/MR"
+# output_dir= "./data/data_fusion/MR/outputs/UNet"
+# model_name= "UNet_6blocks_UK_Feat4_fulldataset"
+# quick= "False"
+
+
+
+# normalTransform = transforms.Compose(
+#         [transforms.ToTensor(), transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
+
+#     # Dataloaders
+# data_path = os.path.join(data_path, dataset)
+# totalData = BrainImages(dataset, data_path, modalities,
+#                         min_dims, transforms=normalTransform)
+# # %%

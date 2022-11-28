@@ -20,7 +20,7 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=UNet_6blocks_UK_Feat4
+MODEL=UNet_6blocks_UK_Feat4_fulldataset
 training:
 	CUDA_VISIBLE_DEVICES=0,1 \
 	python aspects/0_MRI/autoencoder/training.py \
@@ -28,11 +28,11 @@ training:
 		> outputs/UNet/$(MODEL)/file.log 2>&1
 
 extract_concat:
-	CUDA_VISIBLE_DEVICES=0,1 \
+	CUDA_VISIBLE_DEVICES=2,3 \
 	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) -b 6 ; \
 	
 	python scripts/concat_features.py \
-		--metadata survival/uk_metadata2.csv \
+		--metadata survival/whole_ukb_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features \
 
 univariate:

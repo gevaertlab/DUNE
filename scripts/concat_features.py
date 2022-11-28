@@ -35,15 +35,14 @@ def main():
         "eid":"case","31-0.0":"sex", "53-0.0": "start_date", "21022-0.0":"age",
         "12144-2.0":"height", "25009-2.0":"norm_vol", "25010-2.0":"brain_vol" })
 
-    metadata = metadata[["case", "sex","age", "height","norm_vol", "brain_vol"]].drop_duplicates().set_index("case")
+    metadata = metadata[["case", "sex","age", "height","norm_brainvol", "brain_vol"]].drop_duplicates().set_index("case")
     final = pd.DataFrame()
     for dataset in features_files:
 
         features_path = os.path.join(args.features_dir, dataset)
         features = pd.read_csv(features_path)
-        features[["case","_"]] = features["Unnamed: 0"].str.split("_", 1, expand=True)
-        features["case"] = features["case"].astype(int)
-        features = features.drop(["Unnamed: 0", "_"], axis=1).set_index("case")
+        features["case"] = features["Unnamed: 0"]
+        features = features.drop(["Unnamed: 0"], axis=1).set_index("case")
 
         merged = metadata.merge(features, how="inner", left_index=True, right_index= True)
         merged.index = merged.index.rename("case")
