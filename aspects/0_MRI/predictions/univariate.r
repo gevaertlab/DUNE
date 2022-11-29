@@ -72,25 +72,37 @@ config$output_path = paste(config$model_path, config$output_path, sep = "")
 TAF::mkdir(config$output_path)
     
 df <- data.table::fread(DATA) %>%
-# df <- data.table::fread(inn) %>%
     as_tibble() %>%
-    select(-case)
+    select(-case) %>%
+    mutate(
+        alcohol_status = ordered(alcohol_status, c("Never", "Previous", "Current")),
+        alcohol_freq = ordered(alcohol_freq, c("Never", "Special occasions only", "One to three times a month", "Once or twice a week", "Three or four times a week", "Daily or almost daily")),
+        smoking = ordered(smoking, c("Never", "Previous", "Current", "Prefer not to answer")),
+        depression = ordered(depression, c("No", "Yes"))
+    ) %>%
+    mutate(
+        sex = as.factor(sex),
+        alcohol_status = as.numeric(alcohol_status),
+        alcohol_freq = as.numeric(alcohol_freq),
+        smoking = as.numeric(smoking),
+    )
 
 umap <- umap(df %>% select(num_range("", 0:20000)))
 labels <- df %>%
     select(!num_range("", 0:20000)) %>%
     mutate(across(where(~ all(unique(.[!is.na(.)]) %in% c("0", "1"))), as.factor))
 
+
 results = list()
 for (var in colnames(labels)) {
     isFactor <- is.factor(labels %>% select(var) %>% pull())
     if (isFactor) {
-        # res = grouped_wilcox(variable = var, df = df)
+        res = grouped_wilcox(variable = var, df = df)
     } else {
-        # res = grouped_spearman(variable = var, df = df)
+        res = grouped_spearman(variable = var, df = df)
     }
-    # names(res) = var
-    # results = append(results, res)
+    names(res) = var
+    results = append(results, res)
     draw_umap(umap=umap, labels=labels, var = var)
 }
 write_csv(

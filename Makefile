@@ -43,6 +43,6 @@ predict:
 	CUDA_VISIBLE_DEVICES=0 \
 	python aspects/0_MRI/predictions/train_V3.py \
 		--config outputs/UNet/$(MODEL)/config/height_pred.json \
-		 > outputs/UNet/$(MODEL)/predictions/height/log.log 2>&1
+		> outputs/UNet/$(MODEL)/predictions/log.log 2>&1
 
 

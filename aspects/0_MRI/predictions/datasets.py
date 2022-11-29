@@ -1,66 +1,53 @@
-import os
 import numpy as np
-from torch.utils.data import Dataset, WeightedRandomSampler
-from PIL import Image
+from torch.utils.data import Dataset
 import torch
-
-from torchvision import transforms
+from sklearn.preprocessing import LabelEncoder
 import pandas as pd
+
 
 class MRDataset(Dataset):
     """
     """
 
-    def __init__(self, csv_path):
-
-
+    def __init__(self, csv_path, variable, task):
         self._csv_path = csv_path
+        self.variable = variable
+        self.task = task
         self.data = None
+        self.labels = None
+        self.num_classes = 1
         self._preprocess()
 
     def _preprocess(self):
-        self.data = MRDataset.get_data_rna(self._csv_path)
+        self.data, self.labels = MRDataset.get_data_rna(self._csv_path, self.variable, self.task)
+        if self.task == "classification":
+            self.num_classes = int(torch.max(self.labels).item()) +1
 
     def __len__(self):
-        return len(self.data)
+        return self.data.size(0)
 
     def __getitem__(self, idx):
-        item = self.data[idx].copy()
-        item['idx']=idx #test
-        return item
+        features = self.data[idx]
+        label = self.labels[idx]
+        return features, label
 
     @staticmethod
-    def get_data_rna(csv_path):
-        
-        dataset = []
+    def get_data_rna(csv_path, variable, task):
 
-        data = pd.read_csv(csv_path)
-        print("imported !")
-        for _, row in data.iterrows():
+        le = LabelEncoder()
+        data = pd.read_csv(csv_path)            
+        features, labels = [], []
 
-            mr_data = row[[x for x in row.keys() if x.isdigit()]].values.astype(np.float32)
-            mr_data = torch.tensor(mr_data, dtype=torch.float32)
+        features = data[[x for x in data.keys() if x.isdigit()]].values.astype(np.float32)
+        features = torch.tensor(features)
+        labels = data[variable]
 
+        if task == "classification":
+            labels = le.fit_transform(labels)
 
-            row = row[[x for x in row.keys() if not x.isdigit()]].to_dict()
+        labels = torch.tensor(labels)
 
-
-            row['mr_data'] = mr_data
-            try:
-                row['vital_status'] = np.float32(row['vital_status'])
-                row['survival_months'] = np.float32(row['survival_months'])
-            except KeyError:
-                pass
-
-            try:
-                row['sex'] = np.float32(row['sex'])
-            except KeyError:
-                pass
-            
-            item = row.copy()
-            dataset.append(item)
-
-        return dataset
+        return features, labels
 
 
 

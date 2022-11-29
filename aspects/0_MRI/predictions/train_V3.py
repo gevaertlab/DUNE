@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import matplotlib.pyplot as plt
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss, BCELoss, MSELoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader, RandomSampler
 from models import MROnlyModel
@@ -20,8 +20,9 @@ plt.switch_backend('agg')
 def train_model(model, dataloaders, optimizer, device, log_interval, config, output_dir):
 
     num_epochs = config["num_epochs"]
+    best_epoch = 0
     task = config["task"]
-    variable = config["variable"]
+    num_classes = config['num_classes']
     best_val_loss = np.inf
     train_metrics = {}
     val_metrics = {}
@@ -30,44 +31,40 @@ def train_model(model, dataloaders, optimizer, device, log_interval, config, out
         model.train()
 
         print(f'\nEpoch {epoch+1}/{num_epochs}')
-        for b_idx, batch in enumerate(dataloaders['train']):
+        for _, (features, labels) in enumerate(dataloaders['train']):
 
-            inputs = batch['mr_data'].to(device)
+            inputs = features.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
 
             if task == "survival":
-                survival_months = batch['survival_months'].to(device).float()
-                vital_status = batch['vital_status'].to(device).float()
-                optimizer.zero_grad()
-                outputs = model(inputs)
-                loss = cox_loss(outputs.view(-1), survival_months.view(-1), vital_status.view(-1))
-                loss.backward()
-                optimizer.step()
-                vital_sum = vital_status.sum().item()
+                # survival_months = batch['survival_months'].to(device).float()
+                # vital_status = batch['vital_status'].to(device).float()
+                # loss = cox_loss(outputs.view(-1), survival_months.view(-1), vital_status.view(-1))
+                # loss.backward()
+                # optimizer.step()
+                # vital_sum = vital_status.sum().item()
+                pass
 
-            elif task == "classification":
-                labels = batch[variable].type(torch.LongTensor).to(device)
-                optimizer.zero_grad()
-                outputs = model(inputs)
-                print(outputs)
-                loss = CrossEntropyLoss()(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                labels_sum = labels.sum().item()
 
-            elif task == "regression":
-                labels = batch[variable].to(device).float()
-                optimizer.zero_grad()
-                outputs = model(inputs)
-                loss = MSELoss()(outputs.view(-1), labels)
-                loss.backward()
-                optimizer.step()
-                labels_sum = labels.sum().item()
-                
+            elif task == "regression" or num_classes == 2 :
+                labels = labels.float()                
+                outputs = outputs.view(-1)
+                loss_func = MSELoss() if task == "regression" else BCELoss()
+
+            elif task == "classification" and num_classes > 2:
+                loss_func = CrossEntropyLoss()
+                    
+        
+            loss = loss_func(outputs, labels)
+            loss.backward()
+            optimizer.step()                
 
         train_epoch_metrics = evaluate(
-            model, dataloaders['train'], task, variable, device, epoch)
+            model, dataloaders['train'], task, num_classes, device, epoch)
         val_epoch_metrics = evaluate(
-            model, dataloaders['val'], task, variable, device, epoch)
+            model, dataloaders['val'], task, num_classes, device, epoch)
 
         metrics = [m for m in train_epoch_metrics.keys()]
         for m in metrics:
@@ -87,7 +84,6 @@ def train_model(model, dataloaders, optimizer, device, log_interval, config, out
 
         report = update_report(
             output_dir, config, epoch, train_epoch_metrics, val_epoch_metrics)
-
         update_curves(report, metrics, output_dir)
 
 
@@ -100,7 +96,7 @@ def train_model(model, dataloaders, optimizer, device, log_interval, config, out
 
     print("EVALUATING ON TEST SET")
     test_loss = evaluate(
-        model, dataloaders['test'], task, variable, device, best_epoch)
+        model, dataloaders['test'], task, device, best_epoch)
 
 
 def main():
@@ -113,15 +109,17 @@ def main():
     torch.multiprocessing.set_sharing_strategy('file_system')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = MROnlyModel(config['num_features'], config['hidden_layer_size'], config['num_classes'])
 
     # Create training and validation datasets
     image_datasets = {}
     image_samplers = {}
+    train_csv_path = config["csv_paths"]+"/concat_train.csv"
+    val_csv_path = config["csv_paths"]+"/concat_val.csv"
+    test_csv_path = config["csv_paths"]+"/concat_test.csv"
 
-    image_datasets['train'] = MRDataset(config["train_csv_path"])
-    image_datasets['val'] = MRDataset(config["val_csv_path"])
-    image_datasets['test'] = MRDataset(config["test_csv_path"])
+    image_datasets['train'] = MRDataset(train_csv_path, variable, config["task"])
+    image_datasets['val'] = MRDataset(val_csv_path,variable, config["task"])
+    image_datasets['test'] = MRDataset(test_csv_path, variable, config["task"])
 
     image_samplers['train'] = RandomSampler(image_datasets['train'])
     image_samplers['val'] = RandomSampler(image_datasets['val'])
@@ -132,6 +130,8 @@ def main():
         x: DataLoader(image_datasets[x], batch_size=config['batch_size'], sampler=image_samplers[x], num_workers=config["num_workers"]) for x in ['train', 'val', 'test']}
 
     # Send the model to GPU
+    config['num_classes'] = image_datasets['train'].num_classes
+    model = MROnlyModel(config['num_classes'], config["task"], config['num_features'], config['hidden_layer_size'])
     model = model.to(device)
     if config['restore_path'] != "":
         model.load_state_dict(torch.load(config['restore_path']))
