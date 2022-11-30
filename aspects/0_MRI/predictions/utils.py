@@ -25,7 +25,7 @@ def parse_arguments():
     return config
 
 
-def update_report(output_dir, config, epoch, train_epoch_metrics, val_epoch_metrics):
+def update_report(output_dir, num_features, num_classes, config, epoch, train_epoch_metrics, val_epoch_metrics):
 
     print("Updating report...")
     report_path = f"{output_dir}/report.csv"
@@ -36,6 +36,9 @@ def update_report(output_dir, config, epoch, train_epoch_metrics, val_epoch_metr
         report = pd.DataFrame()    
     
     epoch_report = {}
+    epoch_report['dataset'] = config["dataset"]
+    epoch_report['task'] = config["task"]
+    epoch_report['num_features'] = num_features
     epoch_report['variable'] = config["variable"]
     epoch_report['hidden_layer_size'] = int(config["hidden_layer_size"])
     epoch_report['batch_size'] = config["batch_size"]

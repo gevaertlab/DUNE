@@ -1,7 +1,7 @@
 import os
 
 
-ROOTDIR = "/home/tbarba/projects/MultiModalBrainSurvival/data/data_fusion/MR/UKBIOBANK"
+ROOTDIR = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/UKBIOBANK"
 
 folderlist = [ROOTDIR +"/"+ f for f in os.listdir(ROOTDIR) if os.path.isdir(ROOTDIR + "/" +f)][3:]
 

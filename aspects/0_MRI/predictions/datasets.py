@@ -5,7 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 
 
-class MRDataset(Dataset):
+class MRIs(Dataset):
     """
     """
 
@@ -15,13 +15,22 @@ class MRDataset(Dataset):
         self.task = task
         self.data = None
         self.labels = None
-        self.num_classes = 1
-        self._preprocess()
+        self.data, self.labels, self.vital_status = MRIs.get_data_rna(
+            self._csv_path, self.variable, self.task)
 
-    def _preprocess(self):
-        self.data, self.labels = MRDataset.get_data_rna(self._csv_path, self.variable, self.task)
+        self._get_feat_characteristics()
+
+    def _get_feat_characteristics(self):
+        self.num_classes = 1
         if self.task == "classification":
-            self.num_classes = int(torch.max(self.labels).item()) +1
+            self.num_classes = int(torch.max(self.labels).item()) + 1
+
+        self.num_cases = self.data.size(0)
+        self.num_features = self.data.size(1)
+
+        feat_char = (self.num_features, self.num_classes)
+
+        return feat_char
 
     def __len__(self):
         return self.data.size(0)
@@ -29,29 +38,37 @@ class MRDataset(Dataset):
     def __getitem__(self, idx):
         features = self.data[idx]
         label = self.labels[idx]
-        return features, label
+
+        vital_status = self.vital_status[idx]
+
+        return features, label, vital_status
 
     @staticmethod
     def get_data_rna(csv_path, variable, task):
 
         le = LabelEncoder()
-        data = pd.read_csv(csv_path)            
+        data = pd.read_csv(csv_path)
         features, labels = [], []
+        vital_status = torch.tensor([0 for _ in range(data.shape[0])])
 
-        features = data[[x for x in data.keys() if x.isdigit()]].values.astype(np.float32)
+        features = data[[x for x in data.keys() if x.isdigit()]
+                        ].values.astype(np.float32)
         features = torch.tensor(features)
-        labels = data[variable]
 
-        if task == "classification":
-            labels = le.fit_transform(labels)
+        if task == "survival":
+            labels = data["survival_months"]
+            vital_status = torch.tensor(data["vital_status"]).float()
+        else:
+            labels = data[variable]
+            if task == "classification":
+                labels = le.fit_transform(labels)
 
         labels = torch.tensor(labels)
 
-        return features, labels
-
+        return features, labels, vital_status
 
 
 # MODIFIER POUR AVOIR UNE SEULE GROSSE BASE A SPLITTER EN 3
-# PRENDRE EN INPUT 2 FICHIERS CORRESPONDANT : 
+# PRENDRE EN INPUT 2 FICHIERS CORRESPONDANT :
 #   - AUX DONNEES DE SURVIE
 #   - AUX MR FEATURES

@@ -20,10 +20,10 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=UNet_6blocks_UK_Feat4_fulldataset
+MODEL=UNet_6blocks_UKfull_Feat8
 training:
-	CUDA_VISIBLE_DEVICES=0,1 \
-	python aspects/0_MRI/autoencoder/training.py \
+	CUDA_VISIBLE_DEVICES=0,2 \
+	python aspects/0_MRI/autoencoder/train_ae.py \
 		--config "outputs/UNet/$(MODEL)/config/ae.json" \
 		> outputs/UNet/$(MODEL)/file.log 2>&1
 
@@ -35,14 +35,19 @@ extract_concat:
 		--metadata survival/whole_ukb_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features \
 
+
+
+
+# PREDICTIONS
+MODEL=UNet_6blocks_UKfull_Feat4
 univariate:
 	Rscript aspects/0_MRI/predictions/univariate.r \
 		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/$(MODEL)/config/univariate.json
 
 predict:
-	CUDA_VISIBLE_DEVICES=0 \
-	python aspects/0_MRI/predictions/train_V3.py \
-		--config outputs/UNet/$(MODEL)/config/height_pred.json \
-		> outputs/UNet/$(MODEL)/predictions/log.log 2>&1
+	CUDA_VISIBLE_DEVICES=3 \
+	python aspects/0_MRI/predictions/train_pred.py \
+		--config outputs/UNet/$(MODEL)/config/multivariate.json \
+		> outputs/UNet/$(MODEL)/predictions/multi.log 2>&1
 
 

@@ -6,7 +6,7 @@ from os.path import join
 import shutil
 from alive_progress import alive_bar
 
-ROOT = "/home/tbarba/projects/MultiModalBrainSurvival/data/data_fusion/MR/UKBIOBANK/"
+ROOT = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/UKBIOBANK/"
 bugs = []
 
 with alive_bar(len(os.listdir(ROOT))) as bar:

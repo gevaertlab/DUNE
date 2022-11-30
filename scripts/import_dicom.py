@@ -7,7 +7,7 @@ from alive_progress import alive_bar
 import pandas as pd
 
 DATA_FOLDER = "/srv/gevaertlab/data/radiology/MRI_Brain_Age"
-OUTPUT_FOLDER = "/home/tbarba/projects/MultiModalBrainSurvival/data/data_fusion/MR/MRI_Brain_Age"
+OUTPUT_FOLDER = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/MRI_Brain_Age"
 
 
 cases = {f:join(DATA_FOLDER,f, "study","series") for f in os.listdir(DATA_FOLDER) if isdir(join(DATA_FOLDER, f))}
