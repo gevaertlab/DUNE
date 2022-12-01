@@ -38,7 +38,7 @@ def extract_features(net, val_dataloader, device):
     net.eval()
     results = {}
 
-    for b_idx, (imgs, cases) in enumerate(tqdm(val_dataloader)):
+    for b_idx, (imgs, cases) in enumerate(tqdm(val_dataloader), colour="blue"):
         imgs = imgs.to(device)
         with torch.no_grad():
             _, extracted_features = net(imgs)

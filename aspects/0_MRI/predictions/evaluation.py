@@ -5,7 +5,7 @@ import pandas as pd
 from lifelines.utils import concordance_index
 from sklearn.metrics import accuracy_score, r2_score
 from matplotlib import pyplot as plt
-
+from tqdm import tqdm
 
 def cox_loss(cox_scores, labels):
     '''
@@ -26,44 +26,78 @@ def cox_loss(cox_scores, labels):
     return loss.mean()
 
 
-def evaluate(model, val_dataloader, task, num_classes, device):
-
-    model.eval()
+def train_loop(model, dataloader, task, num_classes, optimizer, device, train):
 
     loss_list = []
     output_list, labels_list, vital_status_list = [], [], []
     metrics_dict = {}
 
-    for _, (features, labels, vital_status) in enumerate(val_dataloader):
-        inputs = features.to(device)
-        labels = labels.to(device)
-        outputs = model.forward(inputs)
+    if train:
+        print("Train dataset...")
+        model.train()
+        for _, (features, labels, vital_status) in enumerate(tqdm(dataloader, colour = "magenta")):
+            inputs = features.to(device)
+            labels = labels.to(device)
+            outputs = model(inputs)
 
-        with torch.no_grad():
+            optimizer.zero_grad()
             if task == "survival":
-                labels = labels.float()
                 vital_status = vital_status.to(device)
+                labels = labels.float()
                 surv_obj = (labels, vital_status)
                 loss = cox_loss(outputs, surv_obj)
 
-            elif task == "classification":
-                if num_classes > 2:
-                    loss_func = CrossEntropyLoss()
+            elif task == "regression" or num_classes == 2 :
+                labels = labels.float()                
+                outputs = outputs.view(-1)
+                loss_func = MSELoss() if task == "regression" else BCELoss()
+                loss = loss_func(outputs, labels)
+                outputs = outputs > 0.5 if task == "classification" else outputs
+
+            else: # task == "classification" and num_classes > 2
+                ce_loss = CrossEntropyLoss()
+                loss = ce_loss(outputs, labels)
+                outputs = torch.argmax(outputs, dim=1)
+
+            loss.backward()
+            optimizer.step()
+
+            loss_list.append(loss.item())
+            output_list.append(outputs.detach().cpu().numpy())
+            labels_list.append(labels.detach().cpu().numpy())
+            vital_status_list.append(vital_status.detach().cpu().numpy())    
+
+    else:
+        print("\nValidation dataset...")
+        model.eval()
+        for _, (features, labels, vital_status) in enumerate(tqdm(dataloader, colour = "cyan")):
+            inputs = features.to(device)
+            labels = labels.to(device)
+            outputs = model(inputs)
+
+            with torch.no_grad():
+                if task == "survival":
+                    vital_status = vital_status.to(device)
+                    labels = labels.float()
+                    surv_obj = (labels, vital_status)
+                    loss = cox_loss(outputs, surv_obj)
+
+                elif task == "regression" or num_classes == 2 :
+                    labels = labels.float()                
+                    outputs = outputs.view(-1)
+                    loss_func = MSELoss() if task == "regression" else BCELoss()
                     loss = loss_func(outputs, labels)
+                    outputs = outputs > 0.5 if task == "classification" else outputs
+
+                else: # task == "classification" and num_classes > 2
+                    ce_loss = CrossEntropyLoss()
+                    loss = ce_loss(outputs, labels)
                     outputs = torch.argmax(outputs, dim=1)
-                else:
-                    loss_func = BCELoss()
-                    loss = loss_func(outputs.view(-1), labels.float())
-                    outputs = outputs > 0.5
 
-            else:  # task == "regression":
-                loss_func = MSELoss()
-                loss = loss_func(outputs.view(-1), labels.float())
-
-        loss_list.append(loss.item())
-        output_list.append(outputs.detach().cpu().numpy())
-        labels_list.append(labels.detach().cpu().numpy())
-        vital_status_list.append(vital_status.detach().cpu().numpy())
+            loss_list.append(loss.item())
+            output_list.append(outputs.detach().cpu().numpy())
+            labels_list.append(labels.detach().cpu().numpy())
+            vital_status_list.append(vital_status.detach().cpu().numpy())
 
     output_list = np.concatenate(output_list, axis=0).flatten()
     labels_list = np.concatenate(labels_list, axis=0)

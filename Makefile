@@ -20,7 +20,7 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=UNet_6b_8f_REMBRANDT_finetuning
+MODEL=UNet_6b_8f_UKfull
 training:
 	CUDA_VISIBLE_DEVICES=0,2 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
@@ -45,7 +45,4 @@ univariate:
 predict:
 	CUDA_VISIBLE_DEVICES=3 \
 	python aspects/0_MRI/predictions/train_pred.py \
-		--config outputs/UNet/$(MODEL)/config/multivariate.json \
-		> outputs/UNet/$(MODEL)/predictions/multi.log 2>&1
-
-
+		--config outputs/UNet/$(MODEL)/config/predict.json

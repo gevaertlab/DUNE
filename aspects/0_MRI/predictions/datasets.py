@@ -9,10 +9,11 @@ class MRIs(Dataset):
     """
     """
 
-    def __init__(self, csv_path, variable, task):
+    def __init__(self, csv_path, variable, task, name):
         self._csv_path = csv_path
         self.variable = variable
         self.task = task
+        self.name = name
         self.data = None
         self.labels = None
         self.data, self.labels, self.vital_status = MRIs.get_data_rna(

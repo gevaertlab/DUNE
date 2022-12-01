@@ -26,8 +26,12 @@ from datasets import BrainImages
 from utils import *
 
 
-def train_loop(model, dataloader, optimizer, criterion_name, ssim_func, psnr_func, mse_func, device, train):
+def train_loop(model, dataloader, optimizer, criterion_name, device, train):
+
     loss_list, ssim_list, psnr_list, mse_list = [], [], [], []
+    ssim_func = SSIMLoss(spatial_dims=3).to(device)
+    mse_func = nn.MSELoss()
+    psnr_func = PSNR().to(device)
 
     if train:
         model.train()
@@ -47,6 +51,7 @@ def train_loop(model, dataloader, optimizer, criterion_name, ssim_func, psnr_fun
                 loss = ssim_loss
             else:
                 loss = mse
+
             loss.backward()
             optimizer.step()
 
@@ -54,14 +59,14 @@ def train_loop(model, dataloader, optimizer, criterion_name, ssim_func, psnr_fun
                 logging.info(
                     f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])} features.")
 
-            if config['quick'] and idx == 2:
-                logging.info("quick exec")
-                break
-
             loss_list.append(loss.item())
             mse_list.append(mse)
             ssim_list.append(ssim)
             psnr_list.append(psnr)
+
+            if config['quick'] and idx == 2:
+                logging.info("quick exec")
+                break
 
     else:
         model.eval()
@@ -124,20 +129,18 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 def main(
         data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.8):
 
-    # Dependencies
+    # Initialization
     output_dir = create_dependencies(output_dir, model_name)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # logging
-    logging.basicConfig(filename=os.path.join(output_dir, "output.log"),
+    # Logging
+    logging.basicConfig(filename=os.path.join(output_dir, "ae.log"),
                         filemode='w', format='%(message)s', level=logging.INFO, force=True)
     logging.info(f"Dataset = {dataset}")
     logging.info(f"Modalities = {modalities}")
     logging.info(f"Batches = {batch_size}")
     logging.info(f"Criterion = {criterion_name}")
     logging.info(f"Quick execution = {quick}")
-
-    # Pick a device.
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize a model of our autoEncoder class on the device
     net = UNet3D(in_channels=len(modalities), out_channels=len(
@@ -152,11 +155,8 @@ def main(
         net.load_state_dict(torch.load(
             output_dir + "/autoencoding/exported_data/model.pth"))
 
-    # Optimizer and losses
+    # Optimizer
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
-    ssim_func = SSIMLoss(spatial_dims=3).to(device)
-    mse_func = nn.MSELoss()
-    psnr_func = PSNR().to(device)
 
     # Data transformers
     normalTransform = transforms.Compose(
@@ -182,23 +182,14 @@ def main(
     torch.save(
         testLoader, f'{output_dir}/autoencoding/exported_data/testLoader.pth')
 
-    # Train loop
-    train_metrics = {"loss": [], "ssim": [], "psnr": [], "mse": []}
-    test_metrics = {"loss": [], "ssim": [], "psnr": [], "mse": []}
-
     for epoch in range(num_epochs):
         logging.info(f"\nStarting epoch {epoch+1}/{num_epochs}")
         print(f"\nEpoch {epoch+1}/{num_epochs}")
 
         train_epoch_metrics = train_loop(
-            net, trainLoader, optimizer, criterion_name, ssim_func, psnr_func, mse_func, device, train=True)
+            net, trainLoader, optimizer, criterion_name, device, train=True)
         test_epoch_metrics = train_loop(
-            net, testLoader, optimizer, criterion_name, ssim_func, psnr_func, mse_func, device, train=False)
-
-        metrics = ['loss', 'ssim', 'psnr', 'mse']
-        for m in metrics:
-            train_metrics[m].append(train_epoch_metrics[m])
-            test_metrics[m].append(test_epoch_metrics[m])
+            net, testLoader, optimizer, criterion_name, device, train=False)
 
         # logging.info epoch num and corresponding loss
         logging.info(
@@ -208,7 +199,7 @@ def main(
         torch.save(net.state_dict(), output_dir +
                    "/autoencoding/exported_data/model.pth")
 
-        # Export results
+        # Export epoch results
         reconstruct_image(net, device, output_dir, testLoader)
         report = update_report(output_dir, model_name, quick, totalData, modalities, features, batch_size,
                                criterion_name, learning_rate, num_epochs, epoch, train_epoch_metrics, test_epoch_metrics)

@@ -7,14 +7,16 @@ class MROnlyModel(nn.Module):
         super(MROnlyModel, self).__init__()
         self.num_classes = 1 if num_classes == 2 else num_classes
         self.task = task
+        self.hidden_layer_size = hidden_layer_size
+        self.num_features = num_features
 
         self.mr_mlp = torch.nn.Sequential(
             nn.Dropout(),
-            nn.Linear(num_features, hidden_layer_size),
+            nn.Linear(self.num_features, self.hidden_layer_size),
             nn.ReLU(),
         )
 
-        self.final_mlp = torch.nn.Sequential(nn.Linear(hidden_layer_size, self.num_classes))
+        self.final_mlp = torch.nn.Sequential(nn.Linear(self.hidden_layer_size, self.num_classes))
 
         
 
