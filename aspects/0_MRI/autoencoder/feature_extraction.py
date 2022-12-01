@@ -1,18 +1,17 @@
 import argparse
 import os
 import torch
-import numpy as np
 import pandas as pd
 from models import UNet3D
 import torch.nn as nn
-import torchvision.transforms as transforms
-
+from tqdm import tqdm
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model_name", type=str, help='model name')
     parser.add_argument("-d", "--model_dir", type=str, default = "outputs/UNet", help='model path')
     parser.add_argument("-n", "--num_mod", type=int, default = 2, help='number of modalities')
+    parser.add_argument("-f", "--init_feat", type=int, default = 8, help='number of initial features')
     parser.add_argument("-b", "--num_blocks", type=int, default = 6, help='number of conv blocks')
 
     args = parser.parse_args()
@@ -21,12 +20,12 @@ def parse_arguments():
     return args
 
 
-def import_model(model_dir, num_mod, num_blocks, device):
+def import_model(model_dir, num_mod, init_feat, num_blocks, device):
 
     model_path = os.path.join(model_dir, "autoencoding/exported_data/model.pth")
 
     model = UNet3D(in_channels=num_mod, out_channels=num_mod,
-                   init_features=4, num_blocks=num_blocks)
+                   init_features=init_feat, num_blocks=num_blocks)
     model = nn.DataParallel(model)
     model = model.to(device)
     model.load_state_dict(torch.load(model_path))
@@ -39,7 +38,7 @@ def extract_features(net, val_dataloader, device):
     net.eval()
     results = {}
 
-    for b_idx, (imgs, cases) in enumerate(val_dataloader):
+    for b_idx, (imgs, cases) in enumerate(tqdm(val_dataloader)):
         imgs = imgs.to(device)
         with torch.no_grad():
             _, extracted_features = net(imgs)
@@ -58,7 +57,7 @@ def main():
     os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
     args = parse_arguments()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = import_model(args.model_dir, args.num_mod, args.num_blocks, device)
+    net = import_model(args.model_dir, args.num_mod, args.init_feat, args.num_blocks, device)
 
     trainLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/trainLoader.pth')
     testLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/testLoader.pth')

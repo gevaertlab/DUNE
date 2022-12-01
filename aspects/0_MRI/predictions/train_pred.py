@@ -13,6 +13,7 @@ from utils import create_dependencies,parse_arguments, update_report, update_cur
 plt.switch_backend('agg')
 
 
+
 def train_model(model, dataloaders, optimizer, device, config, num_classes, num_features, output_dir):
 
     num_epochs = config["num_epochs"]

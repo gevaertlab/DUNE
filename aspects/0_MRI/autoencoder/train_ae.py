@@ -16,7 +16,7 @@ from torchvision import transforms as transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
 from torchvision.utils import save_image
-import pandas as pd
+from tqdm import tqdm
 from piqa import PSNR
 from monai.losses.ssim_loss import SSIMLoss
 from models import UNet3D
@@ -150,7 +150,7 @@ def main(
         print(f"\nStarting epoch {epoch+1}/{num_epochs}")
         net.train()
 
-        for idx, (images, _) in enumerate(trainLoader):
+        for idx, (images, _) in enumerate(tqdm(trainLoader)):
             optimizer.zero_grad()
             images = images.to(device)
             outputs, bottleneck = net(images)

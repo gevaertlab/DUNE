@@ -5,6 +5,8 @@ from PIL import Image
 import numpy as np
 from torch.utils.data import Dataset
 from torchvision import transforms
+from scipy import ndimage
+import torchio as tio
 
 
 class BrainImages(Dataset):
@@ -52,8 +54,15 @@ class BrainImages(Dataset):
         case = self.folders[idx]
         imgsPre = []
         for i in range(0, self.n_mod):
-            temp = nib.load(self.imgAddresses[i])
-            temp = temp.get_fdata().transpose((2, 1, 0))
+            nifti = nib.load(self.imgAddresses[i])
+            # vox_X, vox_Y, vox_Z = nifti.header.get_zooms()
+            # temp = nifti.get_fdata()
+            # temp = ndimage.zoom(temp, (vox_X, vox_Y, vox_Z)) # interpolate to 1x1x1 voxels
+            resample = tio.Resample(1, image_interpolation='bspline')
+
+            nifti = resample(nifti)
+            temp = nifti.get_fdata()
+            temp = temp.transpose((2, 1, 0))
             temp = np.array(temp)
             temp *= 255.0 / temp.max()
             temp = temp.astype(np.uint8)
@@ -86,7 +95,7 @@ class BrainImages(Dataset):
                             startSliceX:endSliceX].numpy()
                 t = Image.fromarray(t)
 
-                if self.dataset == "UKBIOBANK":
+                if self.dataset in ("UKBIOBANK", "REMBRANDT"):
                     t = t.rotate(angle=180)
 
                 imgsPil[i, z-startSliceZ, :,
