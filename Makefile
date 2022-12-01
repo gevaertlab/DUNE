@@ -20,19 +20,18 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=UNet_6b_8f_UKfull
+MODEL=UNet_6b_8f_REMBRANDT_finetuning
 training:
 	CUDA_VISIBLE_DEVICES=0,2 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
-		--config "outputs/UNet/$(MODEL)/config/ae.json" \
-		> outputs/UNet/$(MODEL)/file.log 2>&1
-
+		--config "outputs/UNet/$(MODEL)/config/ae.json"
+		
 extract_concat:
 	CUDA_VISIBLE_DEVICES=1,3 \
-	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) \
+	python aspects/0_MRI/autoencoder/feature_extraction.pqy -m $(MODEL) \
 		--num_blocks 6 --init_feat 8 ; \
 	python scripts/concat_features.py \
-		--metadata survival/whole_ukb_metadata.csv \
+		--metadata data/survival/whole_ukb_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features \
 
 

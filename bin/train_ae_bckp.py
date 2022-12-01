@@ -26,66 +26,34 @@ from datasets import BrainImages
 from utils import *
 
 
-def train_loop(model, dataloader, optimizer, criterion_name, ssim_func, psnr_func, mse_func, device, train):
+
+
+def evaluate(model, testLoader, criterion_name, ssim_func, mse_func, device):
+    model.eval()
     loss_list, ssim_list, psnr_list, mse_list = [], [], [], []
 
-    if train:
-        model.train()
-        print("Train set...")
-        for idx, (imgs, _) in enumerate(tqdm(dataloader, colour="magenta")):
-            optimizer.zero_grad()
-            images = imgs.to(device)
-            outputs, bottleneck = model(images)
+    psnr_measurer = PSNR().to(device)
 
-            ssim_loss = ssim_func(images, outputs,
-                                  data_range=images.max())
-            ssim = 1 - ssim_loss.item()
-            mse = mse_func(outputs, images).item()
-            psnr = psnr_func(images, outputs).item()
+    for _, (imgs, _) in enumerate(tqdm(testLoader, colour="green")):
+        batch_images = imgs.to(device)
+        with torch.no_grad():
+            outputs, _ = model(batch_images)
+
+            ssim_loss = ssim_func(batch_images, outputs,
+                                  data_range=batch_images.max()).item()
+            ssim = 1 - ssim_loss
+            mse = mse_func(outputs, batch_images).item()
+            psnr = psnr_measurer(batch_images, outputs).item()
 
             if criterion_name == "SSIM":
                 loss = ssim_loss
             else:
                 loss = mse
-            loss.backward()
-            optimizer.step()
 
-            if idx == 1:
-                logging.info(
-                    f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])} features.")
-
-            if config['quick'] and idx == 2:
-                logging.info("quick exec")
-                break
-
-            loss_list.append(loss.item())
-            mse_list.append(mse)
-            ssim_list.append(ssim)
-            psnr_list.append(psnr)
-
-    else:
-        model.eval()
-        print("Validation set...")
-        for _, (imgs, _) in enumerate(tqdm(dataloader, colour="cyan")):
-            images = imgs.to(device)
-            with torch.no_grad():
-                outputs, _ = model(images)
-
-                ssim_loss = ssim_func(images, outputs,
-                                      data_range=images.max())
-                ssim = 1 - ssim_loss.item()
-                mse = mse_func(outputs, images).item()
-                psnr = psnr_func(images, outputs).item()
-
-                if criterion_name == "SSIM":
-                    loss = ssim_loss
-                else:
-                    loss = mse
-
-            loss_list.append(loss.item())
-            mse_list.append(mse)
-            ssim_list.append(ssim)
-            psnr_list.append(psnr)
+        loss_list.append(loss)
+        mse_list.append(mse)
+        ssim_list.append(ssim)
+        psnr_list.append(psnr)
 
     val_loss = np.mean(loss_list)
     val_ssim = np.mean(ssim_list)
@@ -122,14 +90,13 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 
 
 def main(
-        data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.8):
+    data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick,train_prop=0.8):
 
     # Dependencies
     output_dir = create_dependencies(output_dir, model_name)
 
     # logging
-    logging.basicConfig(filename=os.path.join(output_dir, "output.log"),
-                        filemode='w', format='%(message)s', level=logging.INFO, force=True)
+    logging.basicConfig(filename=os.path.join(output_dir, "output.log") , filemode='w', format='%(message)s', level=logging.INFO, force=True)
     logging.info(f"Dataset = {dataset}")
     logging.info(f"Modalities = {modalities}")
     logging.info(f"Batches = {batch_size}")
@@ -140,8 +107,7 @@ def main(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize a model of our autoEncoder class on the device
-    net = UNet3D(in_channels=len(modalities), out_channels=len(
-        modalities), init_features=features, num_blocks=num_blocks)
+    net = UNet3D(in_channels=len(modalities), out_channels=len(modalities), init_features=features, num_blocks=num_blocks)
 
     # Allocate model on several GPUs
     net = nn.DataParallel(net)
@@ -156,7 +122,6 @@ def main(
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     ssim_func = SSIMLoss(spatial_dims=3).to(device)
     mse_func = nn.MSELoss()
-    psnr_func = PSNR().to(device)
 
     # Data transformers
     normalTransform = transforms.Compose(
@@ -177,10 +142,8 @@ def main(
         f"There are {len(trainLoader)*batch_size} training samples and {len(testLoader)*batch_size} test samples.")
 
     # Saving datasets
-    torch.save(
-        trainLoader, f'{output_dir}/autoencoding/exported_data/trainLoader.pth')
-    torch.save(
-        testLoader, f'{output_dir}/autoencoding/exported_data/testLoader.pth')
+    torch.save(trainLoader, f'{output_dir}/autoencoding/exported_data/trainLoader.pth')
+    torch.save(testLoader, f'{output_dir}/autoencoding/exported_data/testLoader.pth')
 
     # Train loop
     train_metrics = {"loss": [], "ssim": [], "psnr": [], "mse": []}
@@ -188,25 +151,47 @@ def main(
 
     for epoch in range(num_epochs):
         logging.info(f"\nStarting epoch {epoch+1}/{num_epochs}")
-        print(f"\nEpoch {epoch+1}/{num_epochs}")
+        print(f"Epoch {epoch+1}/{num_epochs}")
+        net.train()
 
-        train_epoch_metrics = train_loop(
-            net, trainLoader, optimizer, criterion_name, ssim_func, psnr_func, mse_func, device, train=True)
-        test_epoch_metrics = train_loop(
-            net, testLoader, optimizer, criterion_name, ssim_func, psnr_func, mse_func, device, train=False)
+        for idx, (images, _) in enumerate(tqdm(trainLoader, colour="red")):
+            optimizer.zero_grad()
+            images = images.to(device)
+            outputs, bottleneck = net(images)
 
+            if idx == 1:
+                logging.info(f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])} features.")
+
+            if criterion_name == "SSIM":
+                criterion = ssim_func
+                batch_loss = criterion(
+                    images, outputs, data_range=images.max().unsqueeze(0))
+            else:
+                criterion = mse_func
+                batch_loss = criterion(outputs, images)
+
+            # logging.info(batch_loss)
+            batch_loss.backward()
+            optimizer.step()
+
+            if config['quick'] and idx == 2:
+                logging.info("quick exec")
+                break
+
+        # Evaluate model after each epoch
         metrics = ['loss', 'ssim', 'psnr', 'mse']
+        train_epoch_metrics = evaluate(
+            net, trainLoader, criterion_name, ssim_func, mse_func, device)
+        test_epoch_metrics = evaluate(
+            net, testLoader, criterion_name, ssim_func, mse_func, device)
         for m in metrics:
             train_metrics[m].append(train_epoch_metrics[m])
             test_metrics[m].append(test_epoch_metrics[m])
 
         # logging.info epoch num and corresponding loss
-        logging.info(
-            f"Autoencoder train loss = {train_epoch_metrics['loss']:6f}")
-        logging.info(
-            f"Autoencoder test loss = {test_epoch_metrics['loss']:6f}")
-        torch.save(net.state_dict(), output_dir +
-                   "/autoencoding/exported_data/model.pth")
+        logging.info(f"Autoencoder train loss = {train_epoch_metrics['loss']:6f}")
+        logging.info(f"Autoencoder test loss = {test_epoch_metrics['loss']:6f}")
+        torch.save(net.state_dict(), output_dir+"/autoencoding/exported_data/model.pth")
 
         # Export results
         reconstruct_image(net, device, output_dir, testLoader)
@@ -219,7 +204,11 @@ if __name__ == "__main__":
     start = datetime.now()
     os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
     config = parse_arguments()
+    
+
 
     main(**config)
     execution_time = humanfriendly.format_timespan(datetime.now() - start)
     logging.info(f"\nFinished in {execution_time}.")
+
+
