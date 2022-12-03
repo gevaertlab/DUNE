@@ -1,3 +1,4 @@
+import logging
 import torch
 from torch.nn import CrossEntropyLoss, BCELoss, MSELoss
 import numpy as np
@@ -6,6 +7,7 @@ from lifelines.utils import concordance_index
 from sklearn.metrics import accuracy_score, r2_score
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+from nll_surv_loss import get_ci, NLLSurvLoss
 
 def cox_loss(cox_scores, labels):
     '''
@@ -26,26 +28,34 @@ def cox_loss(cox_scores, labels):
     return loss.mean()
 
 
-def train_loop(model, dataloader, task, num_classes, optimizer, device, train):
+def train_loop(model, dataloader, task, variable, num_classes, optimizer, device, train):
 
     loss_list = []
-    output_list, labels_list, vital_status_list = [], [], []
+    output_list, labels_list = [] , []
+    survival_months_list ,vital_status_list = [], []
     metrics_dict = {}
 
     if train:
         print("Train dataset...")
         model.train()
-        for _, (features, labels, vital_status) in enumerate(tqdm(dataloader, colour = "magenta")):
+        for _, (features, labels, vital_status, survival_months) in enumerate(tqdm(dataloader, colour = "magenta")):
             inputs = features.to(device)
             labels = labels.to(device)
             outputs = model(inputs)
 
+
             optimizer.zero_grad()
             if task == "survival":
                 vital_status = vital_status.to(device)
-                labels = labels.float()
-                surv_obj = (labels, vital_status)
-                loss = cox_loss(outputs, surv_obj)
+                
+                if variable == "survival_bin":
+                    loss = NLLSurvLoss()(outputs, labels, -vital_status)
+
+                else:
+                    labels = labels.float()
+                    surv_obj = (labels, vital_status)
+                    loss = cox_loss(outputs, surv_obj)
+
 
             elif task == "regression" or num_classes == 2 :
                 labels = labels.float()                
@@ -65,12 +75,14 @@ def train_loop(model, dataloader, task, num_classes, optimizer, device, train):
             loss_list.append(loss.item())
             output_list.append(outputs.detach().cpu().numpy())
             labels_list.append(labels.detach().cpu().numpy())
-            vital_status_list.append(vital_status.detach().cpu().numpy())    
+            vital_status_list.append(vital_status.detach().cpu().numpy())
+            survival_months_list.append(survival_months.detach().cpu().numpy())
+    
 
     else:
         print("\nValidation dataset...")
         model.eval()
-        for _, (features, labels, vital_status) in enumerate(tqdm(dataloader, colour = "cyan")):
+        for _, (features, labels, vital_status, survival_months) in enumerate(tqdm(dataloader, colour = "cyan")):
             inputs = features.to(device)
             labels = labels.to(device)
             outputs = model(inputs)
@@ -78,9 +90,13 @@ def train_loop(model, dataloader, task, num_classes, optimizer, device, train):
             with torch.no_grad():
                 if task == "survival":
                     vital_status = vital_status.to(device)
-                    labels = labels.float()
-                    surv_obj = (labels, vital_status)
-                    loss = cox_loss(outputs, surv_obj)
+
+                    if variable == "survival_bin":
+                        loss = NLLSurvLoss()(outputs, labels, vital_status)
+                    else:
+                        labels = labels.float()
+                        surv_obj = (labels, vital_status)
+                        loss = cox_loss(outputs, surv_obj)
 
                 elif task == "regression" or num_classes == 2 :
                     labels = labels.float()                
@@ -98,18 +114,25 @@ def train_loop(model, dataloader, task, num_classes, optimizer, device, train):
             output_list.append(outputs.detach().cpu().numpy())
             labels_list.append(labels.detach().cpu().numpy())
             vital_status_list.append(vital_status.detach().cpu().numpy())
+            survival_months_list.append(survival_months.detach().cpu().numpy())
 
-    output_list = np.concatenate(output_list, axis=0).flatten()
+    output_list = np.concatenate(output_list, axis=0)
     labels_list = np.concatenate(labels_list, axis=0)
     vital_status_list = np.concatenate(vital_status_list, axis=0)
+    survival_months_list = np.concatenate(survival_months_list, axis=0)
 
     metrics_dict["loss"] = np.mean(loss_list)
     if task == "survival":
-        metrics_dict["concordance index"] = concordance_index(
-            labels_list, - output_list, vital_status_list)
+        if variable == "survival_bin":
+            metrics_dict["concordance index"] = get_ci(
+                output_list, vital_status_list, survival_months_list)
+        else:
+            metrics_dict["concordance index"] = concordance_index(
+                labels_list, - output_list, vital_status_list)
+
     elif task == "classification":
-        metrics_dict["accuracy"] = accuracy_score(labels_list, output_list)
+        metrics_dict["accuracy"] = accuracy_score(labels_list, output_list.flatten())
     else:
-        metrics_dict["r2_score"] = r2_score(labels_list, output_list)
+        metrics_dict["r2_score"] = r2_score(labels_list, output_list.flatten())
 
     return metrics_dict

@@ -4,9 +4,9 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def create_dependencies(output_dir, variable):
+def create_dependencies(model_dir, variable):
 
-    output_dir = os.path.join(output_dir, variable)
+    output_dir = os.path.join(model_dir, "predictions", variable)
     os.makedirs(output_dir, exist_ok=True)
 
     return output_dir

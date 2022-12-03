@@ -14,16 +14,14 @@ class MRIs(Dataset):
         self.variable = variable
         self.task = task
         self.name = name
-        self.data = None
-        self.labels = None
-        self.data, self.labels, self.vital_status = MRIs.get_data_rna(
+        self.data, self.labels, self.vital_status, self.survival_months, self.label_counts = MRIs.get_data_rna(
             self._csv_path, self.variable, self.task)
 
         self._get_feat_characteristics()
 
     def _get_feat_characteristics(self):
         self.num_classes = 1
-        if self.task == "classification":
+        if self.task == "classification" or self.variable == "survival_bin":
             self.num_classes = int(torch.max(self.labels).item()) + 1
 
         self.num_cases = self.data.size(0)
@@ -39,10 +37,10 @@ class MRIs(Dataset):
     def __getitem__(self, idx):
         features = self.data[idx]
         label = self.labels[idx]
-
         vital_status = self.vital_status[idx]
+        survival_months = self.survival_months[idx] 
 
-        return features, label, vital_status
+        return features, label, vital_status, survival_months
 
     @staticmethod
     def get_data_rna(csv_path, variable, task):
@@ -50,26 +48,31 @@ class MRIs(Dataset):
         le = LabelEncoder()
         data = pd.read_csv(csv_path)
         features, labels = [], []
-        vital_status = torch.tensor([0 for _ in range(data.shape[0])])
+        labels_counts = None
 
         features = data[[x for x in data.keys() if x.isdigit()]
                         ].values.astype(np.float32)
         features = torch.tensor(features)
 
-        if task == "survival":
-            labels = data["survival_months"]
+        if "survival_months" in data.columns:
+            survival_months = torch.tensor(data["survival_months"]).float()
             vital_status = torch.tensor(data["vital_status"]).float()
+        else:
+            vital_status = torch.tensor([0 for _ in range(data.shape[0])])
+            survival_months = torch.tensor([0 for _ in range(data.shape[0])])
+
+        if task == "survival":
+            if variable == "survival_bin":
+                labels = data["survival_bin"]
+            else:
+                labels = survival_months
         else:
             labels = data[variable]
             if task == "classification":
+                labels_counts = labels.value_counts()
                 labels = le.fit_transform(labels)
+
 
         labels = torch.tensor(labels)
 
-        return features, labels, vital_status
-
-
-# MODIFIER POUR AVOIR UNE SEULE GROSSE BASE A SPLITTER EN 3
-# PRENDRE EN INPUT 2 FICHIERS CORRESPONDANT :
-#   - AUX DONNEES DE SURVIE
-#   - AUX MR FEATURES
+        return features, labels, vital_status, survival_months, labels_counts

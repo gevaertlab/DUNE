@@ -5,8 +5,6 @@
 """
 
 import logging
-
-
 import os
 from datetime import datetime, date
 import humanfriendly
@@ -36,13 +34,12 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
     if train:
         model.train()
         print("Train set...")
-        for idx, (imgs, _) in enumerate(tqdm(dataloader, colour="magenta")):
+        for idx, (imgs, cases_id) in enumerate(tqdm(dataloader, colour="magenta")):
             optimizer.zero_grad()
             images = imgs.to(device)
             outputs, bottleneck = model(images)
 
-            ssim_loss = ssim_func(images, outputs,
-                                  data_range=images.max())
+            ssim_loss = ssim_func(images, outputs, data_range=images.max())
             ssim = 1 - ssim_loss.item()
             mse = mse_func(outputs, images).item()
             psnr = psnr_func(images, outputs).item()
@@ -57,7 +54,7 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
 
             if idx == 1:
                 logging.info(
-                    f"Bottleneck shape is {bottleneck.shape} with a total of {np.prod(bottleneck.shape[1:])} features.")
+                    f"Bottleneck shape is {tuple(bottleneck.shape)} with a total of {np.prod(bottleneck.shape[1:])} features.")
 
             loss_list.append(loss.item())
             mse_list.append(mse)
@@ -71,13 +68,12 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
     else:
         model.eval()
         print("Validation set...")
-        for _, (imgs, _) in enumerate(tqdm(dataloader, colour="cyan")):
+        for idx, (imgs, cases_id) in enumerate(tqdm(dataloader, colour="cyan")):
             images = imgs.to(device)
             with torch.no_grad():
-                outputs, _ = model(images)
+                outputs, bottleneck = model(images)
 
-                ssim_loss = ssim_func(images, outputs,
-                                      data_range=images.max())
+                ssim_loss = ssim_func(images, outputs, data_range=images.max())
                 ssim = 1 - ssim_loss.item()
                 mse = mse_func(outputs, images).item()
                 psnr = psnr_func(images, outputs).item()
@@ -87,10 +83,10 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
                 else:
                     loss = mse
 
-            loss_list.append(loss.item())
-            mse_list.append(mse)
-            ssim_list.append(ssim)
-            psnr_list.append(psnr)
+                loss_list.append(loss.item())
+                mse_list.append(mse)
+                ssim_list.append(ssim)
+                psnr_list.append(psnr)
 
     val_loss = np.mean(loss_list)
     val_ssim = np.mean(ssim_list)
@@ -170,9 +166,9 @@ def main(
         totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
 
     trainLoader = DataLoader(
-        trainData, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
+        trainData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
     testLoader = DataLoader(
-        testData, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
+        testData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
     logging.info(
         f"There are {len(trainLoader)*batch_size} training samples and {len(testLoader)*batch_size} test samples.")
 
