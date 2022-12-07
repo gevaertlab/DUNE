@@ -22,25 +22,22 @@ train_histo:
 
 MODEL=UNet_5b_4f_UKfull
 train_ae:
-	CUDA_VISIBLE_DEVICES=0,3 \
+	CUDA_VISIBLE_DEVICES=2,3\
 	python aspects/0_MRI/autoencoder/train_ae.py \
 		--config "outputs/UNet/$(MODEL)/config/ae.json"
 
+extract:
+	CUDA_VISIBLE_DEVICES=0,3  \
+	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) \
+	--num_blocks 5 --init_feat 4
+
 concat:
 	python scripts/concat_features.py \
-		--metadata data/survival/TCGA_survival_bins.csv \
+		--metadata data/survival/whole_ukb_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features
 
+		# --metadata data/survival/TCGA_survival_bins.csv \
 
-extract_concat:
-	CUDA_VISIBLE_DEVICES=0,2 \
-	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) \
-	--num_blocks 6 --init_feat 8 ; \
-	python scripts/concat_features.py \
-		--metadata data/survival/TCGA_survival_bins.csv \
-		--features_dir outputs/UNet/$(MODEL)/autoencoding/features
-
-		# --metadata data/survival/whole_ukb_metadata.csv 
 # PREDICTIONS
 univariate:
 	Rscript aspects/0_MRI/predictions/univariate.r \

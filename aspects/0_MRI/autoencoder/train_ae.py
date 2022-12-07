@@ -159,6 +159,7 @@ def main(
         [transforms.ToTensor(), transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
 
     # Dataloaders
+    print("\nLoading datasets...")
     data_path = os.path.join(data_path, dataset)
     totalData = BrainImages(dataset, data_path, modalities,
                             min_dims, transforms=normalTransform)
@@ -180,7 +181,7 @@ def main(
 
     for epoch in range(num_epochs):
         logging.info(f"\nStarting epoch {epoch+1}/{num_epochs}")
-        print(f"\nEpoch {epoch+1}/{num_epochs}")
+        print(f"Epoch {epoch+1}/{num_epochs}")
 
         train_epoch_metrics = train_loop(
             net, trainLoader, optimizer, criterion_name, device, train=True)
@@ -202,6 +203,8 @@ def main(
         update_curves(report, criterion_name, output_dir)
 
 
+
+
 if __name__ == "__main__":
     start = datetime.now()
     os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
@@ -210,3 +213,4 @@ if __name__ == "__main__":
     main(**config)
     execution_time = humanfriendly.format_timespan(datetime.now() - start)
     logging.info(f"\nFinished in {execution_time}.")
+    os.system('cls')

@@ -4,7 +4,7 @@ import os
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from torch.optim import Adam
+from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader, RandomSampler
 from models import MROnlyModel
 from datasets import MRIs
@@ -22,6 +22,7 @@ def main():
     nw = config['num_workers']  
     output_dir = create_dependencies(model_dir, variable)
     torch.multiprocessing.set_sharing_strategy('file_system')
+    # device = torch.device("cuda:2" if torch.cuda.is_available() else 'cpu')
     device = torch.device("cpu")
 
     # Create training and validation datasets
@@ -71,17 +72,20 @@ def main():
 
     # Define optimizer
     optimizer = Adam(model.parameters(), lr=config['lr'])
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True)
 
     # Train and evaluate
     num_epochs = config["num_epochs"]
 
     for epoch in range(num_epochs):
-        print(f'\nEpoch {epoch+1}/{num_epochs}')
+        print(f'Epoch {epoch+1}/{num_epochs}')
 
         train_epoch_metrics = train_loop(
             model, train_dataloader, task, variable, num_classes, optimizer, device, train=True)
         val_epoch_metrics = train_loop(
             model, val_dataloader, task, variable, num_classes, optimizer, device, train=False)
+        
+        scheduler.step(val_epoch_metrics['loss'])
 
         metrics = [m for m in train_epoch_metrics.keys()]
         report = update_report(
@@ -92,6 +96,8 @@ def main():
         logging.info(f"Model train loss = {train_epoch_metrics['loss']:6f}")
         logging.info(f"Model val loss = {val_epoch_metrics['loss']:6f}")
         torch.save(model.state_dict(), output_dir+"/model.pt")
+
+        os.system("clear")
 
     # Fin de la boucle d'entrainement
     logging.info("\nEVALUATION ON TEST SET")

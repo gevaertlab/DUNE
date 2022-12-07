@@ -45,7 +45,6 @@ def extract_features(net, val_dataloader, device):
             extracted_features = extracted_features.detach().cpu()
 
         for i, case in enumerate(cases):
-            # try:
             case_features = extracted_features[i,:, :, :, :].reshape(-1).numpy()
 
             results[case] = case_features
@@ -59,6 +58,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     net = import_model(args.model_dir, args.num_mod, args.init_feat, args.num_blocks, device)
 
+    print("\nLoading datasets...")
     trainLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/trainLoader.pth')
     testLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/testLoader.pth')
     dict_loaders = {"train": trainLoader, "test": testLoader}
@@ -66,7 +66,7 @@ def main():
     # feature extraction
     os.makedirs(f"{args.model_dir}/autoencoding/features", exist_ok=True)
     for dataset in ["train", "test"]:
-        print(f"extracting features for dataset : {dataset}")
+        print(f"Extracting features for dataset : {dataset}")
         results = extract_features(
             net, dict_loaders[dataset], device)
 

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from lifelines.utils import concordance_index
 from sklearn.metrics import accuracy_score, r2_score
+from sksurv.metrics import brier_score
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from nll_surv_loss import get_ci, NLLSurvLoss
@@ -129,6 +130,8 @@ def train_loop(model, dataloader, task, variable, num_classes, optimizer, device
         else:
             metrics_dict["concordance index"] = concordance_index(
                 labels_list, - output_list, vital_status_list)
+            # metrics_dict['brier_score'] = brier_score(labels_list, output_list.flatten())
+
 
     elif task == "classification":
         metrics_dict["accuracy"] = accuracy_score(labels_list, output_list.flatten())

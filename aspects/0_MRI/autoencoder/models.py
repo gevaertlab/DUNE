@@ -27,8 +27,8 @@ class UNet3D(nn.Module):
             self.enc_blocks.append(enc_block)
         
         # BOTTLENECK EXTRACTION
-        bottleneck_features= 2*n
-        self.bottleneck = UNet3D._block(n, bottleneck_features, name="bottleneck")
+        bottleneck_features= 2*feature_list[-1]
+        self.bottleneck = UNet3D._block(feature_list[-1], bottleneck_features, name="bottleneck")
 
         # DECODER BLOCKS
         feature_list = feature_list[::-1]
@@ -46,7 +46,7 @@ class UNet3D(nn.Module):
             self.dec_blocks.append(dec_block)
 
         # FINAL CONVOLUTION
-        self.last_conv = nn.Conv3d(n, out_channels=out_channels, kernel_size=1)
+        self.last_conv = nn.Conv3d(feature_list[-1], out_channels=out_channels, kernel_size=1)
 
     def forward(self, x):
         ## ENCODING
@@ -69,6 +69,7 @@ class UNet3D(nn.Module):
 
             dec = torch.cat((dec, encodings[k]), dim=1)
             dec = self.dec_blocks[k](dec)
+
 
         return torch.sigmoid(self.last_conv(dec)), bottleneck
 
@@ -106,75 +107,75 @@ class UNet3D(nn.Module):
         )
 
 
-class convAE(nn.Module):
-    def __init__(self, in_c, out_c, num_feat, num_blocks):
-        super().__init__()
+# class convAE(nn.Module):
+#     def __init__(self, in_c, out_c, num_feat, num_blocks):
+#         super().__init__()
 
-        # Creating the neural network structure
-        self.lastOut = []
-        self.num_blocks = num_blocks
+#         # Creating the neural network structure
+#         self.lastOut = []
+#         self.num_blocks = num_blocks
 
-        # Encoder tools
-        self.conv1 = nn.Conv3d(
-            in_channels=in_c, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
-        self.conv2 = nn.Conv3d(
-            in_channels=out_c, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
-        self.pool = nn.MaxPool3d(2, stride=2, padding=0, return_indices=True)
+#         # Encoder tools
+#         self.conv1 = nn.Conv3d(
+#             in_channels=in_c, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
+#         self.conv2 = nn.Conv3d(
+#             in_channels=out_c, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
+#         self.pool = nn.MaxPool3d(2, stride=2, padding=0, return_indices=True)
 
-        # Feature extraction layer
-        self.extr = nn.Conv3d(
-            in_channels=out_c, out_channels=num_feat, kernel_size=[3, 3, 3], stride=1, padding=1)
+#         # Feature extraction layer
+#         self.extr = nn.Conv3d(
+#             in_channels=out_c, out_channels=num_feat, kernel_size=[3, 3, 3], stride=1, padding=1)
 
-        # Decoder tools
-        self.unpool = nn.MaxUnpool3d(2, stride=2, padding=0)
-        self.start_decode = nn.ConvTranspose3d(
-            in_channels=num_feat, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
-        self.t_conv2 = nn.ConvTranspose3d(
-            in_channels=out_c, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
-        self.t_conv1 = nn.ConvTranspose3d(
-            in_channels=out_c, out_channels=in_c, kernel_size=[3, 3, 3], stride=1, padding=1)
+#         # Decoder tools
+#         self.unpool = nn.MaxUnpool3d(2, stride=2, padding=0)
+#         self.start_decode = nn.ConvTranspose3d(
+#             in_channels=num_feat, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
+#         self.t_conv2 = nn.ConvTranspose3d(
+#             in_channels=out_c, out_channels=out_c, kernel_size=[3, 3, 3], stride=1, padding=1)
+#         self.t_conv1 = nn.ConvTranspose3d(
+#             in_channels=out_c, out_channels=in_c, kernel_size=[3, 3, 3], stride=1, padding=1)
 
-    def encoder(self, features):
-        indexes, shapes = [], [features.size()]
-        for k in range(self.num_blocks):
-            if k == 0:
-                x = func.relu(self.conv1(features))
-            else:
-                x = func.relu(self.conv2(x))
+#     def encoder(self, features):
+#         indexes, shapes = [], [features.size()]
+#         for k in range(self.num_blocks):
+#             if k == 0:
+#                 x = func.relu(self.conv1(features))
+#             else:
+#                 x = func.relu(self.conv2(x))
 
-            x = func.relu(self.conv2(x))
-            x, idk = self.pool(x)
-            indexes.append(idk)
-            shapes.append(x.size())
+#             x = func.relu(self.conv2(x))
+#             x, idk = self.pool(x)
+#             indexes.append(idk)
+#             shapes.append(x.size())
 
-        coded_img = self.extr(x)
+#         coded_img = self.extr(x)
 
-        return coded_img, indexes, shapes
+#         return coded_img, indexes, shapes
 
-    def decoder(self, x, indexes, shapes):
-        indexes.reverse()
-        shapes.reverse()
+#     def decoder(self, x, indexes, shapes):
+#         indexes.reverse()
+#         shapes.reverse()
 
-        x = self.start_decode(x)
-        for k in range(self.num_blocks):
-            x = self.unpool(x, indexes[k], output_size=shapes[k+1])
-            x = func.relu(self.t_conv2(x))
+#         x = self.start_decode(x)
+#         for k in range(self.num_blocks):
+#             x = self.unpool(x, indexes[k], output_size=shapes[k+1])
+#             x = func.relu(self.t_conv2(x))
 
-            if k != self.num_blocks-1:
-                x = func.relu(self.t_conv2(x))
-            else:
-                decoded_img = func.relu(self.t_conv1(x))
+#             if k != self.num_blocks-1:
+#                 x = func.relu(self.t_conv2(x))
+#             else:
+#                 decoded_img = func.relu(self.t_conv1(x))
 
-        decoded_img = decoded_img / torch.max(decoded_img)
+#         decoded_img = decoded_img / torch.max(decoded_img)
 
-        return decoded_img
+#         return decoded_img
 
-    def forward(self, features):
+#     def forward(self, features):
 
-        coded_img, indexes, shapes = self.encoder(features)
-        decoded_img = self.decoder(coded_img, indexes, shapes)
+#         coded_img, indexes, shapes = self.encoder(features)
+#         decoded_img = self.decoder(coded_img, indexes, shapes)
 
-        return decoded_img, code
+#         return decoded_img, code
 
 
 

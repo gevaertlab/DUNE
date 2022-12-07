@@ -60,7 +60,7 @@ def update_curves(report, metrics, output_dir):
 
     print("Updating metric curves...")
     
-    fig, ax = plt.subplots(nrows=len(metrics), sharex=True, figsize=(7, 10))
+    fig, ax = plt.subplots(nrows=len(metrics), sharex=True, figsize=(7, 5*len(metrics)))
     for i, metric in enumerate(metrics):
         ax[i].plot(report.index, report["train_" + metric], label='Train')
         ax[i].plot(report.index, report["val_" + metric], label='Val')
