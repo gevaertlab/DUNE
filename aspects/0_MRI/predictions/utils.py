@@ -17,10 +17,20 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str,
                     default='config.json', help='configuration json file')
+    parser.add_argument('--variable', type=str, help='labeling variable')
+    parser.add_argument('--task', type=str, help='model task')
+    parser.add_argument('--num_epochs', type=int, help='number of epochs (may be alternatively defined in config file')
     args = parser.parse_args()
 
     with open(args.config) as f:
         config = json.load(f)
+
+    config["variable"] = args.variable
+    config["task"] = args.task
+
+    if args.num_epochs:
+        print(f"Overwriting the number of epochs (num_epochs = {args.num_epochs})")
+        config["num_epochs"] = args.num_epochs
 
     return config
 

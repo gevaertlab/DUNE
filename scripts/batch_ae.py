@@ -7,9 +7,8 @@ def main():
     os.chdir(ROOTDIR)
 
     list_of_models = [
-
-        # "UNet_5b_4f_UKfull",
-        # "UNet_5b_8f_UKfull",
+        "UNet_5b_4f_UKfull",
+        "UNet_5b_8f_UKfull",
         "UNet_6b_4f_UKfull",
         "UNet_6b_8f_UKfull"
         ]
@@ -30,4 +29,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print(f"\Finished.")
+    print(f"\nFinished.")

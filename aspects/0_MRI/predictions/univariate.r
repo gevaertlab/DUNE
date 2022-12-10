@@ -66,26 +66,55 @@ opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 config = fromJSON(file = opt$config)
 
-#####
+##################################
+##################################
+
+# age	regression
+# sex	classification
+# sleep	regression
+# height	regression
+# weight	regression
+# bmi	regression
+# diastole	regression
+# smoking	classification
+# alcohol_freq	regression
+# alcohol_status	classification
+# greymat_vol	regression
+# brain_vol	regression
+# norm_brainvol	regression
+# fluidency	regression
+# digits_symbols	regression
+# depression	classification
+
+
+
+
+
 DATA = paste(config$model_path, config$train_csv_path, sep = "")
-config$output_path = paste(config$model_path, config$output_path, sep = "")
+config$output_path = paste(config$model_path, "/univariate", sep = "")
 TAF::mkdir(config$output_path)
     
 df <- data.table::fread(DATA) %>%
     as_tibble() %>%
     select(-case) %>%
     mutate(
-        alcohol_status = ordered(alcohol_status, c("Never", "Previous", "Current")),
-        alcohol_freq = ordered(alcohol_freq, c("Never", "Special occasions only", "One to three times a month", "Once or twice a week", "Three or four times a week", "Daily or almost daily")),
-        smoking = ordered(smoking, c("Never", "Previous", "Current", "Prefer not to answer")),
-        depression = ordered(depression, c("No", "Yes"))
-    ) %>%
-    mutate(
+        age = age,
         sex = as.factor(sex),
-        alcohol_status = as.numeric(alcohol_status),
-        alcohol_freq = as.numeric(alcohol_freq),
-        smoking = as.numeric(smoking),
-    )
+        sleep = sleep,
+        height = height,
+        weight = weight,
+        bmi = bmi,
+        diastole = diastole,
+        smoking = if_else(smoking == "Never","No","Yes"),
+        alcohol_freq = as.numeric(ordered(alcohol_freq, c("Never", "Special occasions only", "One to three times a month", "Once or twice a week", "Three or four times a week", "Daily or almost daily"))),
+        alcohol_status = if_else(alcohol_status == "Never","No","Yes"),
+        greymat_vol = greymat_vol,
+        brain_vol = brain_vol, 
+        norm_brainvol = norm_brainvol,
+        fluidency = fluidency,
+        digits_symbols = digits_symbols,
+        depression = as.factor(depression))
+
 
 umap <- umap(df %>% select(num_range("", 0:20000)))
 labels <- df %>%
@@ -93,8 +122,10 @@ labels <- df %>%
     mutate(across(where(~ all(unique(.[!is.na(.)]) %in% c("0", "1"))), as.factor))
 
 
+print(labels)
 results = list()
 for (var in colnames(labels)) {
+    print(var)
     isFactor <- is.factor(labels %>% select(var) %>% pull())
     if (isFactor) {
         res = grouped_wilcox(variable = var, df = df)
@@ -105,6 +136,9 @@ for (var in colnames(labels)) {
     results = append(results, res)
     draw_umap(umap=umap, labels=labels, var = var)
 }
+
+
+print(results)
 write_csv(
     as.data.frame(results),
     file = paste(paste(config$output_path, "/0-univariate_results.csv", sep = ""))

@@ -22,7 +22,7 @@ def main():
     nw = config['num_workers']  
     output_dir = create_dependencies(model_dir, variable)
     torch.multiprocessing.set_sharing_strategy('file_system')
-    # device = torch.device("cuda:2" if torch.cuda.is_available() else 'cpu')
+    # device = torch.device("cuda:3" if torch.cuda.is_available() else 'cpu')
     device = torch.device("cpu")
 
     # Create training and validation datasets
@@ -78,6 +78,9 @@ def main():
     num_epochs = config["num_epochs"]
 
     for epoch in range(num_epochs):
+
+        print(f'Training model {config["model_name"]}')
+        print(f'Parameter : {variable} ({task} task)')
         print(f'Epoch {epoch+1}/{num_epochs}')
 
         train_epoch_metrics = train_loop(

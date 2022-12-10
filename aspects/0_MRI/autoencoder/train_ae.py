@@ -56,6 +56,7 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
                 logging.info(
                     f"Bottleneck shape is {tuple(bottleneck.shape)} with a total of {np.prod(bottleneck.shape[1:])} features.")
 
+
             loss_list.append(loss.item())
             mse_list.append(mse)
             ssim_list.append(ssim)

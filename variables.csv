@@ -1,0 +1,17 @@
+var,	task,	group
+age	,regression	,global
+sex	,classification	,demographics
+sleep,	regression	,function
+height,	regression,	global
+weight	,regression	,global
+bmi	,regression,	global
+diastole	,regression	,agression
+smoking,	classification,	agression
+alcohol_freq,	regression,	agression
+alcohol_status,	classification	,agression
+greymat_vol	,regression,	volumetry
+brain_vol,	regression,	volumetry
+norm_brainvol	,regression	,volumetry
+fluidency	,regression,	function
+digits_symbols	,regression,	function
+depression,	classification	,function

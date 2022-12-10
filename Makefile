@@ -20,7 +20,7 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=UNet_5b_4f_UKfull
+MODEL=UNet_5b_8f_UKfull
 train_ae:
 	CUDA_VISIBLE_DEVICES=2,3\
 	python aspects/0_MRI/autoencoder/train_ae.py \
@@ -33,10 +33,10 @@ extract:
 
 concat:
 	python scripts/concat_features.py \
-		--metadata data/survival/whole_ukb_metadata.csv \
+		--metadata data/metadata/whole_ukb_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features
 
-		# --metadata data/survival/TCGA_survival_bins.csv \
+		# --metadata data/metadata/TCGA_survival_bins.csv \
 
 # PREDICTIONS
 univariate:
@@ -46,3 +46,10 @@ univariate:
 predict:
 	python aspects/0_MRI/predictions/train_pred.py \
 		--config outputs/UNet/$(MODEL)/config/predict.json
+
+
+# FULL PIPELINE
+pipeline:
+	python scripts/batch_ae.py
+	python scripts/batch_extract.py
+	python scripts/batch_pred.py
