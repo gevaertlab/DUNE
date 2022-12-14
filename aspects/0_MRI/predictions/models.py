@@ -14,9 +14,12 @@ class MROnlyModel(nn.Module):
             nn.Dropout(),
             nn.Linear(self.num_features, self.hidden_layer_size),
             nn.ReLU(),
+            nn.Dropout(),
+            nn.Linear(self.hidden_layer_size, self.hidden_layer_size//2),
+            nn.ReLU(),
         )
 
-        self.final_mlp = torch.nn.Sequential(nn.Linear(self.hidden_layer_size, self.num_classes))
+        self.final_mlp = torch.nn.Sequential(nn.Linear(self.hidden_layer_size//2, self.num_classes))
 
         
 

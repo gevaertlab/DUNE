@@ -50,7 +50,8 @@ def train_loop(model, dataloader, task, variable, num_classes, optimizer, device
                 vital_status = vital_status.to(device)
                 
                 if variable == "survival_bin":
-                    loss = NLLSurvLoss()(outputs, labels, -vital_status)
+                    censoring = 1 - vital_status
+                    loss = NLLSurvLoss()(outputs, labels, censoring)
 
                 else:
                     labels = labels.float()
@@ -93,7 +94,8 @@ def train_loop(model, dataloader, task, variable, num_classes, optimizer, device
                     vital_status = vital_status.to(device)
 
                     if variable == "survival_bin":
-                        loss = NLLSurvLoss()(outputs, labels, vital_status)
+                        censoring = 1 - vital_status
+                        loss = NLLSurvLoss()(outputs, labels, censoring)
                     else:
                         labels = labels.float()
                         surv_obj = (labels, vital_status)

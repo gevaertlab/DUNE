@@ -60,7 +60,7 @@ def update_curves(report, criterion_name, output_dir):
 
 
 def update_report(
-    output_dir, model_name, quick, dataset, modalities, features, batch_size, criterion_name, learning_rate,
+    output_dir, model_name, quick, num_cases, modalities, features, batch_size, criterion_name, learning_rate,
     num_epochs, epoch, train_epoch_metrics, test_epoch_metrics
 ):
 
@@ -74,7 +74,7 @@ def update_report(
     epoch_report = {}
     epoch_report['model'] = [model_name]
     epoch_report['quick_exec'] = quick
-    epoch_report['num_cases'] = len(dataset)
+    epoch_report['num_cases'] = int(num_cases)
     epoch_report['num_mod'] = len(modalities)
     epoch_report['init_features'] = int(features)
     epoch_report['batch_size'] = batch_size

@@ -68,9 +68,10 @@ class MRIs(Dataset):
                 labels = survival_months
         else:
             labels = data[variable]
-            if task == "classification":
-                labels_counts = labels.value_counts()
-                labels = le.fit_transform(labels)
+            # if task == "classification":
+            labels_counts = labels.value_counts()
+            labels = le.fit_transform(labels)
+            # elif task=="regression" & labels.type == "str":
 
 
         labels = torch.tensor(labels)

@@ -1,9 +1,3 @@
-"""
-
-
-
-"""
-
 import logging
 import os
 from datetime import datetime, date
@@ -161,16 +155,24 @@ def main(
 
     # Dataloaders
     print("\nLoading datasets...")
-    data_path = os.path.join(data_path, dataset)
-    totalData = BrainImages(dataset, data_path, modalities,
-                            min_dims, transforms=normalTransform)
-    trainData, testData = random_split(
-        totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
+    if os.path.exists(output_dir + "/autoencoding/exported_data/trainLoader.pth"):
+        print("Restoring previous...")
+        trainLoader = torch.load(output_dir + "/autoencoding/exported_data/trainLoader.pth")
+        testLoader = torch.load(output_dir + "/autoencoding/exported_data/testLoader.pth")
 
-    trainLoader = DataLoader(
-        trainData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
-    testLoader = DataLoader(
-        testData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
+    else:
+        data_path = os.path.join(data_path, dataset)
+        totalData = BrainImages(dataset, data_path, modalities,
+                                min_dims, transforms=normalTransform)
+        trainData, testData = random_split(
+            totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
+
+        trainLoader = DataLoader(
+            trainData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
+        testLoader = DataLoader(
+            testData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
+
+    num_cases = len(trainLoader)*batch_size + len(testLoader)*batch_size
     logging.info(
         f"There are {len(trainLoader)*batch_size} training samples and {len(testLoader)*batch_size} test samples.")
 
@@ -199,7 +201,7 @@ def main(
 
         # Export epoch results
         reconstruct_image(net, device, output_dir, testLoader)
-        report = update_report(output_dir, model_name, quick, totalData, modalities, features, batch_size,
+        report = update_report(output_dir, model_name, quick, num_cases, modalities, features, batch_size,
                                criterion_name, learning_rate, num_epochs, epoch, train_epoch_metrics, test_epoch_metrics)
         update_curves(report, criterion_name, output_dir)
 

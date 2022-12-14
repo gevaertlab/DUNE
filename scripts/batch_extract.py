@@ -20,15 +20,16 @@ def main():
         blocks, features = re.findall(r'\d+', model) 
 
         print(f"Extracting features with {model}, ({idx+1}/{len(list_of_models)})")
-        extract = f"CUDA_VISIBLE_DEVICES=2,3 \
-                python aspects/0_MRI/autoencoder/feature_extraction.py -m {model} \
+        extract = f"CUDA_VISIBLE_DEVICES=1,3 \
+                python aspects/0_MRI/autoencoder/feature_extraction.py \
+                    -m {model} -d outputs/UNet/pretraining\
 	                --num_blocks {blocks} --init_feat {features}"
 
         os.system(extract)
 
         concat = f"python scripts/concat_features.py \
 		--metadata data/metadata/whole_ukb_metadata.csv \
-		--features_dir outputs/UNet/{model}/autoencoding/features"
+		--features_dir outputs/UNet/pretraining/{model}/autoencoding/features"
         os.system(concat)
 
 

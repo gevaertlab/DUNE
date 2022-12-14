@@ -88,7 +88,7 @@ config = fromJSON(file = opt$config)
 
 
 
-
+# DATA = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/UNet_5b_8f_UKfull/autoencoding/features/concat_train.csv"
 
 DATA = paste(config$model_path, config$train_csv_path, sep = "")
 config$output_path = paste(config$model_path, "/univariate", sep = "")
@@ -105,25 +105,28 @@ df <- data.table::fread(DATA) %>%
         weight = weight,
         bmi = bmi,
         diastole = diastole,
-        smoking = if_else(smoking == "Never","No","Yes"),
+        smoking = as.factor(if_else(smoking == "Never", "No", "Yes")),
         alcohol_freq = as.numeric(ordered(alcohol_freq, c("Never", "Special occasions only", "One to three times a month", "Once or twice a week", "Three or four times a week", "Daily or almost daily"))),
-        alcohol_status = if_else(alcohol_status == "Never","No","Yes"),
+        alcohol_status = as.factor(if_else(alcohol_status == "Never", "No", "Yes")),
         greymat_vol = greymat_vol,
-        brain_vol = brain_vol, 
+        brain_vol = brain_vol,
         norm_brainvol = norm_brainvol,
         fluidency = fluidency,
         digits_symbols = digits_symbols,
-        depression = as.factor(depression))
+        depression = as.factor(if_else(depression == "No", "No", "Yes"))
+    )
 
 
-umap <- umap(df %>% select(num_range("", 0:20000)))
+results <- data.table::fread("data/metadata/UKB_variables.csv") %>% as_tibble()
+results$res <- numeric(nrow(results))
+
+
+umap <- umap(df %>% select(num_range("", 0:50000)))
 labels <- df %>%
-    select(!num_range("", 0:20000)) %>%
+    select(!num_range("", 0:50000)) %>%
     mutate(across(where(~ all(unique(.[!is.na(.)]) %in% c("0", "1"))), as.factor))
 
 
-print(labels)
-results = list()
 for (var in colnames(labels)) {
     print(var)
     isFactor <- is.factor(labels %>% select(var) %>% pull())
@@ -132,15 +135,13 @@ for (var in colnames(labels)) {
     } else {
         res = grouped_spearman(variable = var, df = df)
     }
-    names(res) = var
-    results = append(results, res)
+    results[results$var == var, "proportion_sig"] = res
     draw_umap(umap=umap, labels=labels, var = var)
 }
 
 
-print(results)
 write_csv(
-    as.data.frame(results),
+    results,
     file = paste(paste(config$output_path, "/0-univariate_results.csv", sep = ""))
 )
 
