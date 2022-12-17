@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime, date
+from datetime import datetime
 import humanfriendly
 import numpy as np
 import torch
@@ -112,7 +112,7 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
         concat = torch.cat([orig, reconstructed])
 
         save_image(torchvision.utils.make_grid(
-            concat, nrow=nmod), f'{output_dir}/autoencoding/reconstructions.png'
+            concat, nrow=nmod*batch_size), f'{output_dir}/autoencoding/reconstructions.png'
         )
         break
 
@@ -123,6 +123,7 @@ def main(
     # Initialization
     output_dir = create_dependencies(output_dir, model_name)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    best_test_loss = np.inf
 
     # Logging
     logging.basicConfig(filename=os.path.join(output_dir, "ae.log"),
@@ -141,10 +142,10 @@ def main(
     net = nn.DataParallel(net)
     net = net.to(device)
 
-    if os.path.exists(output_dir + "/autoencoding/exported_data/model.pth"):
+    if os.path.exists(output_dir + "/autoencoding/exported_data/model.pt"):
         logging.info("Loading backup version of the model...")
         net.load_state_dict(torch.load(
-            output_dir + "/autoencoding/exported_data/model.pth"))
+            output_dir + "/autoencoding/exported_data/model.pt"))
 
     # Optimizer
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
@@ -197,7 +198,11 @@ def main(
         logging.info(
             f"Autoencoder test loss = {test_epoch_metrics['loss']:6f}")
         torch.save(net.state_dict(), output_dir +
-                   "/autoencoding/exported_data/model.pth")
+                   "/autoencoding/exported_data/model.pt")
+
+        if test_epoch_metrics['loss'] < best_test_loss:
+            torch.save(net.state_dict(), output_dir+f"/best_model.pt")
+            best_test_loss = test_epoch_metrics['loss']
 
         # Export epoch results
         reconstruct_image(net, device, output_dir, testLoader)

@@ -20,7 +20,7 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=final/UNet_5b4f_TCGA
+MODEL=finetuning/UNet_5b4f_REMB
 train_ae:
 	CUDA_VISIBLE_DEVICES=2,3 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
@@ -33,7 +33,7 @@ extract:
 
 concat:
 	python scripts/concat_features.py \
-		--metadata data/metadata/TCGA_metadata.csv \
+		--metadata data/metadata/REMBRANDT_metadata.csv \
 		--features_dir outputs/UNet/$(MODEL)/autoencoding/features
 
 		# --metadata data/metadata/TCGA_metadata.csv \
@@ -45,8 +45,8 @@ univariate:
 
 predict:
 	python aspects/0_MRI/predictions/train_pred.py \
-		--task survival \
-		--variable survival_bin \
+		--task classification \
+		--variable grade \
 		--config outputs/UNet/$(MODEL)/config/predict.json
 
 

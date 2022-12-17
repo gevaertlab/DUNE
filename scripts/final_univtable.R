@@ -108,7 +108,7 @@ concat <- left_join(univ, multi) %>%
     
     
     
-concat %>%
+cat_table <- concat %>%
     rename("univ" = "proportion_sig", "multi" = "performance") %>%
     pivot_wider(id_cols = c("var", "task", "group"), values_from = c("univ", "multi"), names_from = model, names_sort = T) %>%
     gt(groupname_col = "group") %>%
@@ -137,5 +137,8 @@ concat %>%
                 domain = range(0, 1)
             )
         ) %>%
-        gt_theme_538()
+        gt_theme_538() 
 
+cat_table
+
+gtsave(univ_table, "test.html")

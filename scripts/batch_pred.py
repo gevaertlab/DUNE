@@ -26,7 +26,7 @@ def train_models(model, task_dict):
             current_epoch = 0
         
         if MAX_EPOCH - current_epoch <= 0:
-            num_epochs = 0
+            num_epochs = 1
         else:
             num_epochs = MAX_EPOCH - current_epoch
 
@@ -105,7 +105,7 @@ def main():
 
     with Pool(8) as pool:
         train_func = partial(train_models, task_dict=task_dict)
-        pool.map(train_func, list_of_AEs)
+        # pool.map(train_func, list_of_AEs)
 
 
     overall = pd.DataFrame()

@@ -39,7 +39,7 @@ def update_curves(report, criterion_name, output_dir):
     print("Updating metric curves...")
     metrics = ["loss", "ssim", "psnr", "mse"]
 
-    fig, ax = plt.subplots(nrows=len(metrics), sharex=True, figsize=(7, 17))
+    fig, ax = plt.subplots(nrows=len(metrics), sharex=True, figsize=(6, 16))
     for i, metric in enumerate(metrics):
         ax[i].plot(report.index, report["train_" + metric], label='Train')
         ax[i].plot(report.index, report["test_" + metric], label='Test')
@@ -56,6 +56,7 @@ def update_curves(report, criterion_name, output_dir):
         ax[i].set_ylabel(metric)
         ax[0].legend()
     fig.savefig(f"{output_dir}/autoencoding/curves.png")
+    plt.close(fig)
 
 
 

@@ -78,5 +78,6 @@ def update_curves(report, metrics, output_dir):
         ax[i].set_ylabel(metric)
         ax[i].set_title(metric.upper())
         ax[0].legend()
+    fig.suptitle(report["variable"].iloc[0], fontsize=16)
     fig.savefig(f"{output_dir}/curves.png")
     plt.close(fig)

@@ -24,6 +24,7 @@ def main():
     torch.multiprocessing.set_sharing_strategy('file_system')
     # device = torch.device("cuda:3" if torch.cuda.is_available() else 'cpu')
     device = torch.device("cpu")
+    best_val_loss = np.inf
 
     # Create training and validation datasets
     train_csv_path = os.path.join(model_dir, "autoencoding/features/concat_train.csv")
@@ -72,7 +73,7 @@ def main():
 
     # Define optimizer
     optimizer = Adam(model.parameters(), lr=config['lr'])
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True)
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True)
 
     # Train and evaluate
     num_epochs = config["num_epochs"]
@@ -88,7 +89,8 @@ def main():
         val_epoch_metrics = train_loop(
             model, val_dataloader, task, variable, num_classes, optimizer, device, train=False)
         
-        scheduler.step(val_epoch_metrics['loss'])
+        # scheduler.step(val_epoch_metrics['loss'])
+        optimizer.step()
 
         metrics = [m for m in train_epoch_metrics.keys()]
         report = update_report(
@@ -100,10 +102,17 @@ def main():
         logging.info(f"Model val loss = {val_epoch_metrics['loss']:6f}")
         torch.save(model.state_dict(), output_dir+"/model.pt")
 
+        if val_epoch_metrics['loss'] < best_val_loss:
+            best_epoch = epoch
+            torch.save(model.state_dict(), output_dir+f"/best_model.pt")
+            best_val_loss = val_epoch_metrics['loss']
+
+
         os.system("clear")
 
     # Fin de la boucle d'entrainement
-    logging.info("\nEVALUATION ON TEST SET")
+    logging.info(f"\nEVALUATION ON TEST SET (best epoch = {best_epoch}")
+    model.load_state_dict(torch.load(output_dir+f"/best_model.pt"))
     test_metrics = train_loop(
         model, test_dataloader, task, variable, num_classes, optimizer, device, train=False)
 

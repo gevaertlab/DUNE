@@ -56,13 +56,14 @@ class BrainImages(Dataset):
         for i in range(0, self.n_mod):
             nifti = nib.load(self.imgAddresses[i])
             # self.voxel_size = nifti.header.get_zooms()
-            resample = tio.Resample(1, image_interpolation='bspline')
+            resample = tio.Resample(1, image_interpolation='linear')
+            rescale = tio.RescaleIntensity(out_min_max=(0,255.0))
 
             nifti = resample(nifti)
+            nifti = rescale(nifti)
             temp = nifti.get_fdata()
             temp = temp.transpose((2, 1, 0))
             temp = np.array(temp)
-            temp *= 255.0 / temp.max()
             temp = temp.astype(np.uint8)
 
             imgsPre.append(temp.copy())
