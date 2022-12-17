@@ -25,6 +25,7 @@ def main():
     # device = torch.device("cuda:3" if torch.cuda.is_available() else 'cpu')
     device = torch.device("cpu")
     best_val_loss = np.inf
+    best_epoch = 0
 
     # Create training and validation datasets
     train_csv_path = os.path.join(model_dir, "autoencoding/features/concat_train.csv")

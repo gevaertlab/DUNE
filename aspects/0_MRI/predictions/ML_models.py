@@ -80,8 +80,7 @@ def main():
     X_train, y_train, X_test, y_test = create_datasets(csv_paths, "grade_binary")
 
 
-    print(X_train.shape)
-    print(X_test.shape)
+
     # Model initialization
     # KNN = KNeighborsClassifier(n_neighbors=5)
     XGB = xgb.XGBClassifier()
