@@ -85,60 +85,60 @@ multi_table <- create_table("multi_summary.csv", metric = "performance")
 # multi_table
 
 univ <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/univ_summary.csv")) 
-multi <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/multi_summary.csv")) 
+# multi <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/multi_summary.csv")) 
 
-concat <- left_join(univ, multi) %>%
-    mutate(
-        group = factor(group, levels = c("volumetry", "global", "function", "agression")),
-        model = factor(model, levels = c("UNet_5b_8f_UKfull", "UNet_5b_4f_UKfull", "UNet_6b_8f_UKfull", "UNet_6b_4f_UKfull")),
-        model = recode_factor(model,
-            "UNet_5b_8f_UKfull" = "5B_8F",
-            "UNet_5b_4f_UKfull" = "5B_4F",
-            "UNet_6b_8f_UKfull" = "6B_8F",
-            "UNet_6b_4f_UKfull" = "6B_4F"
-        )
-    ) %>%
-    mutate(
-        proportion_sig = round(proportion_sig, 3),
-        performance = round(performance, 3),
-    ) %>%
-        filter(!(var %in% c("weight","sleep")))
+# concat <- left_join(univ, multi) %>%
+#     mutate(
+#         group = factor(group, levels = c("volumetry", "global", "function", "agression")),
+#         model = factor(model, levels = c("UNet_5b_8f_UKfull", "UNet_5b_4f_UKfull", "UNet_6b_8f_UKfull", "UNet_6b_4f_UKfull")),
+#         model = recode_factor(model,
+#             "UNet_5b_8f_UKfull" = "5B_8F",
+#             "UNet_5b_4f_UKfull" = "5B_4F",
+#             "UNet_6b_8f_UKfull" = "6B_8F",
+#             "UNet_6b_4f_UKfull" = "6B_4F"
+#         )
+#     ) %>%
+#     mutate(
+#         proportion_sig = round(proportion_sig, 3),
+#         performance = round(performance, 3),
+#     ) %>%
+#         filter(!(var %in% c("weight","sleep")))
     
     
     
     
     
-cat_table <- concat %>%
-    rename("univ" = "proportion_sig", "multi" = "performance") %>%
-    pivot_wider(id_cols = c("var", "task", "group"), values_from = c("univ", "multi"), names_from = model, names_sort = T) %>%
-    gt(groupname_col = "group") %>%
-        cols_align(columns = matches("univ|multi"), align="center") %>%
-        summary_rows(
-            groups = TRUE,
-            columns = matches("univ|multi"),
-            fns = list(avg = ~ mean(., na.rm=T))
-        ) %>%
-        grand_summary_rows(
-            columns = matches("univ|multi"),
-            fns = list("GLOBAL AVG" = ~ mean(., na.rm=T))
-        ) %>%
-        tab_spanner(
-            label = "Univariate",
-            columns = 3:7,
-        ) %>%
-        tab_spanner(
-            label = "Multivar. prediction",
-            columns = 8:11
-        ) %>%
-        data_color(
-            columns = matches("univ|multi"),
-            colors = scales::col_numeric(
-                c("#0a4c6a", "#73bfe2", "#cfe8f3", "#fff2cf", "#fdd870", "#ca0000"),
-                domain = range(0, 1)
-            )
-        ) %>%
-        gt_theme_538() 
+# cat_table <- concat %>%
+#     rename("univ" = "proportion_sig", "multi" = "performance") %>%
+#     pivot_wider(id_cols = c("var", "task", "group"), values_from = c("univ", "multi"), names_from = model, names_sort = T) %>%
+#     gt(groupname_col = "group") %>%
+#         cols_align(columns = matches("univ|multi"), align="center") %>%
+#         summary_rows(
+#             groups = TRUE,
+#             columns = matches("univ|multi"),
+#             fns = list(avg = ~ mean(., na.rm=T))
+#         ) %>%
+#         grand_summary_rows(
+#             columns = matches("univ|multi"),
+#             fns = list("GLOBAL AVG" = ~ mean(., na.rm=T))
+#         ) %>%
+#         tab_spanner(
+#             label = "Univariate",
+#             columns = 3:7,
+#         ) %>%
+#         tab_spanner(
+#             label = "Multivar. prediction",
+#             columns = 8:11
+#         ) %>%
+#         data_color(
+#             columns = matches("univ|multi"),
+#             colors = scales::col_numeric(
+#                 c("#0a4c6a", "#73bfe2", "#cfe8f3", "#fff2cf", "#fdd870", "#ca0000"),
+#                 domain = range(0, 1)
+#             )
+#         ) %>%
+#         gt_theme_538() 
 
-cat_table
+# cat_table
 
 gtsave(univ_table, "test.html")

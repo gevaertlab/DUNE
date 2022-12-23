@@ -7,10 +7,10 @@ def main():
     os.chdir(ROOTDIR)
 
     list_of_models = [
+        "pretraining/UNet_6b_4f_UKfull",
+        "pretraining/UNet_6b_8f_UKfull",
         "pretraining/UNet_5b_4f_UKfull",
         "pretraining/UNet_5b_8f_UKfull",
-        "pretraining/UNet_6b_4f_UKfull",
-        "pretraining/UNet_6b_8f_UKfull"
         ]
 
 

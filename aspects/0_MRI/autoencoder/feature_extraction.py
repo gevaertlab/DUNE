@@ -22,7 +22,7 @@ def parse_arguments():
 
 def import_model(model_dir, num_mod, init_feat, num_blocks, device):
 
-    model_path = os.path.join(model_dir, "autoencoding/exported_data/model.pt")
+    model_path = os.path.join(model_dir, "autoencoding/exported_data/best_model.pt")
 
     model = UNet3D(in_channels=num_mod, out_channels=num_mod,
                    init_features=init_feat, num_blocks=num_blocks)
