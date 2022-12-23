@@ -40,7 +40,7 @@ concat:
 
 # PREDICTIONS
 univariate:
-	Rscript aspects/0_MRI/predictions/univariate2.r \
+	Rscript aspects/0_MRI/predictions/univariate.r \
 		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/$(MODEL)/config/univariate.json
 
 predict:

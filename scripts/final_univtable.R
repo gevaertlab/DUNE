@@ -34,7 +34,7 @@ create_table <- function(csv_file, metric) {
     csv_path = paste(MODELS_DIR, csv_file, sep = "/")
     summary <- tibble(data.table::fread(csv_path)) %>%
         mutate(
-            group = factor(group, levels = c("volumetry", "global", "function", "agression")),
+            group = as.factor(group),
             model = factor(model, levels = c("UNet_5b_8f_UKfull", "UNet_5b_4f_UKfull", "UNet_6b_8f_UKfull", "UNet_6b_4f_UKfull")),
             model = recode_factor(model,
                 "UNet_5b_8f_UKfull" = "5B_8F",

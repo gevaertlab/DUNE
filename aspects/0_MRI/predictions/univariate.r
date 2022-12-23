@@ -1,8 +1,13 @@
-library("tidyverse")
-library("rjson")
-library("umap")
-library("cowplot")
-library("optparse")
+suppressMessages({
+    library("tidyverse")
+    library("rjson")
+    library("umap")
+    library("cowplot")
+    library("optparse")
+    library("caret")
+    library("cowplot")
+    library("ggthemes")
+})
 
 grouped_wilcox <- function(variable, df = df) {
     df <- df %>%
@@ -10,6 +15,25 @@ grouped_wilcox <- function(variable, df = df) {
             across(
                 .cols = `0`:ncol(df),
                 ~ wilcox.test(. ~ !!sym(variable))$p.value
+            )
+        )
+    ratio <- df %>%
+        mutate(
+            countsign = rowSums(. * ncol(df) < 0.05, na.rm = T),
+            total = ncol(df),
+            ratio = countsign / total
+        ) %>%
+        pull(ratio)
+
+    return(ratio)
+}
+
+grouped_anova <- function(variable, df) {
+    df <- df %>%
+        summarize(
+            across(
+                .cols = `0`:ncol(df),
+                ~ anova(lm(. ~ !!sym(variable)))[["Pr(>F)"]][1]
             )
         )
     ratio <- df %>%
@@ -42,20 +66,24 @@ grouped_spearman <- function(variable, df = df) {
     return(ratio)
 }
 
-draw_umap <- function(umap=umap, labels=labels, var = var) {
+draw_umap <- function(umap, labels, var_name, var_class) {
+    var = labels %>% pull(var_name)
     p <- data.frame(
         x = umap$layout[, 1],
         y = umap$layout[, 2],
-        var = labels[, var]
-    ) %>%
+        var = var  ) %>%
         ggplot(aes_string("x", "y", col = var)) +
-            geom_point() +
-            theme_linedraw()
-        
-    ggsave(p, filename = paste(config$output_path, "/", var, ".png", sep=""))
+            geom_point(size = 0.7) +
+            theme_tufte() +
+            theme(legend.position = "None") +
+            ggtitle(var_name) 
+    
+    ggsave(paste(OUTPUT_PATH, "/",  var_name,".pdf", sep=""), p)
+    return(p)
 }
 
 
+# PARSING
 option_list <- list(
     make_option(c("-c", "--config"),
         type = "character", default = NULL,
@@ -66,82 +94,97 @@ opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 config = fromJSON(file = opt$config)
 
-##################################
-##################################
 
-# age	regression
-# sex	classification
-# sleep	regression
-# height	regression
-# weight	regression
-# bmi	regression
-# diastole	regression
-# smoking	classification
-# alcohol_freq	regression
-# alcohol_status	classification
-# greymat_vol	regression
-# brain_vol	regression
-# norm_brainvol	regression
-# fluidency	regression
-# digits_symbols	regression
-# depression	classification
+# IMPORTS
+message("\nImporting data...")
+METADATA <- config$metadata_path
+VARIABLES <- config$variables_path
+FEATURES <- paste(config$model_path, config$feature_path, sep = "")
+OUTPUT_PATH <- paste(config$model_path, config$output_path, sep = "")
+UMAP <- as.logical(config$umap)
+
+TAF::mkdir(OUTPUT_PATH)
 
 
+features = bind_rows(
+    data.table::fread(paste(FEATURES, "train_features.csv", sep=""), header=T),
+    data.table::fread(paste(FEATURES, "test_features.csv", sep=""), header=T)  
+) %>% as_tibble() %>%
+    rename(eid = V1) %>%
+    mutate(eid = substr(eid, 1, 7))
 
-# DATA = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/UNet_5b_8f_UKfull/autoencoding/features/concat_train.csv"
-
-DATA = paste(config$model_path, config$train_csv_path, sep = "")
-config$output_path = paste(config$model_path, "/univariate", sep = "")
-TAF::mkdir(config$output_path)
+metadata <- data.table::fread(METADATA, stringsAsFactors = T) %>%
+    mutate(eid = as.character(eid)) %>%
+    as_tibble()
     
-df <- data.table::fread(DATA) %>%
+variables <- data.table::fread(VARIABLES) %>%
     as_tibble() %>%
-    select(-case) %>%
-    mutate(
-        age = age,
-        sex = as.factor(sex),
-        sleep = sleep,
-        height = height,
-        weight = weight,
-        bmi = bmi,
-        diastole = diastole,
-        smoking = as.factor(if_else(smoking == "Never", "No", "Yes")),
-        alcohol_freq = as.numeric(ordered(alcohol_freq, c("Never", "Special occasions only", "One to three times a month", "Once or twice a week", "Three or four times a week", "Daily or almost daily"))),
-        alcohol_status = as.factor(if_else(alcohol_status == "Never", "No", "Yes")),
-        greymat_vol = greymat_vol,
-        brain_vol = brain_vol,
-        norm_brainvol = norm_brainvol,
-        fluidency = fluidency,
-        digits_symbols = digits_symbols,
-        depression = as.factor(if_else(depression == "No", "No", "Yes"))
-    )
+    filter(newname %in% names(metadata))
+
+factors <- variables$newname[variables$task == "classification"]
+metadata <- metadata %>%
+    mutate_at(factors, as.factor)
+    
+# MISSING METADATA IMPUTATION (KNN)
+message("\nMissing data imputation...")
+imputer <- preProcess(as.data.frame(metadata), method = c("knnImpute"), k = 120, knnSummary = mean)
+imputed_metadata <- predict(imputer, metadata, na.action=pass)
 
 
-results <- data.table::fread("data/metadata/UKB_variables.csv") %>% as_tibble()
-results$res <- numeric(nrow(results))
+# FUSED DF
+df <- imputed_metadata %>% right_join(features, by = ("eid"))
+labels <- df %>% select(!num_range("", 0:50000)) 
 
-
-umap <- umap(df %>% select(num_range("", 0:50000)))
-labels <- df %>%
-    select(!num_range("", 0:50000)) %>%
-    mutate(across(where(~ all(unique(.[!is.na(.)]) %in% c("0", "1"))), as.factor))
-
-
-for (var in colnames(labels)) {
-    print(var)
-    isFactor <- is.factor(labels %>% select(var) %>% pull())
-    if (isFactor) {
-        res = grouped_wilcox(variable = var, df = df)
-    } else {
-        res = grouped_spearman(variable = var, df = df)
-    }
-    results[results$var == var, "proportion_sig"] = res
-    draw_umap(umap=umap, labels=labels, var = var)
+# ANALYSIS
+if (UMAP) {
+    message("\nUMAP analysis...")
+    Umap <- umap(df %>% select(num_range("", 0:50000)))
 }
 
+message("\nComputing univariate analyses...")
+results <- tibble(variables) 
+plot_list <- list()
+i <- 1
+for (i in 1:length(results$newname)) {
+    var = results$newname[i]
+    task = results$task[i]
+    res = NA
+    print(var)
 
-write_csv(
-    results,
-    file = paste(paste(config$output_path, "/0-univariate_results.csv", sep = ""))
-)
+    if (task == "regression") {
+        res = grouped_spearman(variable = var, df = df)
+    } else {
+        lvls <- length(levels(df %>% pull(var)))
+        if (lvls < 3) {
+            res = grouped_wilcox(variable = var, df = df)
+        } else {
+            res = grouped_anova(variable = var, df = df)
+        }
+    }
+    print(res)
+    results[results$newname == var, "proportion_sig"] = res
+
+    write_csv(
+        results,
+        file = paste(OUTPUT_PATH, "/0-univariate_results.csv", sep = "")
+    )
+
+    if (UMAP) {
+        plot_list[[i]] = draw_umap(umap = Umap, labels = labels, var_name = var, var_class = task)
+
+
+    }
+}
+
+if (UMAP) {
+    ncols = 10
+    num_plots = length(plot_list)
+    pl <- plot_grid(plotlist = plot_list, rel_heights = 1, rel_widths = 1, ncol = ncols) + theme(legend.position = "None")
+    ggsave(paste(OUTPUT_PATH, "/0-umaps.pdf", sep = ""), pl,
+        height = 5.5 * num_plots %/% ncols, 
+        width = 5 * ncols, 
+        units = "cm"
+    )
+}
+
 

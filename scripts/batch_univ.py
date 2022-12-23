@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from os.path import join
 
-MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/finetuning"
+MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining"
 
 def ls_dironly(path):
     dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
@@ -24,10 +24,10 @@ def main():
     os.chdir(ROOT_DIR)
 
     list_of_models = [
-        "UNet_5b4f_REMB",
-        # "UNet_5b_8f_UKfull",
-        # "UNet_6b_4f_UKfull",
-        # "UNet_6b_8f_UKfull"
+        "UNet_5b_4f_UKfull",
+        "UNet_5b_8f_UKfull",
+        "UNet_6b_4f_UKfull",
+        "UNet_6b_8f_UKfull"
         ]
 
     univariate_models(list_of_models)
@@ -39,7 +39,7 @@ def main():
 
         overall = pd.concat([overall, mod_summ])
     
-    overall.to_csv("outputs/UNet/finetuning/univ_summary.csv", index=False)
+    overall.to_csv(MODEL_DIR + "/univ_summary.csv", index=False)
 
 
 
