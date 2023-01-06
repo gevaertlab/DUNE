@@ -37,7 +37,7 @@ import copy
 import json
 import argparse
 
-from models import cox_loss, RNAOnlyModel
+from sle.models import cox_loss, RNAOnlyModel
 from datasets import RNADataset
 
 from tensorboardX import SummaryWriter

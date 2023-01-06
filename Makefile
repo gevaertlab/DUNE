@@ -27,9 +27,9 @@ train_ae:
 		--config outputs/UNet/$(MODEL)/config/ae.json
 
 extract:
-	CUDA_VISIBLE_DEVICES=2,3  \
+	CUDA_VISIBLE_DEVICES=1,3  \
 	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) \
-	--num_blocks 6 --init_feat 4
+	--num_blocks 6 --init_feat 8
 
 concat:
 	python scripts/concat_features.py \
@@ -41,7 +41,11 @@ concat:
 # PREDICTIONS
 univariate:
 	Rscript aspects/0_MRI/predictions/univariate.r \
-		--config /home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/$(MODEL)/config/univariate.json
+		--config outputs/UNet/$(MODEL)/config/univariate.json
+
+multivariate:
+	python aspects/0_MRI/predictions/multivariate.py \
+		--model_path outputs/UNet/$(MODEL)
 
 predict:
 	python aspects/0_MRI/predictions/train_pred.py \

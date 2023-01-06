@@ -2,7 +2,7 @@ import argparse
 import os
 import torch
 import pandas as pd
-from models import UNet3D
+from sle.models import UNet3D
 import torch.nn as nn
 from tqdm import tqdm
 

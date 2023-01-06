@@ -38,7 +38,7 @@ import json
 import argparse
 
 from resnet import resnet50
-from models import AggregationModel, Identity, TanhAttention, CoxLoss, PatchBagDataset
+from sle.models import AggregationModel, Identity, TanhAttention, CoxLoss, PatchBagDataset
 
 from tensorboardX import SummaryWriter
 

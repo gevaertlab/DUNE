@@ -13,7 +13,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 from piqa import PSNR
 from monai.losses.ssim_loss import SSIMLoss
-from models import UNet3D
+from sle.models import UNet3D
 from datasets import BrainImages
 from utils import *
 
@@ -201,7 +201,7 @@ def main(
                    "/autoencoding/exported_data/model.pt")
 
         if test_epoch_metrics['loss'] < best_test_loss:
-            torch.save(net.state_dict(), output_dir+f"/exported_data/best_model.pt")
+            torch.save(net.state_dict(), output_dir+f"/autoencoding/exported_data/best_model.pt")
             best_test_loss = test_epoch_metrics['loss']
 
         # Export epoch results

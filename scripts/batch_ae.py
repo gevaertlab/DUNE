@@ -7,8 +7,8 @@ def main():
     os.chdir(ROOTDIR)
 
     list_of_models = [
-        "pretraining/UNet_6b_4f_UKfull",
-        "pretraining/UNet_6b_8f_UKfull",
+        # "pretraining/UNet_6b_4f_UKfull",
+        # "pretraining/UNet_6b_8f_UKfull",
         "pretraining/UNet_5b_4f_UKfull",
         "pretraining/UNet_5b_8f_UKfull",
         ]
@@ -17,7 +17,7 @@ def main():
     for idx, model in enumerate(list_of_models):
 
         print(f"Training {model}, ({idx+1}/{len(list_of_models)})")
-        cmd = f"CUDA_VISIBLE_DEVICES=2,3 \
+        cmd = f"CUDA_VISIBLE_DEVICES=0,1 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
     --config 'outputs/UNet/{model}/config/ae.json'"
 

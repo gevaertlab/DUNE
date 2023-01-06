@@ -34,7 +34,7 @@ def main():
 
 
     if "eid" in metadata.columns:
-        metadata = metadata[["eid", "sex", "age", "sleep", "alcohol_freq", "alcohol_status", "smoking", "greymat_vol", "brain_vol", "norm_brainvol", "fluidency", "digits_symbols", "depression", "height", "weight", "bmi", "diastole"]].drop_duplicates().set_index("eid")
+        metadata = metadata.drop_duplicates().set_index("eid")
     elif "disease" in metadata.columns:
         metadata = metadata[["case", "age","sex","survival","disease","grade"]].set_index("case")
     else:

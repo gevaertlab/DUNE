@@ -41,7 +41,7 @@ import argparse
 
 from datasets import PatchRNADataset, PatchBagRNADataset
 from resnet import resnet50
-from models import HistopathologyRNAModel, AggregationModel, AggregationProjectModel, Identity, TanhAttention, CoxLoss, BagHistopathologyRNAModel
+from sle.models import HistopathologyRNAModel, AggregationModel, AggregationProjectModel, Identity, TanhAttention, CoxLoss, BagHistopathologyRNAModel
 
 from tensorboardX import SummaryWriter
 

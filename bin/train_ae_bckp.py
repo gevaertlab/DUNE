@@ -21,7 +21,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 from piqa import PSNR
 from monai.losses.ssim_loss import SSIMLoss
-from models import UNet3D
+from sle.models import UNet3D
 from datasets import BrainImages
 from utils import *
 

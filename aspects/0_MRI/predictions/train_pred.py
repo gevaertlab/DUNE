@@ -6,7 +6,7 @@ import torch
 import matplotlib.pyplot as plt
 from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader, RandomSampler
-from models import MROnlyModel
+from sle.models import MROnlyModel
 from datasets import MRIs
 from evaluation import train_loop
 from utils import create_dependencies,parse_arguments, update_report, update_curves

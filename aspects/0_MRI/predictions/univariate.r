@@ -7,6 +7,7 @@ suppressMessages({
     library("caret")
     library("cowplot")
     library("ggthemes")
+    library("survival")
 })
 
 grouped_wilcox <- function(variable, df = df) {
@@ -15,6 +16,27 @@ grouped_wilcox <- function(variable, df = df) {
             across(
                 .cols = `0`:ncol(df),
                 ~ wilcox.test(. ~ !!sym(variable))$p.value
+            )
+        )
+    ratio <- df %>%
+        mutate(
+            countsign = rowSums(. * ncol(df) < 0.05, na.rm = T),
+            total = ncol(df),
+            ratio = countsign / total
+        ) %>%
+        pull(ratio)
+
+    return(ratio)
+}
+
+grouped_logrank <- function(variable, df = df) {
+    time <- paste(variable, "_delay", sep="")
+    event <- paste(variable, "_event", sep="")
+    df <- df %>%
+        summarize(
+            across(
+                .cols = `0`:ncol(df),
+                ~ survdiff(Surv(!!sym(time), !!sym(event)) ~ .)$p.value
             )
         )
     ratio <- df %>%
@@ -119,16 +141,16 @@ metadata <- data.table::fread(METADATA, stringsAsFactors = T) %>%
     
 variables <- data.table::fread(VARIABLES) %>%
     as_tibble() %>%
-    filter(newname %in% names(metadata))
+    filter(var %in% names(metadata))
 
-factors <- variables$newname[variables$task == "classification"]
+factors <- variables$var[variables$task == "classification"]
 metadata <- metadata %>%
     mutate_at(factors, as.factor)
     
-# MISSING METADATA IMPUTATION (KNN)
-message("\nMissing data imputation...")
-imputer <- preProcess(as.data.frame(metadata), method = c("knnImpute"), k = 120, knnSummary = mean)
-imputed_metadata <- predict(imputer, metadata, na.action=pass)
+# # MISSING METADATA IMPUTATION (KNN)
+# message("\nMissing data imputation...")
+# imputer <- preProcess(as.data.frame(metadata), method = c("knnImpute"), k = 120, knnSummary = mean)
+# imputed_metadata <- predict(imputer, metadata, na.action=pass)
 
 
 # FUSED DF
@@ -145,24 +167,27 @@ message("\nComputing univariate analyses...")
 results <- tibble(variables) 
 plot_list <- list()
 i <- 1
-for (i in 1:length(results$newname)) {
-    var = results$newname[i]
+for (i in 1:length(results$var)) {
+    var = results$var[i]
     task = results$task[i]
     res = NA
-    print(var)
+    message(var, task)
 
     if (task == "regression") {
         res = grouped_spearman(variable = var, df = df)
-    } else {
+    } else if (task == "classification") {
         lvls <- length(levels(df %>% pull(var)))
         if (lvls < 3) {
             res = grouped_wilcox(variable = var, df = df)
         } else {
             res = grouped_anova(variable = var, df = df)
         }
+    } else {
+        res = grouped_logrank(variable = var, df = df)
     }
+
     print(res)
-    results[results$newname == var, "proportion_sig"] = res
+    results[results$var == var, "proportion_sig"] = res
 
     write_csv(
         results,
@@ -181,6 +206,12 @@ if (UMAP) {
     num_plots = length(plot_list)
     pl <- plot_grid(plotlist = plot_list, rel_heights = 1, rel_widths = 1, ncol = ncols) + theme(legend.position = "None")
     ggsave(paste(OUTPUT_PATH, "/0-umaps.pdf", sep = ""), pl,
+        height = 5.5 * num_plots %/% ncols,
+        width = 5 * ncols,
+        units = "cm"
+    )
+    
+    ggsave(paste(OUTPUT_PATH, "/0-umaps.jpg", sep = ""), pl,
         height = 5.5 * num_plots %/% ncols, 
         width = 5 * ncols, 
         units = "cm"

@@ -80,7 +80,7 @@ create_table <- function(csv_file, metric) {
 }
 
 univ_table <- create_table("univ_summary.csv", metric = "proportion_sig")
-multi_table <- create_table("multi_summary.csv", metric = "performance")
+multi_table <- create_table("multi_summary2.csv", metric = "performance")
 # univ_table
 # multi_table
 
