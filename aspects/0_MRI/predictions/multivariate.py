@@ -1,17 +1,28 @@
+# %%
 import os
 from os.path import join
 import configparser
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, accuracy_score
-from xgboost import XGBRegressor, XGBClassifier
-from sklearn.model_selection import learning_curve
+from sklearn.linear_model import ElasticNet, Ridge, RidgeClassifier, LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+
+from sksurv.linear_model import CoxnetSurvivalAnalysis
+from sksurv.ensemble import RandomSurvivalForest
+from sksurv.metrics import integrated_brier_score, as_concordance_index_ipcw_scorer
 from tqdm import tqdm
 import argparse
+from scipy.stats import entropy
+from termcolor import colored
+import warnings
 
 
+# %%
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 plt.switch_backend('agg')
 
 
@@ -64,7 +75,7 @@ def evaluate(model, X_train, y_train, X_test, scoring, output_dir, name="var", p
 
 def create_fulldataset(csv_paths, metadata_path):
 
-    metadata = pd.read_excel(metadata_path, index_col="eid")
+    metadata = pd.read_csv(metadata_path, index_col="eid")
 
     list_features = []
     for f in csv_paths:
@@ -76,26 +87,47 @@ def create_fulldataset(csv_paths, metadata_path):
 
     merged = metadata.merge(features, how="inner",
                             left_index=True, right_index=True)
+    
+
 
     return merged
 
 
-def create_train_test_datasets(merged, variable):
+def create_train_test_datasets(merged, var, task):
 
     features = merged[[k for k in merged.columns if k.isdigit()]]
-    labels = merged[variable]
-    labels = np.array(labels)
+    if task != "survival":
+        labels = merged[var]
+        labels = np.array(labels)
+    else:
+        time = merged[f"{var}_delay"].astype(float)
+        event = merged[f"{var}_event"].astype(bool)
+        labels = np.array([(e, t) for e, t in zip(event, time)], dtype=[('Status', '?'), ('Survival_in_days', '<f8')])
+    
+
 
     X_train, X_test, y_train, y_test = train_test_split(
         features, labels, test_size=0.2, random_state=12)
-
+    
     return X_train, y_train, X_test, y_test
 
 
-def main():
+# %%
+if __name__ == '__main__':
 
     np.random.seed(333)
     config = parse_arguments()
+
+
+    # ########
+    # os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
+    # config = configparser.ConfigParser()
+    # config.read("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/UNet_6b_8f_UKfull/config/multivariate.cfg")
+    # config = dict(config["config"])
+    # config["model_path"] = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/UNet_6b_8f_UKfull"
+    # #######
+
+
     output_dir = create_dependencies(config['model_path'])
 
     # Importing datasets
@@ -105,43 +137,82 @@ def main():
                           f"{file}_features.csv") for file in ["train", "test"]]
     merged = create_fulldataset(feature_paths, metadata_path)
 
-    variables = [v for v in merged.columns if not v.isdigit()]
-    task_list = pd.read_csv(config["variables"])
+    # Importing task list
+    tasks = pd.read_csv(config["variables"])
+    tasks = tasks[tasks["keep_model"]]
     task_list = {k: task for k, task in zip(
-        task_list["newname"], task_list["task"])}
+        tasks["var"], tasks["task"])}
+    variables = list(task_list.keys())
 
-    # Multiple variables testing
+    # Preparing results dataframe
+    results_df = tasks.copy()
+    results_df['ibs'] = np.nan
 
-    results_df = pd.read_excel(metadata_path, index_col="eid")
-    results_df = results_df[results_df['var'].isin(variables)]
-    results_df['res'] = np.nan
+    for _, var in enumerate(bar := tqdm(variables, colour="green")):
+        task = task_list[var]
 
-    results = {}
-    for var in tqdm(variables, colour="green"):
-        X_train, y_train, X_test, y_test = create_train_test_datasets(
-            merged, var)
+        bar.set_description(colored(f"\n{var} - {task}", "yellow"))
 
-        if task_list[var] == "regression":
-            XGB = XGBRegressor(tree_method='gpu_hist', gpu_id=0)
+        X_train, y_train, X_test, y_test = create_train_test_datasets(merged, var, task)
+        n_feat = X_train.shape[1]
+
+        num_classes = np.nan
+        variance = np.nan
+        scoring=None
+
+
+        if task == "survival":
+            lower, upper = np.percentile(merged["death_delay"], [10, 90])
+            times = np.arange(lower, upper + 1)
+
+            # mod = CoxnetSurvivalAnalysis(fit_baseline_model=True)
+            mod = RandomSurvivalForest(max_depth=1, random_state=123)
+            mod = as_concordance_index_ipcw_scorer(mod, tau=times[-1])
+            dict_params = {"estimator__n_estimators":np.arange(250, 500, 50),
+                           "estimator__min_samples_split":np.arange(2,10)
+                           }
+    
+        elif task== "regression":
+            mod = Ridge(alpha=0.014)
+            dict_params = {"alpha":np.logspace(-4,1, 30)}
+            variance = np.var(y_train)
             scoring = "r2"
-        else:
-            XGB = XGBClassifier(tree_method='gpu_hist', gpu_id=0)
+  
+        elif task=="classification":
+            num_classes = int(len(set(y_train)))
+            _, px = np.unique(y_train, return_counts=True)
+            px = px / len(y_train)
+            variance = entropy(px, base=2)
+
+            # mod = RidgeClassifier(alpha=0.014)
+            # dict_params = {"alpha":np.logspace(-4,1, 30)}
+            mod = RandomForestClassifier(random_state=123)
+            dict_params = {"n_estimators":np.arange(100, 500, 100),
+                           "min_samples_split":np.arange(2, 5)}
             scoring = "f1_weighted"
 
-        y_pred = evaluate(XGB, X_train, y_train,
-                          X_test, scoring, output_dir, var, printing=True)
-
-        res = np.nan
-        if task_list[var] == "regression":
-            res = r2_score(y_test, y_pred)
         else:
-            res = accuracy_score(y_test, y_pred)
+            print("Unknown task.")
+            break
+        
+        mod = GridSearchCV(mod, dict_params, scoring=scoring, cv=3, n_jobs=-1)
+        mod.fit(X_train, y_train)
+        res = mod.score(X_test, y_test)
 
-        results_df.loc[results_df['var'] == var, "res"] = round(res, 4)
+        print(var , res)
+        print(mod.best_params_)
+        if task =="survival":
+            surv_probs = np.row_stack([
+                fn(times) for fn in mod.best_estimator_.predict_survival_function(X_test)])
+            ibs = integrated_brier_score(y_train, y_test, surv_probs, times)
+            results_df.loc[results_df['var'] == var, "ibs"] = round(ibs,4)
+
+
+        results_df.loc[results_df['var'] == var, "performance"] = round(res, 4)
+        results_df.loc[results_df['var'] == var, "variance"] = round(variance,4)
+        results_df.loc[results_df['var'] == var, "num_classes"] = num_classes
 
         output_file = join(output_dir, "0-multivariate.csv")
-        results_df.to_csv(output_file)
+        results_df.to_csv(output_file, index=False)
 
 
-if __name__ == '__main__':
-    main()

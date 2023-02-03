@@ -20,16 +20,16 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=pretraining/UNet_6b_4f_UKfull
+MODEL=final/6b_4f_TCGA
 train_ae:
-	CUDA_VISIBLE_DEVICES=2,3 \
+	CUDA_VISIBLE_DEVICES=0,1 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
 		--config outputs/UNet/$(MODEL)/config/ae.json
 
 extract:
-	CUDA_VISIBLE_DEVICES=1,3  \
+	CUDA_VISIBLE_DEVICES=0,1  \
 	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) \
-	--num_blocks 6 --init_feat 8
+	--num_blocks 6 --init_feat 4
 
 concat:
 	python scripts/concat_features.py \

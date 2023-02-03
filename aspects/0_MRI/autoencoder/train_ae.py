@@ -13,9 +13,12 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 from piqa import PSNR
 from monai.losses.ssim_loss import SSIMLoss
-from sle.models import UNet3D
+from models import UNet3D
 from datasets import BrainImages
 from utils import *
+
+import matplotlib
+matplotlib.use('Agg') 
 
 
 def train_loop(model, dataloader, optimizer, criterion_name, device, train):
@@ -119,7 +122,6 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 
 def main(
         data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.8):
-
     # Initialization
     output_dir = create_dependencies(output_dir, model_name)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -142,10 +144,10 @@ def main(
     net = nn.DataParallel(net)
     net = net.to(device)
 
-    if os.path.exists(output_dir + "/autoencoding/exported_data/model.pt"):
+    if os.path.exists(output_dir + "/autoencoding/exported_data/best_model.pt"):
         logging.info("Loading backup version of the model...")
         net.load_state_dict(torch.load(
-            output_dir + "/autoencoding/exported_data/model.pt"))
+            output_dir + "/autoencoding/exported_data/best_model.pt"))
 
     # Optimizer
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)

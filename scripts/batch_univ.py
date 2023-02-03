@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from os.path import join
+import re
 
 MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining"
 
@@ -24,23 +25,27 @@ def main():
     os.chdir(ROOT_DIR)
 
     list_of_models = [
-        "UNet_5b_4f_UKfull",
-        "UNet_5b_8f_UKfull",
         "UNet_6b_4f_UKfull",
-        "UNet_6b_8f_UKfull"
+        "UNet_6b_8f_UKfull",
+        "UNet_5b_4f_UKfull",
+        "UNet_5b_8f_UKfull"
         ]
 
-    univariate_models(list_of_models)
+    # univariate_models(list_of_models)
 
     overall = pd.DataFrame()
     for model in list_of_models:
-        mod_summ = pd.read_csv(join(MODEL_DIR, model, "univariate","0-univariate_results.csv"))
-        mod_summ['model'] = model
+        try:
+            mod_summ = pd.read_csv(join(MODEL_DIR, model, "univariate","0-univariate_results.csv"))
+            b, f = re.findall(r'\d+', model)
+            mod_summ['model'] = f"{b}B_{f}F"
 
-        overall = pd.concat([overall, mod_summ])
-    
-    overall.to_csv(MODEL_DIR + "/univ_summary.csv", index=False)
+            overall = pd.concat([overall, mod_summ])
+        
+        except FileNotFoundError:
+            pass
 
+    overall.to_csv(MODEL_DIR + "/univ_summaryNORM.csv", index=False)
 
 
 if __name__ == "__main__":

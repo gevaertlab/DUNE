@@ -21,7 +21,7 @@ class BrainImages(Dataset):
         self.transforms = transforms
         self.n_mod = len(self.modalities)
         self.depth, self.height, self.width = mindims
-
+        
     @staticmethod
     def find_brain_center(stack):
         """
@@ -44,6 +44,7 @@ class BrainImages(Dataset):
         return len(self.folders)
 
     def __getitem__(self, idx):
+
         self.imgAddresses = []
         for mod in self.modalities:
             mod = mod.lower() + ".nii"
@@ -73,16 +74,13 @@ class BrainImages(Dataset):
 
         centerZ, centerY, centerX = BrainImages.find_brain_center(imgsPre)
 
-        startSliceZ = int(
-            centerZ - self.depth/2) if centerZ > self.depth/2 else 0
-        endSliceZ = int(startSliceZ) + self.depth
+        startSliceZ = max(int(centerZ - self.depth/2), 0)
+        endSliceZ = min(int(startSliceZ) + self.depth, self.depth)
 
-        startSliceY = int(
-            centerY - self.height/2) if centerY > self.height/2 else 0
+        startSliceY = max(int(centerY - self.height/2), 0)
         endSliceY = int(startSliceY) + self.height
 
-        startSliceX = int(
-            centerX - self.width/2)if centerX > self.width/2 else 0
+        startSliceX = max(int(centerX - self.width/2), 0)
         endSliceX = int(startSliceX) + self.width
 
         imgsPil = torch.zeros(
