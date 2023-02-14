@@ -20,9 +20,9 @@ train_histo:
 
 # BRAIN AUTOENCODER
 
-MODEL=final/6b_4f_TCGA
+MODEL=finetuning/6b_4f_segm_UCSF
 train_ae:
-	CUDA_VISIBLE_DEVICES=0,1 \
+	CUDA_VISIBLE_DEVICES=2,3 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
 		--config outputs/UNet/$(MODEL)/config/ae.json
 
