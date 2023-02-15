@@ -59,9 +59,9 @@ def main():
     train, val, test = np.split(
         final, [int(.6*len(final)), int(.8*len(final))])
 
-    train.to_csv(args.features_dir + '/concat_train.csv', index=True)
-    val.to_csv(args.features_dir + '/concat_val.csv', index=True)
-    test.to_csv(args.features_dir + '/concat_test.csv', index=True)
+    train.to_csv(args.features_dir + '/concat_train.csv.gz', index=True)
+    val.to_csv(args.features_dir + '/concat_val.csv.gz', index=True)
+    test.to_csv(args.features_dir + '/concat_test.csv.gz', index=True)
     
     print("Finished.")
 

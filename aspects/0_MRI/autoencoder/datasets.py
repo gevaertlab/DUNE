@@ -92,7 +92,7 @@ class BrainImages(Dataset):
                             startSliceX:endSliceX].numpy()
                 t = Image.fromarray(t)
 
-                if self.dataset in ("UKBIOBANK", "REMBRANDT"):
+                if self.dataset in ("UKBIOBANK", "REMBRANDT", "UPENN"):
                     t = t.rotate(angle=180)
 
                 imgsPil[i, z-startSliceZ, :,

@@ -72,8 +72,10 @@ def main():
 
         feature_dict = pd.DataFrame.from_dict(results, orient="index")
         feature_dict.to_csv(
-            f"{args.model_dir}/autoencoding/features/{dataset}_features.csv", index=True)
+            f"{args.model_dir}/autoencoding/features/{dataset}_features.csv.gz", index=True)
 
 
 if __name__ == "__main__":
     main()
+
+

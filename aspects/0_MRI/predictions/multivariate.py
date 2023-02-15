@@ -108,7 +108,7 @@ if __name__ == '__main__':
     model_path = config['model_path']
     metadata_path = config["metadata"]
     feature_paths = [join(model_path, "autoencoding/features",
-                          f"{file}_features.csv") for file in ["train", "test"]]
+                          f"{file}_features.csv.gz") for file in ["train", "test"]]
     merged = create_fulldataset(feature_paths, metadata_path)
 
     # Importing task list

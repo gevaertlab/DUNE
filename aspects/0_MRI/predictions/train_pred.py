@@ -28,9 +28,9 @@ def main():
     best_epoch = 0
 
     # Create training and validation datasets
-    train_csv_path = os.path.join(model_dir, "autoencoding/features/concat_train.csv")
-    val_csv_path =  os.path.join(model_dir, "autoencoding/features/concat_val.csv")
-    test_csv_path =  os.path.join(model_dir, "autoencoding/features/concat_test.csv")
+    train_csv_path = os.path.join(model_dir, "autoencoding/features/concat_train.csv.gz")
+    val_csv_path =  os.path.join(model_dir, "autoencoding/features/concat_val.csv.gz")
+    test_csv_path =  os.path.join(model_dir, "autoencoding/features/concat_test.csv.gz")
 
     train_dataset = MRIs(train_csv_path, variable, task, "train")
     val_dataset = MRIs(val_csv_path,variable, task, "val")

@@ -22,14 +22,14 @@ train_histo:
 
 MODEL=finetuning/6b_4f_segm_UCSF
 train_ae:
-	CUDA_VISIBLE_DEVICES=2,3 \
+	CUDA_VISIBLE_DEVICES=0,1 \
 	python aspects/0_MRI/autoencoder/train_ae.py \
 		--config outputs/UNet/$(MODEL)/config/ae.json
 
 extract:
-	CUDA_VISIBLE_DEVICES=0,1  \
+	CUDA_VISIBLE_DEVICES=2,3  \
 	python aspects/0_MRI/autoencoder/feature_extraction.py -m $(MODEL) \
-	--num_blocks 6 --init_feat 4
+	--num_blocks 6 --init_feat 4 --num_mod 3
 
 concat:
 	python scripts/concat_features.py \
@@ -53,6 +53,9 @@ predict:
 		--variable grade \
 		--config outputs/UNet/$(MODEL)/config/predict.json
 
+# BACKUPS OUTPUTS ON OAK
+backup:
+	bash scripts/backup_outputs.sh
 
 # FULL PIPELINE
 pipeline:

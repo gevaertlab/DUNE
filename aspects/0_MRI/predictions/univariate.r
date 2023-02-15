@@ -131,8 +131,8 @@ TAF::mkdir(OUTPUT_PATH)
 
 
 features = bind_rows(
-    data.table::fread(paste(FEATURES, "train_features.csv", sep=""), header=T),
-    data.table::fread(paste(FEATURES, "test_features.csv", sep=""), header=T)  
+    data.table::fread(paste(FEATURES, "train_features.csv.gz", sep=""), header=T),
+    data.table::fread(paste(FEATURES, "test_features.csv.gz", sep=""), header=T)  
 ) %>%
     rename(eid = V1) %>%
     mutate(eid = substr(eid, 1, 7)) %>%
