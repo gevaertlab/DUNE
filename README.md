@@ -21,3 +21,21 @@ The introduction of deep learning in both imaging and genomics has significantly
  
 ![image](https://user-images.githubusercontent.com/44655862/192858138-3433b524-eb8c-4a69-bf61-d25b47da5671.png)
 
+
+REMBRANDT
+        133,
+        175,
+        148
+
+   TCGA  "min_dims": [
+        145,
+        175,
+        148
+    ],
+
+
+UKB     "min_dims": [
+        145,
+        175,
+        148
+    ],
