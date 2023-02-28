@@ -8,7 +8,6 @@ from torchvision import transforms
 from scipy import ndimage
 import torchio as tio
 
-
 class BrainImages(Dataset):
     def __init__(self, dataset, data_path, modalities, mindims, transforms=None):
 
@@ -49,6 +48,7 @@ class BrainImages(Dataset):
         for mod in self.modalities:
             mod = mod.lower() + ".nii"
             folderpath = os.path.join(self.data_path, self.folders[idx])
+
             filepath = [os.path.join(folderpath, f) for f in os.listdir(
                 folderpath) if mod in f.lower()][0]
             self.imgAddresses.append(filepath)
@@ -88,7 +88,7 @@ class BrainImages(Dataset):
                 t = imgsPre[i, z, startSliceY:endSliceY,
                             startSliceX:endSliceX]
 
-                angle = 180 if self.dataset in ("UKBIOBANK", "REMBRANDT") else 0
+                angle = 180 if self.dataset in ("UKBIOBANK", "REMBRANDT", "SCHIZO") else 0
 
                 toPil = transforms.ToPILImage()
                 t = toPil(t).rotate(angle=angle)

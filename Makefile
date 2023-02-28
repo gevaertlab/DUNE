@@ -1,7 +1,9 @@
 # BRAIN AUTOENCODER
-MODEL=finetuning/6b_4f_UPENN_segm
+MODEL=finetuning/6b_4f_TCGA_segm
 MOD=3
-CUDA=0,1
+CUDA=2,3
+
+
 train_ae:
 	CUDA_VISIBLE_DEVICES=$(CUDA) \
 	python src/autoencoder/train_ae.py \

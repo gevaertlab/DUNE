@@ -204,7 +204,7 @@ def main(
         
         if epoch % 10 == 0:
             torch.save(net.state_dict(), output_dir +
-                    "/autoencoding/exported_data/model.pt")
+                    f"/autoencoding/exported_data/model_ep{epoch}.pt")
 
         if test_epoch_metrics['loss'] < best_test_loss:
             torch.save(net.state_dict(), output_dir+f"/autoencoding/exported_data/best_model.pt")
