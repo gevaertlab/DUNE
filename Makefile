@@ -1,7 +1,7 @@
 # BRAIN AUTOENCODER
 MODEL=finetuning/6b_4f_TCGA_segm
 MOD=3
-CUDA=2,3
+CUDA=3,2
 
 
 train_ae:
@@ -45,9 +45,6 @@ pipeline:
 	python src/tools/batch/batch_ae.py
 	python src/tools/batch/batch_extract.py
 	python src/tools/batch/batch_pred.py
-
-
-
 
 # create_csvs:
 # 	python aspects/1_HistoPathology/create_subset_csv.py

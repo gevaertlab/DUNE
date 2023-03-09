@@ -30,22 +30,6 @@ gt_theme_538 <- function(data, ...) {
 }
 
 
-## CONCAT
-segm_models <- c("6b_4f_TCGA_segm", "6b_4f_UCSF_segm", "6b_4f_UPENN_segm", "6b_4f_REMB_segm")
-
-multi <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/finetuning/0-synth_multi.csv")) %>%
-    mutate(performance = round(performance, 4), segm=if_else(model_ %in% segm_models, TRUE, FALSE))
-
-
-
-variances <- multi %>%
-    select(var, variance, missing_rate, model, restored_model, num_classes) %>%
-    mutate(variance = round(variance, 2)) %>%
-    distinct(var, .keep_all = T) %>%
-    rename("nb_classes" = "num_classes")
-
-
-
 create_cat_table <- function(df, cohort) {
 
     models <- c(paste("6b_4f_", cohort, sep = ""), paste("6b_4f_", cohort, "_segm", sep = ""))
@@ -70,10 +54,6 @@ create_cat_table <- function(df, cohort) {
             columns = matches("6b_"),
             fns = list("GLOBAL AVG" = ~ mean(., na.rm = T))
         ) %>%
-        # tab_spanner(
-        #     label = "Multivar : prediction (r2 / accuracy)",
-        #     columns = matches("performance")
-        # ) %>%
         data_color(
             columns = matches("6b_"),
             colors = scales::col_numeric(
@@ -94,6 +74,20 @@ create_cat_table <- function(df, cohort) {
 
 ## EXPORT
 
-create_cat_table(multi, 'TCGA')
-# create_cat_table(multi, 'UPENN')
-# create_cat_table(multi, 'UCSF')
+
+
+## CONCAT
+segm_models <- c("6b_4f_TCGA_segm", "6b_4f_UCSF_segm", "6b_4f_UPENN_segm", "6b_4f_REMB_segm")
+
+multi <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/finetuning/0-synth_multi.csv")) %>%
+    mutate(performance = round(performance, 4), segm=if_else(model_ %in% segm_models, TRUE, FALSE))
+
+
+
+variances <- multi %>%
+    select(var, variance, missing_rate, model, restored_model, num_classes) %>%
+    mutate(variance = round(variance, 2)) %>%
+    distinct(var, .keep_all = T) %>%
+    rename("nb_classes" = "num_classes")
+
+

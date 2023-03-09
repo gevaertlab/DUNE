@@ -130,7 +130,7 @@ def main(
     best_test_loss = np.inf
 
     # Logging
-    logging.basicConfig(filename=os.path.join(output_dir, "ae.log"),
+    logging.basicConfig(filename=os.path.join(output_dir, "autoencoding", "ae.log"),
                         filemode='w', format='%(message)s', level=logging.INFO, force=True)
     logging.info(f"Dataset = {dataset}")
     logging.info(f"Modalities = {modalities}")

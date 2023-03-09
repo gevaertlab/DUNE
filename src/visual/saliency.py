@@ -1,8 +1,17 @@
+# %%
 import argparse
 import os
 import torch
 import pandas as pd
-from models import UNet3D
+from models import UNet3D, CompleteRegressor
+from torchvision import transforms as transforms
+from datasets import BrainImages
+from torch.utils.data import DataLoader
+from torch.utils.data.dataset import random_split
+import numpy as np
+from os.path import join
+from matplotlib import pyplot as plt
+
 import torch.nn as nn
 from tqdm import tqdm
 
@@ -52,30 +61,122 @@ def extract_features(net, val_dataloader, device):
     return results
 
 
-def main():
+def train_loop(model, dataloader, optimizer, device, train):
+
+    loss_list = []
+    col = "magenta" if train else "cyan"
+    model.train() if train else model.eval()
+
+    for idx, (img, label) in enumerate(tqdm(dataloader, colour=col)):
+            
+        with torch.set_grad_enabled(train):
+            img = img.to(device)
+            label = label.to(device)
+            loss = model.compute_loss(img, label)
+
+        if train:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        loss_list.append(loss.item())
+
+        if idx == 10:
+            break
+
+    val_loss = np.mean(loss_list)
+
+    return val_loss
+
+
+
+
+
+if __name__=='__main__':
     os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
-    args = parse_arguments()
+    # args = parse_arguments()
+
+
+    #######################################################
+    ROOT_DATA = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR"
+    dataset = "UCSF"
+    model_dir = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/finetuning/6b_4f_UCSF_segm"
+    min_dims = [  158,   198,   153]
+    num_mod = 3
+    init_feat = 4
+    num_blocks = 6
+    modalities = ["T1c","FLAIR","tumor_segmentation"]
+    data_path = join(ROOT_DATA, dataset,"images")
+    metadata = join(ROOT_DATA, dataset, "metadata", "0-UCSF_metadata_encoded.csv")
+    variable = "age_at_mri"
+    task = "regression"
+    batch_size=5
+    ##########################################################
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = import_model(args.model_dir, args.num_mod, args.init_feat, args.num_blocks, device)
 
+    # Model
+    encoder = import_model(model_dir , num_mod, init_feat, num_blocks, device)
+    # last_layer = torch.load(
+    #     "/home/tbarba/projects/MultiModalBrainSurvival/src/visual/test.path")
+
+
+    
+    # net = CompleteRegressor(
+    #     encoder=encoder,
+    #     loss_fn=torch.nn.MSELoss(),
+    #     n_inputs=3072,
+    #     l1_lambda=0.00,
+    #     l2_lambda=0.05)
+    
+    # net_dict = net.state_dict()
+    # for l in last_layer.keys():
+    #     net_dict[l] = last_layer[l]
+    # net.load_state_dict(net_dict)
+
+    net = encoder
+
+    net = net.to(device)
+    # Freeze the encoder
+    for name, p in net.named_parameters():
+        if "encoder.module" in name:
+            p.requires_grad = False
+
+
+    # Optimizer
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.005)
+
+
+    # Data
     print("\nLoading datasets...")
-    trainLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/trainLoader.pth')
-    testLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/testLoader.pth')
-    dict_loaders = {"train": trainLoader, "test": testLoader}
-
-    # feature extraction
-    os.makedirs(f"{args.model_dir}/autoencoding/features", exist_ok=True)
-    for dataset in ["train", "test"]:
-        print(f"Extracting features for dataset : {dataset}")
-        results = extract_features(
-            net, dict_loaders[dataset], device)
-
-        feature_dict = pd.DataFrame.from_dict(results, orient="index")
-        feature_dict.to_csv(
-            f"{args.model_dir}/autoencoding/features/{dataset}_features.csv.gz", index=True)
+    metadata = pd.read_csv(metadata, index_col="eid")
+    metadata = metadata[variable]
 
 
-if __name__ == "__main__":
-    main()
+    normalTransform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
+    totalData = BrainImages(dataset, data_path, modalities,
+                        min_dims, metadata, transforms=normalTransform)
+    
+    totalLoader = DataLoader(
+        totalData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=2)
+
+# %%
+    for img, lab in totalLoader:
+
+        img.requires_grad = True
+        out = net(img)
+
+        out[0,0].backward()
+
+        grads = img.grad.detach().numpy()
+
+        img_s = img.detach().numpy()
+
+        plt.imshow(img_s[0,1, 70,:,:], cmap="Greys_r")
+        plt.imshow(grads[0,1, 70,:,:], alpha=0.4, cmap="Reds_r")
+
+        break
 
 
+# %%

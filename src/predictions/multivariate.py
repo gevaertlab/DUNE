@@ -9,6 +9,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import ElasticNet, Ridge, RidgeClassifier, LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
 
 from sksurv.linear_model import CoxnetSurvivalAnalysis
 from sksurv.ensemble import RandomSurvivalForest
@@ -205,6 +206,11 @@ if __name__ == '__main__':
 
         res = mod.score(X_test, y_test)
         
+        # if task=="classification":
+        #     plt.plot()
+        #     metrics.plot_roc_curve(mod, X_test, y_test, pos_label=1)
+        #     plt.savefig(f"{var}.pdf")
+
         if task == "survival":
             surv_probs = np.row_stack([
                 fn(times) for fn in mod.predict_survival_function(X_test)])

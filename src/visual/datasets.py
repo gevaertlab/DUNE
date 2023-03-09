@@ -9,12 +9,13 @@ from scipy import ndimage
 import torchio as tio
 
 class BrainImages(Dataset):
-    def __init__(self, dataset, data_path, modalities, mindims, transforms=None):
+    def __init__(self, dataset, data_path, modalities, mindims, metadata, transforms=None):
 
+        self.metadata = metadata
         self.dataset = dataset
         self.data_path = data_path
         self.folders = [case for case in os.listdir(
-            data_path) if os.path.isdir(os.path.join(data_path, case))]
+            data_path) if os.path.isdir(os.path.join(data_path, case)) if case in metadata.index]
 
         self.modalities = modalities
         self.transforms = transforms
@@ -110,5 +111,7 @@ class BrainImages(Dataset):
                 # imgsPil[i, z-startSliceZ, :, :] = transforms.ToTensor()(t)
 
         imgs = imgsPil[:, :, :, :]
+
+        label = torch.tensor(self.metadata.loc[case])
         
-        return imgs, case
+        return imgs, label

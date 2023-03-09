@@ -73,7 +73,7 @@ if __name__ == "__main__":
                 masked_data = img_data * mask
 
                 # Resampling and cropping
-                print("Resampling and cropping")
+                print("Resampling")
                 masked_nifti = nib.Nifti1Image(masked_data, header=img.header, affine=img.affine)
                 resampled_nifti = resample_img(masked_nifti, target_affine=UKB_AFFINE)
                 # resampled_nifti = crop_img(res`mpled_nifti)

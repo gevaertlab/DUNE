@@ -135,7 +135,7 @@ features = bind_rows(
     data.table::fread(paste(FEATURES, "test_features.csv.gz", sep=""), header=T)  
 ) %>%
     rename(eid = V1) %>%
-    mutate(eid = substr(eid, 1, 7)) %>%
+    mutate(eid = substr(eid, 1, 18)) %>% # 7 for UKB
     as.data.frame()
 
 num_feats = ncol(features)
@@ -196,7 +196,7 @@ for (i in 1:num_var) {
     print(res)
     results[results$var == variable, "proportion_sig"] = round(res, 4)
     results[results$var == variable, "variance"] = round(variance, 4)
-    results[results$var == variable, "num_classes"] = num_classes
+    results[results$var == variable, "num_classes"] = length(num_classes)
 
     write_csv(
         results,

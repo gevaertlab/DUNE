@@ -39,7 +39,7 @@ def main():
     overall = pd.DataFrame()
     for model in list_of_models:
         try:
-            mod_summ = pd.read_csv(join(MODEL_DIR, model, "multivariate","0-synth_multi.csv"))
+            mod_summ = pd.read_csv(join(MODEL_DIR, model, "multivariate","0-last.csv"))
             b, f = re.findall(r'\d+', model)
             mod_summ['model_'] = model
 

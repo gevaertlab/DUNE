@@ -59,7 +59,6 @@ class BrainImages(Dataset):
             # self.voxel_size = nifti.header.get_zooms()
             resample = tio.Resample(1, image_interpolation='bspline')
             rescale = tio.RescaleIntensity(out_min_max=(0,255.0))
-
             nifti = resample(nifti)
             nifti = rescale(nifti)
             temp = nifti.get_fdata()

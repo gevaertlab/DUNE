@@ -1,4 +1,3 @@
-import pytorch_lightning as pl
 import torch
 
 import os
@@ -62,19 +61,7 @@ class UNet3D(nn.Module):
         ## REPRESENTATION EXTRACTION
         bottleneck = self.bottleneck(x)
 
-        ## DECODING
-        encodings.reverse()
-        for k in range(self.num_blocks):   
-            if k==0:
-                dec = self.transposers[k](bottleneck, output_size= encodings[k].shape)
-            else:
-                dec = self.transposers[k](dec, output_size= encodings[k].shape)
-
-            dec = torch.cat((dec, encodings[k]), dim=1)
-            dec = self.dec_blocks[k](dec)
-
-
-        return torch.sigmoid(self.last_conv(dec)), bottleneck
+        return bottleneck
 
     @staticmethod
     def _block(in_channels, features, name):
@@ -112,13 +99,12 @@ class UNet3D(nn.Module):
 
 
 
-class ElasticLinear(pl.LightningModule):
+class CompleteRegressor(nn.Module):
     def __init__(
-        self, loss_fn, n_inputs: int = 1, learning_rate=0.05, l1_lambda=0.05, l2_lambda=0.05
+        self, encoder, loss_fn, n_inputs: int = 1, l1_lambda=0.05, l2_lambda=0.05, classifier=True
     ):
-        super().__init__()
-
-        self.learning_rate = learning_rate
+        super(CompleteRegressor, self).__init__()
+        self.encoder = encoder
         self.loss_fn = loss_fn
         self.l1_lambda = l1_lambda
         self.l2_lambda = l2_lambda
@@ -126,12 +112,12 @@ class ElasticLinear(pl.LightningModule):
         self.train_log = []
 
     def forward(self, x):
+        x = self.encoder(x).view(5, -1)
         outputs = self.output_layer(x)
-        return outputs
 
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        return optimizer
+        if self.classifier:
+            outputs=torch.sigmoid(outputs)
+        return outputs
 
     def l1_reg(self):
         l1_norm = self.output_layer.weight.abs().sum()
@@ -143,20 +129,110 @@ class ElasticLinear(pl.LightningModule):
 
         return self.l2_lambda * l2_norm
 
-    def training_step(self, batch, batch_idx):
-        x, y = batch
+    def compute_loss(self, x, y):
+        x = torch.tensor(x, dtype=torch.float32)
+        y = torch.tensor(y, dtype=torch.float32)
         y_hat = self(x)
         loss = self.loss_fn(y_hat, y) + self.l1_reg() + self.l2_reg()
 
-        self.log("loss", loss)
-        self.train_log.append(loss.detach().numpy())
         return loss
     
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.loss_fn(y_hat, y) + self.l1_reg() + self.l2_reg()
 
-        self.log("test loss", loss)
+
+class ElasticLinear(nn.Module):
+    def __init__(
+        self, loss_fn, n_inputs: int = 1, num_class=1, l1_lambda=0.05, l2_lambda=0.05, classifier=True
+    ):
+        super(ElasticLinear, self).__init__()
+        self.loss_fn = loss_fn
+        self.l1_lambda = l1_lambda
+        self.l2_lambda = l2_lambda
+        self.classifier= classifier
+        self.hidden = torch.nn.Linear(n_inputs, 256)
+        self.hidden2 = torch.nn.Linear(256, 16)
+        self.output_layer = torch.nn.Linear(16, num_class)
+
+    def forward(self, x):
+        x = self.hidden(x)
+        x = self.hidden2(x)
+        outputs = self.output_layer(x)
+
+        if self.classifier:
+            outputs=torch.nn.functional.softmax(outputs)
+
+        return outputs
+
+    def l1_reg(self):
+        l1_norm = self.output_layer.weight.abs().sum()
+
+        return self.l1_lambda * l1_norm
+
+    def l2_reg(self):
+        l2_norm = self.output_layer.weight.pow(2).sum()
+
+        return self.l2_lambda * l2_norm
+
+    def compute_loss(self, x, y):
+        dt = torch.long if self.classifier else torch.float32
+        y = torch.tensor(y, dtype=dt)
+        # x = torch.tensor(x, dtype=torch.float32)
+        y_hat = self(x)
+        y_hat = torch.squeeze(y_hat)
+        loss = self.loss_fn(y_hat, y)  + self.l1_reg() + self.l2_reg()
+
+
         return loss
+
+
+
+# class ElasticLinear(pl.LightningModule):
+#     def __init__(
+#         self, encoder, loss_fn, n_inputs: int = 1, learning_rate=0.05, l1_lambda=0.05, l2_lambda=0.05
+#     ):
+#         super().__init__()
+#         self.encoder = encoder
+#         self.learning_rate = learning_rate
+#         self.loss_fn = loss_fn
+#         self.l1_lambda = l1_lambda
+#         self.l2_lambda = l2_lambda
+#         self.output_layer = torch.nn.Linear(n_inputs, 1)
+#         self.train_log = []
+
+#     def forward(self, x):
+#         x = self.encoder(x)
+#         outputs = self.output_layer(x)
+#         return outputs
+
+#     def configure_optimizers(self):
+#         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+#         return optimizer
+
+#     def l1_reg(self):
+#         l1_norm = self.output_layer.weight.abs().sum()
+
+#         return self.l1_lambda * l1_norm
+
+#     def l2_reg(self):
+#         l2_norm = self.output_layer.weight.pow(2).sum()
+
+#         return self.l2_lambda * l2_norm
+
+#     def training_(self, batch, batch_idx):
+#         x, y = batch
+#         y_hat = self(x)
+#         loss = self.loss_fn(y_hat, y) + self.l1_reg() + self.l2_reg()
+
+#         self.log("loss", loss)
+#         self.train_log.append(loss.detach().numpy())
+#         return loss
+    
+#     def test_step(self, batch, batch_idx):
+#         x, y = batch
+#         y_hat = self(x)
+#         loss = self.loss_fn(y_hat, y) + self.l1_reg() + self.l2_reg()
+
+#         self.log("test loss", loss)
+#         return loss
+
+
 
