@@ -7,7 +7,7 @@ CUDA=3,2
 train_ae:
 	CUDA_VISIBLE_DEVICES=$(CUDA) \
 	python src/autoencoder/train_ae.py \
-		--config outputs/UNet/$(MODEL)/config/ae.json
+		--model_path outputs/UNet/$(MODEL)
 
 extract:
 	CUDA_VISIBLE_DEVICES=$(CUDA)  \

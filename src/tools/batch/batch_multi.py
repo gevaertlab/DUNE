@@ -3,7 +3,7 @@ import pandas as pd
 from os.path import join
 import re
 
-MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/finetuning"
+MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining"
 
 def ls_dironly(path):
     dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
@@ -26,20 +26,24 @@ def main():
     list_of_models = [
         # "6b_4f_REMB",
         # "6b_4f_REMB_segm",
-        "6b_4f_TCGA",
-        "6b_4f_TCGA_segm"#,
+        # "6b_4f_TCGA",
+        # "6b_4f_TCGA_segm",
         # "6b_4f_UCSF",
         # "6b_4f_UCSF_segm",
         # "6b_4f_UPENN",
         # "6b_4f_UPENN_segm"
+        "UNet_5b_8f_UKfull",
+        "UNet_5b_4f_UKfull",
+        "UNet_6b_8f_UKfull",
+        "UNet_6b_4f_UKfull"
         ]
 
-    multivariate(list_of_models)
+    # multivariate(list_of_models)
 
     overall = pd.DataFrame()
     for model in list_of_models:
         try:
-            mod_summ = pd.read_csv(join(MODEL_DIR, model, "multivariate","0-last.csv"))
+            mod_summ = pd.read_csv(join(MODEL_DIR, model, "multivariate","0-multivariate.csv"))
             b, f = re.findall(r'\d+', model)
             mod_summ['model_'] = model
 

@@ -3,23 +3,32 @@ suppressMessages({
     library(data.table)
 })
 
+set.seed(123)
+
+var_path <- "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/TCGA/metadata/0-variable_list.csv"
+raw_meta_path <- "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/TCGA/metadata/TCGA_metadata.csv"
+list_patients <- list.files("/home/tbarba/projects/MultiModalBrainSurvival/data/MR/TCGA/images")
 
 
-varlist <- fread("/home/tbarba/projects/MultiModalBrainSurvival/data/MR/TCGA/metadata/0-variable_list.csv")
 
+###
+varlist <- fread(var_path)
 catg_cols <- varlist$var[varlist$task == "classification"]
 reg_cols <- varlist$var[varlist$task == "regression"]
 surv_cols <- c("death_delay", "death_event")
 
 
-
-
-raw <- fread("/home/tbarba/projects/MultiModalBrainSurvival/data/MR/TCGA/metadata/TCGA_metadata.csv") %>%
+raw <- fread(raw_meta_path) %>%
     distinct(eid, .keep_all = T) %>%
-    select(-c(case_id, survival_bin, grade_binary))
+    select(-c(case_id, survival_bin, grade_binary)) %>%
+    filter(eid %in% list_patients)
 
 export <- raw %>%
     column_to_rownames("eid")
+
+
+
+
 
 export$IDH1 <- factor(export$IDH1)
 export$IDH1 <- relevel(export$IDH1, "WT")
@@ -47,6 +56,10 @@ normalized <- encoded
 normalized[, reg_cols] <- scale(normalized[, reg_cols])
 normalized <- normalized %>% rownames_to_column("eid")
 
+
+
+
+normalized$cohort <- sample(c("train", "test"), nrow(normalized), replace = TRUE, prob = c(0.8, 0.2))
 
 fwrite(normalized,
     file = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/TCGA/metadata/0-TCGA_metadata_encoded.csv"

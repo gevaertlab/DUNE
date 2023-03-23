@@ -1,37 +1,46 @@
 import json
 import argparse
 import os
+from os.path import join
 import pandas as pd
 import matplotlib.pyplot as plt
+import configparser
 
 
 def create_dependencies(output_dir, model_name):
 
     output_dir = os.path.join(output_dir, model_name)
-    os.makedirs(os.path.join(output_dir, "autoencoding","exported_data"), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, "autoencoding/exported_data"), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, "autoencoding/logs"), exist_ok=True)
 
     return output_dir
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="config/config.json",
-                        help='configuration json file')
+    
+    parser.add_argument('--model_path', type=str,
+                        help='model_path')
     args = parser.parse_args()
 
-    with open(args.config) as f:
-        config = json.load(f)
+    config_file = join(args.model_path, "config/ae.cfg")
 
-    try:
-        if config['quick'] == "True":
-            config['quick'] = True
-        else:
-            config['quick'] = False
-    except KeyError:
-        pass
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    config = dict(config["config"])
+
+    config['batch_size']  = eval(config['batch_size'])
+    config['num_blocks']  = eval(config['num_blocks'])
+    config['features']  = eval(config['features'])
+    config['num_epochs'] = eval(config['num_epochs'])
+    config['learning_rate']  = eval(config['learning_rate'])
+    config['num_workers']  = eval(config['num_workers'])
+    config['modalities']  = eval(config['modalities'])
+    config['min_dims']  = eval(config['min_dims'])
+    config['unet']  = eval(config['unet'])
+    config['quick']  = eval(config['quick'])
 
     return config
-
 
 
 def update_curves(report, criterion_name, output_dir):
@@ -55,7 +64,7 @@ def update_curves(report, criterion_name, output_dir):
         ax[i].set_xlabel('Epochs')
         ax[i].set_ylabel(metric)
         ax[0].legend()
-    fig.savefig(f"{output_dir}/autoencoding/curves.png")
+    fig.savefig(f"{output_dir}/autoencoding/logs/curves.png")
     plt.close(fig)
 
 
@@ -65,7 +74,7 @@ def update_report(
     num_epochs, epoch, train_epoch_metrics, test_epoch_metrics
 ):
 
-    report_path = f"{output_dir}/autoencoding/report.csv"
+    report_path = f"{output_dir}/autoencoding/logs/report.csv"
 
     if os.path.exists(report_path):
         report = pd.read_csv(report_path)

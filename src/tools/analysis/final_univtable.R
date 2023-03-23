@@ -92,17 +92,17 @@ create_table <- function(csv_file, metric) {
         return(Table)
 }
 
-univ_table <- create_table("univ_summaryNORM.csv", metric = "proportion_sig")
-multi_table <- create_table("multi_summaryNORM.csv", metric = "performance")
+# univ_table <- create_table("univ_summaryNORM.csv", metric = "proportion_sig")
+# multi_table <- create_table("multi_summaryNORM.csv", metric = "performance")
 
 
-gtsave(univ_table, "results/UNIV.html")
-gtsave(multi_table, "results/MULTI_RIDGE.html")
+# gtsave(univ_table, "results/UNIV.html")
+# gtsave(multi_table, "results/MULTI_RIDGE.html")
 
 
 ## CONCAT
 
-multi <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/multi_summaryNORM.csv")) %>%
+multi <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/0-synth_multi.csv")) %>%
     mutate(performance = round(performance, 2))
 
 univ <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/univ_summaryNORM.csv")) %>%
@@ -112,16 +112,16 @@ univ <- tibble(data.table::fread("/home/tbarba/projects/MultiModalBrainSurvival/
 
 
 variances <- multi %>%
-    select(var, multi_var, num_classes) %>%
-    mutate(multi_var = round(multi_var, 2)) %>%
+    select(var, variance, num_classes) %>%
+    mutate(variance = round(variance, 2)) %>%
     distinct(var, .keep_all = T) %>%
-    rename("variance" = "multi_var", "nb_classes"="num_classes")
+    rename("variance" = "variance", "nb_classes" = "num_classes")
 
 
 
 concat <- multi %>%
+    mutate(model = recode(model, "UNet_5b_8f_UKfull"="5B_8F", "UNet_5b_4f_UKfull"="5B_4F", "UNet_6b_8f_UKfull"="6B_8F","UNet_6b_4f_UKfull"="6B_4F")) %>%
     left_join(univ, by = c("model", "var")) %>%
-    mutate(model = recode(model, "5B_8F" = "mod1", "5B_4F"="mod2", "6B_8F"="mod3","6B_4F"="mod4")) %>%
     rename("U" = "proportion_sig", "M" = "performance") %>%
     pivot_wider(id_cols = c("var", "task", "group"), values_from = c("U", "M"), names_from = model, names_sort = T) %>%
     left_join(variances, by = "var") %>%
@@ -188,11 +188,11 @@ concat$group <- factor(concat$group, levels = c(volumetry, global, vascular, lif
 
 
 
-gtsave(create_cat_table(volumetry), "results/0-volumetry.html")
-gtsave(create_cat_table(global), "results/0-global.html")
-gtsave(create_cat_table(vascular), "results/0-vascular.html")
-gtsave(create_cat_table(lifestyle), "results/0-lifestyle.html")
-gtsave(create_cat_table(diet), "results/0-diet.html")
-gtsave(create_cat_table(conditions), "results/0-conditions.html")
-gtsave(create_cat_table(psy), "results/0-psy.html")
-gtsave(create_cat_table(genes), "results/0-genes.html")
+gtsave(create_cat_table(volumetry), "results/1-volumetry.html")
+gtsave(create_cat_table(global), "results/1-global.html")
+gtsave(create_cat_table(vascular), "results/1-vascular.html")
+gtsave(create_cat_table(lifestyle), "results/1-lifestyle.html")
+gtsave(create_cat_table(diet), "results/1-diet.html")
+gtsave(create_cat_table(conditions), "results/1-conditions.html")
+gtsave(create_cat_table(psy), "results/1-psy.html")
+gtsave(create_cat_table(genes), "results/1-genes.html")

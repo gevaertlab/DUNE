@@ -13,7 +13,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 from piqa import PSNR
 from monai.losses.ssim_loss import SSIMLoss
-from models import UNet3D
+from models import VAE
 from datasets import BrainImages
 from utils import *
 import time
@@ -29,11 +29,17 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
     psnr_func = PSNR().to(device)
 
     if train:
+        log = "Train set..."
         model.train()
-        print("Train set...")
-        for idx, (imgs, cases_id) in enumerate(tqdm(dataloader, colour="magenta")):
-            optimizer.zero_grad()
+        colour="magenta"
+    else:
+        log = "Validation set..."
+        model.eval()
+        colour="cyan"
 
+    with torch.set_grad_enabled(train):
+        print(log)
+        for idx, (imgs, cases_id) in enumerate(tqdm(dataloader, colour=colour)):
 
             images = imgs.to(device)
             outputs, bottleneck = model(images)
@@ -43,18 +49,16 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
             mse = mse_func(outputs, images).item()
             psnr = psnr_func(images, outputs).item()
 
-            if criterion_name == "SSIM":
-                loss = ssim_loss
-            else:
-                loss = mse
+            loss = ssim_loss if criterion_name == "SSIM" else mse
 
-            loss.backward()
-            optimizer.step()
+            if train:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
             if idx == 1:
                 logging.info(
                     f"Bottleneck shape is {tuple(bottleneck.shape)} with a total of {np.prod(bottleneck.shape[1:])} features.")
-
 
             loss_list.append(loss.item())
             mse_list.append(mse)
@@ -64,29 +68,6 @@ def train_loop(model, dataloader, optimizer, criterion_name, device, train):
             if config['quick'] and idx == 2:
                 logging.info("quick exec")
                 break
-
-    else:
-        model.eval()
-        print("Validation set...")
-        for idx, (imgs, cases_id) in enumerate(tqdm(dataloader, colour="cyan")):
-            images = imgs.to(device)
-            with torch.no_grad():
-                outputs, bottleneck = model(images)
-
-                ssim_loss = ssim_func(images, outputs, data_range=images.max())
-                ssim = 1 - ssim_loss.item()
-                mse = mse_func(outputs, images).item()
-                psnr = psnr_func(images, outputs).item()
-
-                if criterion_name == "SSIM":
-                    loss = ssim_loss
-                else:
-                    loss = mse
-
-                loss_list.append(loss.item())
-                mse_list.append(mse)
-                ssim_list.append(ssim)
-                psnr_list.append(psnr)
 
     val_loss = np.mean(loss_list)
     val_ssim = np.mean(ssim_list)
@@ -117,20 +98,20 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
         concat = torch.cat([orig, reconstructed])
 
         save_image(torchvision.utils.make_grid(
-            concat, nrow=nmod*batch_size), f'{output_dir}/autoencoding/reconstructions.png'
+            concat, nrow=nmod*batch_size), f'{output_dir}/autoencoding/logs/reconstructions.png'
         )
         break
 
 
 def main(
-        data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, quick, train_prop=0.8):
+        data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, unet, quick, train_prop=0.8):
     # Initialization
     output_dir = create_dependencies(output_dir, model_name)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     best_test_loss = np.inf
 
     # Logging
-    logging.basicConfig(filename=os.path.join(output_dir, "autoencoding", "ae.log"),
+    logging.basicConfig(filename=os.path.join(output_dir, "autoencoding", "logs", "ae.log"),
                         filemode='w', format='%(message)s', level=logging.INFO, force=True)
     logging.info(f"Dataset = {dataset}")
     logging.info(f"Modalities = {modalities}")
@@ -139,8 +120,9 @@ def main(
     logging.info(f"Quick execution = {quick}")
 
     # Initialize a model of our autoEncoder class on the device
-    net = UNet3D(in_channels=len(modalities), out_channels=len(
-        modalities), init_features=features, num_blocks=num_blocks)
+    net = VAE(in_channels=len(modalities), out_channels=len(
+        modalities), init_features=features, num_blocks=num_blocks, unet=unet)
+
 
     # Allocate model on several GPUs
     net = nn.DataParallel(net)

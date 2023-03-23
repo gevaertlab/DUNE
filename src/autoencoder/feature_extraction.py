@@ -2,7 +2,7 @@ import argparse
 import os
 import torch
 import pandas as pd
-from models import UNet3D
+from models import VAE
 import torch.nn as nn
 from tqdm import tqdm
 
@@ -24,8 +24,8 @@ def import_model(model_dir, num_mod, init_feat, num_blocks, device):
 
     model_path = os.path.join(model_dir, "autoencoding/exported_data/best_model.pt")
 
-    model = UNet3D(in_channels=num_mod, out_channels=num_mod,
-                   init_features=init_feat, num_blocks=num_blocks)
+    model = VAE(in_channels=num_mod, out_channels=num_mod,
+                   init_features=init_feat, num_blocks=num_blocks, unet=True)
     model = nn.DataParallel(model)
     model = model.to(device)
     model.load_state_dict(torch.load(model_path))
@@ -63,6 +63,7 @@ def main():
     testLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/testLoader.pth')
     dict_loaders = {"train": trainLoader, "test": testLoader}
 
+    final_df = pd.DataFrame()
     # feature extraction
     os.makedirs(f"{args.model_dir}/autoencoding/features", exist_ok=True)
     for dataset in ["train", "test"]:
@@ -71,11 +72,13 @@ def main():
             net, dict_loaders[dataset], device)
 
         feature_dict = pd.DataFrame.from_dict(results, orient="index")
-        feature_dict.to_csv(
-            f"{args.model_dir}/autoencoding/features/{dataset}_features.csv.gz", index=True)
+        # feature_dict.to_csv(
+            # f"{args.model_dir}/autoencoding/features/{dataset}_features.csv.gz", index=True)
 
+        final_df = pd.concat([final_df, feature_dict], axis=0)
+        final_df.index.name = "eid"
+        final_df = final_df.sort_index()
+        final_df.to_csv(f"{args.model_dir}/autoencoding/features/features.csv.gz", index=True)
 
 if __name__ == "__main__":
     main()
-
-

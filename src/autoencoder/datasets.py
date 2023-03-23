@@ -1,4 +1,5 @@
 import os
+from os.path import join
 import torch
 import nibabel as nib
 from PIL import Image
@@ -14,7 +15,7 @@ class BrainImages(Dataset):
         self.dataset = dataset
         self.data_path = data_path
         self.folders = [case for case in os.listdir(
-            data_path) if os.path.isdir(os.path.join(data_path, case))]
+            data_path) if os.path.isdir(join(data_path, case))]
 
         self.modalities = modalities
         self.transforms = transforms
@@ -43,13 +44,12 @@ class BrainImages(Dataset):
         return len(self.folders)
 
     def __getitem__(self, idx):
-
         self.imgAddresses = []
         for mod in self.modalities:
             mod = mod.lower() + ".nii"
-            folderpath = os.path.join(self.data_path, self.folders[idx])
+            folderpath = join(self.data_path, self.folders[idx])
 
-            filepath = [os.path.join(folderpath, f) for f in os.listdir(
+            filepath = [join(folderpath, f) for f in os.listdir(
                 folderpath) if mod in f.lower()][0]
             self.imgAddresses.append(filepath)
         case = self.folders[idx]
@@ -96,17 +96,6 @@ class BrainImages(Dataset):
 
                 imgsPil[i, z-startSliceZ, :, :] = t[0,:,:]
 
-                # t = imgsPre[i, z, startSliceY:endSliceY,
-                #             startSliceX:endSliceX].numpy()
-                # print(t.shape, "beefore Rot")
-                # if self.dataset in ("UKBIOBANK", "REMBRANDT", "UPENN"):
-                #     t = Image.fromarray(t)
-                #     t = t.rotate(angle=180)
-
-                #     t = np.array(t)
-                #     print(t.shape, "after rotation")
-
-                # imgsPil[i, z-startSliceZ, :, :] = transforms.ToTensor()(t)
 
         imgs = imgsPil[:, :, :, :]
         

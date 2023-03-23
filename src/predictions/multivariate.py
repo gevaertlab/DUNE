@@ -56,14 +56,8 @@ def create_dependencies(model_dir):
 def create_fulldataset(csv_paths, metadata_path):
 
     metadata = pd.read_csv(metadata_path, index_col="eid")
-
-    list_features = []
-    for f in csv_paths:
-        df = pd.read_csv(f)
-        list_features.append(df)
-    features = pd.concat(list_features, axis=0, ignore_index=True)
-    features["eid"] = features["Unnamed: 0"]
-    features = features.drop(["Unnamed: 0"], axis=1).set_index("eid")
+    features = pd.read_csv(csv_paths)
+    features = features.set_index("eid")
 
     merged = metadata.merge(features, how="inner",
                             left_index=True, right_index=True)
@@ -74,6 +68,7 @@ def create_fulldataset(csv_paths, metadata_path):
 def create_train_test_datasets(merged, var, task):
     
     nrow_init = merged.shape[0]
+
 
     if task != "survival":
         labels = merged[var]
@@ -90,13 +85,18 @@ def create_train_test_datasets(merged, var, task):
         merged = merged.loc[~np.isnan(time)]
         labels = labels[~np.isnan(time)]
 
-    features = merged[[k for k in merged.columns if k.isdigit()]]
-    
+
+    features = merged[[k for k in merged.columns if k.isdigit()]]    
     missing_rate = round(1-(features.shape[0] / nrow_init),2)
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        features, labels, test_size=0.2, random_state=12)
+    train_indexes = list(merged["cohort"] == "train")
+    test_indexes = list(merged["cohort"] == "test")
+    X_train, y_train = features[train_indexes], labels[train_indexes]
+    X_test, y_test = features[test_indexes], labels[test_indexes]
 
+    # X_train, X_test, y_train, y_test = train_test_split(
+    #     features, labels, test_size=0.2, random_state=12)
+    
     return X_train, y_train, X_test, y_test, missing_rate
 
 
@@ -119,9 +119,17 @@ if __name__ == '__main__':
     # Importing datasets
     model_path = config['model_path']
     metadata_path = config["metadata"]
-    feature_paths = [join(model_path, "autoencoding/features",
-                          f"{file}_features.csv.gz") for file in ["train", "test"]]
-    merged = create_fulldataset(feature_paths, metadata_path)
+
+    if config["features"] == "radiomics":
+        features_path = config["pyradiomics"]
+    elif config["features"] == "combined":
+        features_path = join(model_path, "autoencoding/features/features_and_radiomics.csv.gz")
+    elif config["features"] == "features":
+        features_path = join(model_path, "autoencoding/features/features.csv.gz")
+    else:
+        print("Invalid feature source")
+
+    merged = create_fulldataset(features_path, metadata_path)
 
     # Importing task list
     tasks = pd.read_csv(config["variables"])
@@ -130,26 +138,25 @@ if __name__ == '__main__':
         tasks["var"], tasks["task"])}
     variables = list(task_list.keys())
 
-    # Preparing results dataframe
+    # Create empty results
     results_df = tasks.copy()
     results_df['ibs'] = np.nan
 
     for _, var in enumerate(bar := tqdm(variables, colour="green")):
         task = task_list[var]
-
         bar.set_description(colored(f"\n{var} - {task}", "yellow"))
 
+        # create dataset
         X_train, y_train, X_test, y_test, missing_rate = create_train_test_datasets(
             merged, var, task)
         n_feat = X_train.shape[1]
-
         num_classes = np.nan
         variance = np.nan
         scoring = None
-
+        
         if task == "survival":
-            lower, upper = np.nanpercentile(merged["death_delay"], [10, 90])
-            times = np.arange(lower, upper + 1)
+            lower, upper = np.nanpercentile(merged.query("cohort =='train'")["death_delay"], [10, 90])
+            times = np.arange(lower, upper,10)
 
             mod = RandomSurvivalForest(max_depth=1, random_state=123)
             mod = as_concordance_index_ipcw_scorer(mod, tau=times[-1])
@@ -212,6 +219,8 @@ if __name__ == '__main__':
         #     plt.savefig(f"{var}.pdf")
 
         if task == "survival":
+            lower, upper = np.nanpercentile(merged.query("cohort =='train'")["death_delay"], [10, 90])
+            times = np.arange(lower, upper,10)
             surv_probs = np.row_stack([
                 fn(times) for fn in mod.predict_survival_function(X_test)])
             ibs = integrated_brier_score(y_train, y_test, surv_probs, times)
