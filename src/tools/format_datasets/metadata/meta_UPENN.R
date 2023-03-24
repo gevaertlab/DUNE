@@ -31,7 +31,7 @@ export$Gender <- ordered(export$Gender, levels = c("F", "M"))
 export$IDH1 <- factor(export$IDH1)
 export$IDH1 <- relevel(export$IDH1, "Wildtype")
 export$IDH1 <- ordered(export$IDH1)
-export$IDH1_bin <- ordered(export$IDH1 == "Wildtype", levels = c("FALSE", "TRUE"))
+export$IDH_glob_bin <- ordered(export$IDH1 == "Wildtype", levels = c("FALSE", "TRUE"))
 export$MGMT <- ordered(export$MGMT, levels=c("negative","positive"))
 export$GTR_over90percent <- ordered(export$GTR_over90percent, levels=c("N","Y"))
 export$death_event <- 1

@@ -32,7 +32,7 @@ export$final_pathology_diag <- ordered(export$final_pathology_diag, levels = c("
 export$IDH <- factor(export$IDH)
 export$IDH <- relevel(export$IDH, "wildtype")
 export$IDH <- ordered(export$IDH)
-export$IDH_bin <- ordered(export$IDH %in% c("wildtype", "mutated (NOS)"), levels = c("FALSE", "TRUE"))
+export$IDH_glob_bin <- ordered(export$IDH %in% c("wildtype", "mutated (NOS)"), levels = c("FALSE", "TRUE"))
 export$Biopsy_prior_to_imaging <- ordered(export$Biopsy_prior_to_imaging, levels = c("No", "Yes"))
 
 export <- export  %>% filter(!is.na(death_delay))

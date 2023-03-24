@@ -32,15 +32,26 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type=str,
                         help='model_path')
+    parser.add_argument('--output_name', type=str,
+                        help='output_name', required=False)
+    parser.add_argument('--features', type=str,
+                        help='output_name', required=False)
     args = parser.parse_args()
 
     config_file = join(args.model_path, "config/multivariate.cfg")
-
     config = configparser.ConfigParser()
     config.read(config_file)
     config = dict(config["config"])
-    config["model_path"] = args.model_path
+    
     config["load_models"] = eval(config["load_models"])
+    config["model_path"] = args.model_path
+
+
+    if args.output_name:
+        config["output_name"] = args.output_name
+    
+    if args.features:
+        config["features"] = args.features
 
     return config
 
@@ -142,7 +153,7 @@ if __name__ == '__main__':
     results_df = tasks.copy()
     results_df['ibs'] = np.nan
 
-    for _, var in enumerate(bar := tqdm(variables, colour="green")):
+    for _, var in enumerate(bar := tqdm(variables, colour="yellow")):
         task = task_list[var]
         bar.set_description(colored(f"\n{var} - {task}", "yellow"))
 
@@ -219,8 +230,6 @@ if __name__ == '__main__':
         #     plt.savefig(f"{var}.pdf")
 
         if task == "survival":
-            lower, upper = np.nanpercentile(merged.query("cohort =='train'")["death_delay"], [10, 90])
-            times = np.arange(lower, upper,10)
             surv_probs = np.row_stack([
                 fn(times) for fn in mod.predict_survival_function(X_test)])
             ibs = integrated_brier_score(y_train, y_test, surv_probs, times)
@@ -237,7 +246,7 @@ if __name__ == '__main__':
         results_df.loc[results_df['var'] == var, "metric"] = scoring
         results_df.loc[results_df['var'] == var, "restored_model"] = model_loaded
 
-        output_file = join(output_dir, f"0-{config['output_name']}.csv")
+        output_file = join(output_dir, f"{config['output_name']}.csv")
         results_df.to_csv(output_file, index=False)
 
         # Saving model

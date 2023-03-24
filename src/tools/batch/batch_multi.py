@@ -1,9 +1,10 @@
 import os
 import pandas as pd
 from os.path import join
+from tqdm import tqdm
 import re
 
-MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining"
+MODEL_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/finetuning/"
 
 def ls_dironly(path):
     dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
@@ -11,47 +12,49 @@ def ls_dironly(path):
     
 
 
-def multivariate(list_of_models):
-
-    for _, model in enumerate(list_of_models):
-        print("Evaluating ", model)
-        cmd = f"python src/predictions/multivariate.py --model_path {MODEL_DIR}/{model}"
-
-        os.system(cmd)
-
 def main():
     ROOT_DIR = "/home/tbarba/projects/MultiModalBrainSurvival/"
     os.chdir(ROOT_DIR)
 
-    list_of_models = [
-        # "6b_4f_REMB",
-        # "6b_4f_REMB_segm",
-        # "6b_4f_TCGA",
-        # "6b_4f_TCGA_segm",
-        # "6b_4f_UCSF",
-        # "6b_4f_UCSF_segm",
-        # "6b_4f_UPENN",
-        # "6b_4f_UPENN_segm"
-        "UNet_5b_8f_UKfull",
-        "UNet_5b_4f_UKfull",
-        "UNet_6b_8f_UKfull",
-        "UNet_6b_4f_UKfull"
+    list_cond = [
+
+        ["6b_4f_UCSF_segm", "features", "UCSF_features"],
+        ["6b_4f_UCSF_segm", "radiomics", "UCSF_radiomics"],
+        ["6b_4f_UCSF_segm", "combined", "UCSF_combined"],
+
+        ["6b_4f_UCSF_segm2", "features", "UCSF_features"],
+        ["6b_4f_UCSF_segm2", "radiomics", "UCSF_radiomics"],
+        ["6b_4f_UCSF_segm2", "combined", "UCSF_combined"],
+
+        ["6b_4f_TCGA_segm","features", "TCGA_features"],
+        ["6b_4f_TCGA_segm","radiomics", "TCGA_radiomics"],
+        ["6b_4f_TCGA_segm","combined", "TCGA_combined"],
+
+        ["6b_4f_UPENN_segm", "features", "UPENN_features"],
+        ["6b_4f_UPENN_segm", "radiomics", "UPENN_radiomics"],
+        ["6b_4f_UPENN_segm", "combined", "UPENN_combined"]
+
         ]
 
-    # multivariate(list_of_models)
-
     overall = pd.DataFrame()
-    for model in list_of_models:
-        try:
-            mod_summ = pd.read_csv(join(MODEL_DIR, model, "multivariate","0-multivariate.csv"))
-            b, f = re.findall(r'\d+', model)
-            mod_summ['model_'] = model
+    for cond in tqdm(list_cond, colour="red"):
+        model, features, output_name = cond
 
+        cmd = f"python src/predictions/multivariate.py --model_path {MODEL_DIR}/{model} --features {features} --output_name {output_name}"
+
+        # os.system(cmd)
+
+
+        try:
+            mod_summ = pd.read_csv(join(MODEL_DIR, model, "multivariate",f"{output_name}.csv"))
+            # b, f = re.findall(r'\d+', model)
+            mod_summ['AE'] = model
+            mod_summ['features'] = features
 
             overall = pd.concat([overall, mod_summ])
         except FileNotFoundError:
             pass    
-    overall.to_csv(MODEL_DIR + "/0-synth_multi.csv", index=False)
+        overall.to_csv(MODEL_DIR + "AEvsRAD.csv", index=False)
 
 
 

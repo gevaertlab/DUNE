@@ -11,21 +11,22 @@ def parse_arguments():
     parser.add_argument("-m", "--model_name", type=str, help='model name')
     parser.add_argument("-d", "--model_dir", type=str, default = "outputs/UNet", help='model path')
     parser.add_argument("-n", "--num_mod", type=int, default = 2, help='number of modalities')
-    parser.add_argument("-f", "--init_feat", type=int, default = 8, help='number of initial features')
+    parser.add_argument("-f", "--init_feat", type=int, default = 4, help='number of initial features')
     parser.add_argument("-b", "--num_blocks", type=int, default = 6, help='number of conv blocks')
+    parser.add_argument("--unet", type=int, default = 1, help='unet architecture')
 
     args = parser.parse_args()
     args.model_dir = os.path.join(args.model_dir, args.model_name)
-
+    args.unet = bool(args.unet)
     return args
 
 
-def import_model(model_dir, num_mod, init_feat, num_blocks, device):
+def import_model(model_dir, num_mod, init_feat, num_blocks,unet, device):
 
     model_path = os.path.join(model_dir, "autoencoding/exported_data/best_model.pt")
 
     model = VAE(in_channels=num_mod, out_channels=num_mod,
-                   init_features=init_feat, num_blocks=num_blocks, unet=True)
+                   init_features=init_feat, num_blocks=num_blocks, unet=unet)
     model = nn.DataParallel(model)
     model = model.to(device)
     model.load_state_dict(torch.load(model_path))
@@ -56,7 +57,7 @@ def main():
     os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
     args = parse_arguments()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = import_model(args.model_dir, args.num_mod, args.init_feat, args.num_blocks, device)
+    net = import_model(args.model_dir, args.num_mod, args.init_feat, args.num_blocks, args.unet, device)
 
     print("\nLoading datasets...")
     trainLoader = torch.load(f'{args.model_dir}/autoencoding/exported_data/trainLoader.pth')

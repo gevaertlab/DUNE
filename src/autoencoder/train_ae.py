@@ -203,9 +203,8 @@ def main(
 
 if __name__ == "__main__":
     start = datetime.now()
-    os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
-    config = parse_arguments()
 
+    config = parse_arguments()
     main(**config)
     execution_time = humanfriendly.format_timespan(datetime.now() - start)
     logging.info(f"\nFinished in {execution_time}.")
