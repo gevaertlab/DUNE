@@ -13,8 +13,8 @@ list_patients <- list.files("/home/tbarba/projects/MultiModalBrainSurvival/data/
 
 ###
 varlist <- fread(var_path)
-catg_cols <- varlist$var[varlist$task == "classification"]
-reg_cols <- varlist$var[varlist$task == "regression"]
+catg_cols <- varlist$var[varlist$task == "classification" & varlist$keep_model == TRUE]
+reg_cols <- varlist$var[varlist$task == "regression" & varlist$keep_model == TRUE]
 surv_cols <- c("death_delay", "death_event")
 
 
@@ -30,6 +30,7 @@ export <- raw %>%
 
 
 
+export$Gender <- factor(export$Gender, levels= c("Male","Female"), ordered=T)
 export$IDH1 <- factor(export$IDH1)
 export$IDH1 <- relevel(export$IDH1, "WT")
 export$IDH1 <- ordered(export$IDH1)

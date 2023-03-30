@@ -1,29 +1,45 @@
 from os.path import join
 import pandas as pd
 import os
-from itertools import product
-from tqdm import tqdm
-
-os.chdir("/home/tbarba/projects/MultiModalBrainSurvival/")
+import argparse
+import configparser
 
 
-DATASETS = ["UCSF", "TCGA", "UPENN"]
-DATASETS = ["UCSF"]
-# SEGM = ["", "_segm"]
-SEGM = ["_segm2"]
+def ls_dir(path):
+    dirs = [d for d in os.listdir(
+        path) if os.path.isdir(os.path.join(path, d))]
+    return dirs
 
 
-def fuse(model):
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_path', type=str,
+                        help='model_path')
 
-    dataset, segm = model
-    model_dir = f"outputs/UNet/finetuning/6b_4f_{dataset}{segm}"
+    args = parser.parse_args()
 
-    radiomics = f"data/MR/{dataset}/metadata/0-pyradiomics.csv.gz"
-    radiomics = pd.read_csv(radiomics, index_col="eid")
+    config_file = join(args.model_path, "config/ae.cfg")
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    config = dict(config["config"])
 
-    features = f"{model_dir}/autoencoding/features"
-    features = join(features, "features.csv.gz")
-    features = pd.read_csv(features, index_col=0)
+    config['model_path'] = args.model_path
+    config['radiomics_path'] = join(
+        config['data_path'], config['dataset'], "metadata/0-pyradiomics.csv.gz")
+    
+    config['features_path'] = join(
+        args.model_path, "autoencoding/features/features.csv.gz")
+
+    return config
+
+
+def main():
+
+    config = parse_arguments()
+
+    model_dir = config['model_path']
+    radiomics = pd.read_csv(config['radiomics_path'], index_col="eid")
+    features = pd.read_csv(config['features_path'], index_col=0)
     features.index.name = "eid"
 
     merged = pd.merge(features, radiomics, left_index=True, right_index=True)
@@ -35,9 +51,4 @@ def fuse(model):
 
 
 if __name__ == "__main__":
-
-    models = [m for m in product(DATASETS, SEGM)]
-
-    for model in tqdm(models):
-        print(model)
-        fuse(model)
+    main()

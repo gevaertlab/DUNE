@@ -11,6 +11,7 @@ from sklearn.linear_model import ElasticNet, Ridge, RidgeClassifier, LogisticReg
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
+from sklearn.preprocessing import StandardScaler
 from sksurv.linear_model import CoxnetSurvivalAnalysis
 from sksurv.ensemble import RandomSurvivalForest
 from sksurv.metrics import integrated_brier_score, as_concordance_index_ipcw_scorer
@@ -160,10 +161,13 @@ if __name__ == '__main__':
         # create dataset
         X_train, y_train, X_test, y_test, missing_rate = create_train_test_datasets(
             merged, var, task)
+        
+        
         n_feat = X_train.shape[1]
         num_classes = np.nan
         variance = np.nan
         scoring = None
+
         
         if task == "survival":
             lower, upper = np.nanpercentile(merged.query("cohort =='train'")["death_delay"], [10, 90])
