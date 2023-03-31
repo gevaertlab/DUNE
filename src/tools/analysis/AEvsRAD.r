@@ -23,7 +23,9 @@ df <- read_csv(INPUT_FILE) %>%
 
 
 df %>%
-    filter(features != "combined") %>%
+    # filter(features != "combined") %>%
+    filter(!(features == "combined" & type_AE == "UNet")) %>%
+    # filter(type_AE != "VAE") %>%
     ggplot(
         aes(x = var, y = performance, fill=features, alpha=type_AE)
     ) +

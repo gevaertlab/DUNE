@@ -37,7 +37,6 @@ def parse_arguments():
     config['num_workers']  = eval(config['num_workers'])
     config['modalities']  = eval(config['modalities'])
     config['min_dims']  = eval(config['min_dims'])
-    config['unet']  = eval(config['unet'])
     config['quick']  = eval(config['quick'])
 
     return config

@@ -13,7 +13,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 from piqa import PSNR
 from monai.losses.ssim_loss import SSIMLoss
-from models import VAE
+from models import VAE, RNet
 from datasets import BrainImages
 from utils import *
 import time
@@ -104,7 +104,7 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 
 
 def main(
-        data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, unet, quick, train_prop=0.8):
+        data_path, dataset, output_dir, learning_rate, modalities, features, num_blocks, min_dims,  batch_size, criterion_name, num_epochs, num_workers, model_name, type_ae, quick, train_prop=0.8):
     # Initialization
     output_dir = create_dependencies(output_dir, model_name)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -120,8 +120,11 @@ def main(
     logging.info(f"Quick execution = {quick}")
 
     # Initialize a model of our autoEncoder class on the device
-    net = VAE(in_channels=len(modalities), out_channels=len(
-        modalities), init_features=features, num_blocks=num_blocks, unet=unet)
+    if type_ae in ["VAE", "UNet"]:
+        net = VAE(in_channels=len(modalities), out_channels=len(
+            modalities), init_features=features, num_blocks=num_blocks, type_ae=type_ae)
+    else:
+        net = RNet(len(modalities))
 
 
     # Allocate model on several GPUs
