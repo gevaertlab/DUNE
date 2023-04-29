@@ -17,26 +17,22 @@ def main():
     os.chdir(ROOT_DIR)
 
     list_cond = [
-        ["UNet", "6b_4f_UCSF_segm", "features", "UCSF_features"],
-        ["UNet", "6b_4f_UCSF_segm", "radiomics", "UCSF_radiomics"],
-        ["UNet", "6b_4f_UCSF_segm", "combined", "UCSF_combined"],
+        ["AE", "AE_UCSF_segm", "whole_brain", "UCSF_wholebrain"],
+        ["AE", "AE_TCGA_segm", "whole_brain", "TCGA_wholebrain"],
+        ["AE", "AE_UPENN_segm", "whole_brain", "UPENN_wholebrain"],
 
-        ["VAE", "VAE_UCSF_segm", "features", "UCSF_features"],
-        ["VAE", "VAE_UCSF_segm", "combined", "UCSF_combined"],
+        ["AE", "AE_UCSF_segm", "tumor", "UCSF_tumor_only"],
+        ["AE", "AE_TCGA_segm", "tumor", "TCGA_tumor_only"],
+        ["AE", "AE_UPENN_segm", "tumor", "UPENN_tumor_only"],
 
-        ["UNet", "6b_4f_TCGA_segm","features", "TCGA_features"],
-        ["UNet", "6b_4f_TCGA_segm","radiomics", "TCGA_radiomics"],
-        ["UNet", "6b_4f_TCGA_segm","combined", "TCGA_combined"],
-
-        ["VAE", "VAE_TCGA_segm","features", "TCGA_features"],
-        ["VAE", "VAE_TCGA_segm","combined", "TCGA_combined"],
-
-        ["UNet", "6b_4f_UPENN_segm", "features", "UPENN_features"],
-        ["UNet", "6b_4f_UPENN_segm", "radiomics", "UPENN_radiomics"],
-        ["UNet", "6b_4f_UPENN_segm", "combined", "UPENN_combined"],
-
-        ["VAE", "VAE_UPENN_segm", "features", "UPENN_features"],
-        ["VAE", "VAE_UPENN_segm", "combined", "UPENN_combined"]
+        ["AE", "AE_UCSF_segm", "combined", "UCSF_combined"],
+        ["AE", "AE_TCGA_segm", "combined", "TCGA_combined"],
+        ["AE", "AE_UPENN_segm", "combined", "UPENN_combined"],
+  
+        ["AE", "AE_UCSF_segm", "radiomics", "UCSF_radiomics"],
+        ["AE", "AE_TCGA_segm", "radiomics", "TCGA_radiomics"],
+        ["AE", "AE_UPENN_segm", "radiomics", "UPENN_radiomics"]
+  
         ]
 
     overall = pd.DataFrame()
@@ -57,7 +53,7 @@ def main():
             overall = pd.concat([overall, mod_summ])
         except FileNotFoundError:
             pass    
-        overall.to_csv(MODEL_DIR + "AEvsRAD3.csv", index=False)
+        overall.to_csv(MODEL_DIR + "tumor_crop.csv", index=False)
 
 
 

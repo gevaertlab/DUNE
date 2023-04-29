@@ -6,56 +6,50 @@ from collections import OrderedDict
 from torch.utils.data import Dataset
 
 
-class VAE(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1, init_features=4, num_blocks=5, type_ae="VAE"):
-        super(VAE, self).__init__()
 
-        self.in_channels = in_channels
-        self.out_channels = out_channels
+class AutoEncoder(nn.Module):
+    def __init__(self, in_channels, init_features, num_blocks, type_ae, hidden_size="auto"):
+        super(AutoEncoder, self).__init__()
+
+        self.num_mod = in_channels
         self.num_blocks = num_blocks
-        self.UNet = True if type_ae=="UNet" else False
-        self.s = 2 if self.UNet else 1
-        
+        self._type = type_ae
+        self.hidden_size = hidden_size
+
         # ENCODER BLOCKS
         feature_list = [init_features*(2**n) for n in range(num_blocks)]
-        self.enc_blocks = nn.ModuleList()
-        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
-        for i, n in enumerate(feature_list):
-            if i ==0:
-                enc_block = VAE._block(self.in_channels, n, name=f"enc{i}")
-            else:
-                enc_block = VAE._block(feature_list[i-1], n, name=f"enc{i}")
+        self.encoder = nn.ModuleList()
+        self.pool = nn.MaxPool3d(2,2,0)
+        for n in feature_list:
+            enc_block = AutoEncoder._block(in_channels, n)
+            self.encoder.append(enc_block)
+            in_channels = n
 
-            self.enc_blocks.append(enc_block)
-        
         # BOTTLENECK EXTRACTION
-        bottleneck_features= 2*feature_list[-1]
-        self.bottleneck = VAE._block(feature_list[-1], bottleneck_features, name="bottleneck")
+        bn_features= 2*feature_list[-1]
+        self.bottleneck = AutoEncoder._block(feature_list[-1], bn_features)
 
         # DECODER BLOCKS
         feature_list = feature_list[::-1]
-        self.dec_blocks = nn.ModuleList()
+        self.decoder = nn.ModuleList()
         self.transposers = nn.ModuleList()
-        for i, n in enumerate(feature_list):
-            if i==0:
-                upconv = nn.ConvTranspose3d(bottleneck_features, n, kernel_size=2, stride=2)
-                dec_block = VAE._block(n*self.s, n, name=f"dec{i}")
-            else: 
-                upconv = nn.ConvTranspose3d(feature_list[i-1], n, kernel_size=2, stride=2)
-                dec_block = VAE._block(n*self.s, n, name=f"dec{i}")
-            
+        enlarger = 2 if self._type == "UNet" else 1
+        for n in feature_list:
+            upconv = nn.ConvTranspose3d(bn_features, n, 2, 2, 0)
+            dec_block = AutoEncoder._block(n* enlarger, n)
             self.transposers.append(upconv)
-            self.dec_blocks.append(dec_block)
+            self.decoder.append(dec_block)
+            bn_features = n
             
         # FINAL CONVOLUTION
-        self.last_conv = nn.Conv3d(feature_list[-1], out_channels=out_channels, kernel_size=1)
+        self.last_conv = nn.Conv3d(feature_list[-1], self.num_mod, 1, 1, 0)
 
 
     def forward(self, x):
         ## ENCODING
         encodings = []
         for k in range(self.num_blocks):
-            enc = self.enc_blocks[k](x)
+            enc = self.encoder[k](x)
             x = self.pool(enc)
             encodings.append(enc)
             
@@ -64,53 +58,140 @@ class VAE(nn.Module):
 
         ## DECODING
         encodings.reverse()
-
+        dec = bottleneck
         for k in range(self.num_blocks): 
-            if k==0:
-                dec = self.transposers[k](bottleneck, output_size= encodings[k].shape)
-            else:
-                dec = self.transposers[k](dec, output_size= encodings[k].shape)
-
-
-            if self.UNet:
+            dec = self.transposers[k](dec, output_size= encodings[k].shape)
+            if self._type == "UNet":
                 dec = torch.cat((dec, encodings[k]), dim=1)
-            dec = self.dec_blocks[k](dec)
+            dec = self.decoder[k](dec)
 
+        dec = self.last_conv(dec)
 
-        return torch.sigmoid(self.last_conv(dec)), bottleneck
+        return torch.sigmoid(dec), bottleneck, None
 
     @staticmethod
-    def _block(in_channels, features, name):
-        return nn.Sequential(
-            OrderedDict(
-                [
-                    (
-                        name + "conv1",
-                        nn.Conv3d(
-                            in_channels=in_channels,
-                            out_channels=features,
-                            kernel_size=3,
-                            padding=1,
-                            bias=False,
-                        ),
-                    ),
-                    (name + "norm1", nn.BatchNorm3d(num_features=features)),
-                    (name + "relu1", nn.ReLU(inplace=True)),
-                    (
-                        name + "conv2",
-                        nn.Conv3d(
-                            in_channels=features,
-                            out_channels=features,
-                            kernel_size=3,
-                            padding=1,
-                            bias=False,
-                        ),
-                    ),
-                    (name + "norm2", nn.BatchNorm3d(num_features=features)),
-                    (name + "relu2", nn.ReLU(inplace=True)),
-                ]
-            )
+    def _block(in_channels, features):
+        block = nn.Sequential(
+            nn.Conv3d(in_channels, features, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(features),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(features, features, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(features),
+            nn.ReLU(inplace=True)
         )
+        return block
+
+class VAE(nn.Module):
+    def __init__(self, in_channels, init_features, num_blocks, input_dim, hidden_size=2048):
+        super(VAE, self).__init__()
+
+        self.num_mod = in_channels
+        self.num_blocks = num_blocks
+        self._type = "VAE"
+        self.hidden_size = hidden_size
+
+        # ENCODER BLOCKS
+        feature_list = [init_features*(2**n) for n in range(num_blocks)]
+        self.enc_blocks = nn.ModuleList()
+        self.pool = nn.MaxPool3d(2, 2, 0)
+        for n in feature_list:
+            enc_block = VAE._block(in_channels, n)
+            self.enc_blocks.append(enc_block)
+            in_channels = n
+
+        # BOTTLENECK EXTRACTION
+        enc_shape, size = VAE._get_encoded_shape(input_dim, feature_list)
+        self.mu = nn.Linear(size, self.hidden_size)
+        self.sigma = nn.Linear(size, self.hidden_size)
+        self.decoder_input = nn.Linear(self.hidden_size, size)
+
+        # DECODER BLOCKS
+        feature_list = feature_list[::-1]
+        self.dec_blocks = nn.ModuleList()
+        self.transposers = nn.ModuleList()
+        for n in feature_list:
+            upconv = nn.ConvTranspose3d(enc_shape[0], n, 2, 2, 0)
+            dec_block = VAE._block(n, n)
+            self.transposers.append(upconv)
+            self.dec_blocks.append(dec_block)
+            enc_shape[0] = n
+
+        # FINAL CONVOLUTION
+        self.last_conv = nn.Conv3d(feature_list[-1], self.num_mod, 1, 1, 0)
+
+    def reparametrize(self, mu, sigma):
+        eps = torch.randn_like(sigma)
+        return eps * sigma + mu
+
+    def encode(self, x):
+        encodings = []
+
+        for k in range(self.num_blocks):
+            enc = self.enc_blocks[k](x)
+            encodings.append(enc)
+            x = self.pool(enc)
+
+        return x, encodings
+
+    def decode(self, x, encodings):
+        for k in range(self.num_blocks):
+            x = self.transposers[k](x, output_size=encodings[k].shape)
+            x = self.dec_blocks[k](x)
+
+        return self.last_conv(x)
+
+    def forward(self, x):
+        # ENCODING
+        enc, encodings = self.encode(x)
+
+        # REPRESENTATION EXTRACTION
+        mu = self.mu(enc.view(enc.size(0), -1))
+        sigma = self.sigma(enc.view(enc.size(0), -1))
+        sigma =  torch.exp(0.5 * sigma)
+        bottleneck = self.reparametrize(mu, sigma)
+
+        # DECODING
+        encodings.reverse()
+        dec = self.decoder_input(bottleneck)
+        dec = dec.view(enc.shape)
+        dec = self.decode(dec, encodings)
+
+        return torch.sigmoid(dec), bottleneck, (mu, sigma)
+
+    @staticmethod
+    def _block(in_channels, features):
+        block = nn.Sequential(
+            nn.Conv3d(in_channels, features, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(features),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(features, features, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(features),
+            nn.ReLU(inplace=True)
+        )
+        return block
+
+    @staticmethod
+    def _get_encoded_shape(input_dim, feature_list):
+
+        def block_shaping(dim):
+            k, s, p = 3, 1, 1
+            dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # block conv1
+            dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # block conv2
+
+            k, s, p = 2, 2, 0
+            dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # maxpool
+            return dim
+
+        D, H, W = input_dim
+        for C in feature_list:
+            D = block_shaping(D)
+            H = block_shaping(H)
+            W = block_shaping(W)
+
+        return [C, D, H, W], int(C*D*H*W)
+
 
 
 class ResBlock(nn.Module):
@@ -204,8 +285,8 @@ class Decoder(nn.Module):
         rb2, _ = self.rb2(rb3, shapes[5])
         rb1, _ = self.rb1(rb2, shapes[6])
         out_conv = self.out_conv(rb1, output_size=shapes[7])
-        output = self.tanh(out_conv)
-        return output
+        # output = self.tanh(out_conv)
+        return out_conv
     
 
 class RNet(nn.Module):
@@ -217,6 +298,7 @@ class RNet(nn.Module):
         super(RNet, self).__init__()
         self.encoder = Encoder(NMOD)
         self.decoder = Decoder(NMOD)
+        self._type = "ResNet AE"
 
     @property
     def num_params(self):
@@ -228,6 +310,118 @@ class RNet(nn.Module):
         encoded, shapes = self.encoder(inputs)
         decoded = self.decoder(encoded, shapes)
         decoded = torch.sigmoid(decoded)
-        return decoded, encoded
+        return decoded, encoded, None
     
 # https://github.com/jan-xu/autoencoders/blob/master/resnet/resnet.ipynb
+
+
+#######
+# OLD AES
+class OldAE(nn.Module):
+    def __init__(self, in_channels=1, init_features=4, num_blocks=5, type_ae="oldae"):
+        super(OldAE, self).__init__()
+
+        self.in_channels = in_channels
+        self.out_channels = in_channels
+        self.num_blocks = num_blocks
+        self.UNet = True if type_ae=="oldaeU" else False
+        self.s = 2 if self.UNet else 1
+        self._type = type_ae
+        
+        # ENCODER BLOCKS
+        feature_list = [init_features*(2**n) for n in range(num_blocks)]
+        self.enc_blocks = nn.ModuleList()
+        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
+        for i, n in enumerate(feature_list):
+            if i ==0:
+                enc_block = OldAE._block(self.in_channels, n, name=f"enc{i}")
+            else:
+                enc_block = OldAE._block(feature_list[i-1], n, name=f"enc{i}")
+
+            self.enc_blocks.append(enc_block)
+        
+        # BOTTLENECK EXTRACTION
+        bottleneck_features= 2*feature_list[-1]
+        self.bottleneck = OldAE._block(feature_list[-1], bottleneck_features, name="bottleneck")
+
+        # DECODER BLOCKS
+        feature_list = feature_list[::-1]
+        self.dec_blocks = nn.ModuleList()
+        self.transposers = nn.ModuleList()
+        for i, n in enumerate(feature_list):
+            if i==0:
+                upconv = nn.ConvTranspose3d(bottleneck_features, n, kernel_size=2, stride=2)
+                dec_block = OldAE._block(n*self.s, n, name=f"dec{i}")
+            else: 
+                upconv = nn.ConvTranspose3d(feature_list[i-1], n, kernel_size=2, stride=2)
+                dec_block = OldAE._block(n*self.s, n, name=f"dec{i}")
+            
+            self.transposers.append(upconv)
+            self.dec_blocks.append(dec_block)
+            
+        # FINAL CONVOLUTION
+        self.last_conv = nn.Conv3d(feature_list[-1], out_channels=in_channels, kernel_size=1)
+
+
+    def forward(self, x):
+        ## ENCODING
+        encodings = []
+        for k in range(self.num_blocks):
+            enc = self.enc_blocks[k](x)
+            x = self.pool(enc)
+            encodings.append(enc)
+            
+        ## REPRESENTATION EXTRACTION
+        bottleneck = self.bottleneck(x)
+
+        ## DECODING
+        encodings.reverse()
+
+        for k in range(self.num_blocks): 
+            if k==0:
+                dec = self.transposers[k](bottleneck, output_size= encodings[k].shape)
+            else:
+                dec = self.transposers[k](dec, output_size= encodings[k].shape)
+
+
+            if self.UNet:
+                dec = torch.cat((dec, encodings[k]), dim=1)
+            dec = self.dec_blocks[k](dec)
+
+
+        return torch.sigmoid(self.last_conv(dec)), bottleneck, None
+
+    @staticmethod
+    def _block(in_channels, features, name):
+        return nn.Sequential(
+            OrderedDict(
+                [
+                    (
+                        name + "conv1",
+                        nn.Conv3d(
+                            in_channels=in_channels,
+                            out_channels=features,
+                            kernel_size=3,
+                            padding=1,
+                            bias=False,
+                        ),
+                    ),
+                    (name + "norm1", nn.BatchNorm3d(num_features=features)),
+                    (name + "relu1", nn.ReLU(inplace=True)),
+                    (
+                        name + "conv2",
+                        nn.Conv3d(
+                            in_channels=features,
+                            out_channels=features,
+                            kernel_size=3,
+                            padding=1,
+                            bias=False,
+                        ),
+                    ),
+                    (name + "norm2", nn.BatchNorm3d(num_features=features)),
+                    (name + "relu2", nn.ReLU(inplace=True)),
+                ]
+            )
+        )
+
+

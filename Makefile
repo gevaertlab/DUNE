@@ -1,11 +1,6 @@
 # BRAIN AUTOENCODER
-MODEL=ResNet/RNet_UKB_segm
-MOD=3
-UNET=0
+MODEL=AE_crop/tAE_UCSF_augm
 CUDA=0,1
-BLOCKS=6
-FEATS=4
-
 #
 #TRAIN AE
 train_ae:
@@ -15,8 +10,9 @@ train_ae:
 
 extract_vae_features:
 	CUDA_VISIBLE_DEVICES=$(CUDA)  \
-	python src/autoencoder/feature_extraction.py -m $(MODEL) \
-	--num_blocks $(BLOCKS) --init_feat $(FEATS) --unet $(UNET) --num_mod $(MOD)
+	python src/autoencoder/feature_extraction.py \
+		-m outputs/$(MODEL)
+
 
 extract_radiomics:
 	python src/tools/format_datasets/metadata/extract_radiomics.py \

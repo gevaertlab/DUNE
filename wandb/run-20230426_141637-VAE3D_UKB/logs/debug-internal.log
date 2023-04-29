@@ -1,0 +1,72 @@
+2023-04-26 14:16:37,084 INFO    StreamThr :11661 [internal.py:wandb_internal():86] W&B internal server running at pid: 11661, started at: 2023-04-26 14:16:37.083335
+2023-04-26 14:16:37,088 DEBUG   HandlerThread:11661 [handler.py:handle_request():144] handle_request: status
+2023-04-26 14:16:37,091 INFO    WriterThread:11661 [datastore.py:open_for_write():85] open: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230426_141637-VAE3D_UKB/run-VAE3D_UKB.wandb
+2023-04-26 14:16:37,094 DEBUG   SenderThread:11661 [sender.py:send():375] send: header
+2023-04-26 14:16:37,160 DEBUG   SenderThread:11661 [sender.py:send():375] send: run
+2023-04-26 14:16:37,349 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:16:37,349 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:16:38,629 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:16:38,629 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:16:41,090 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:16:41,090 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:16:41,090 INFO    SenderThread:11661 [retry.py:__call__():172] Retry attempt failed:
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/retry.py", line 131, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 285, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/gql_request.py", line 56, in execute
+    request.raise_for_status()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 409 Client Error: Conflict for url: https://api.wandb.ai/graphql
+2023-04-26 14:16:41,329 DEBUG   HandlerThread:11661 [handler.py:handle_request():144] handle_request: shutdown
+2023-04-26 14:16:41,329 INFO    HandlerThread:11661 [handler.py:finish():845] shutting down handler
+2023-04-26 14:16:42,164 INFO    WriterThread:11661 [datastore.py:close():298] close: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230426_141637-VAE3D_UKB/run-VAE3D_UKB.wandb
+2023-04-26 14:16:45,888 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:16:45,888 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:16:55,556 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:16:55,556 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:17:13,592 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:17:13,592 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:17:50,400 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:17:50,400 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:18:58,325 ERROR   SenderThread:11661 [internal_api.py:execute():288] 409 response executing GraphQL.
+2023-04-26 14:18:58,326 ERROR   SenderThread:11661 [internal_api.py:execute():289] {"errors":[{"message":"run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-04-26 14:18:58,326 ERROR   SenderThread:11661 [sender.py:send_run():979] run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name (Error 409: Conflict)
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/apis/normalize.py", line 41, in wrapper
+    return func(*args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 1690, in upsert_run
+    response = self.gql(
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 257, in gql
+    ret = self._retry_gql(
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/retry.py", line 131, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 285, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/gql_request.py", line 56, in execute
+    request.raise_for_status()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 409 Client Error: Conflict for url: https://api.wandb.ai/graphql
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/internal/sender.py", line 977, in send_run
+    self._init_run(run, config_value_dict)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/internal/sender.py", line 1015, in _init_run
+    server_run, inserted, server_messages = self._api.upsert_run(
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/apis/normalize.py", line 51, in wrapper
+    raise CommError(message, error)
+wandb.errors.CommError: run tbarba19/Brain_VAE/VAE3D_UKB was previously created and deleted; try a new run name (Error 409: Conflict)
+2023-04-26 14:18:58,333 INFO    SenderThread:11661 [sender.py:finish():1550] shutting down sender

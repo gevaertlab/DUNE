@@ -1,0 +1,56 @@
+
+[256, 3, 3, 3]
+Loading datasets...
+Restoring previous...
+Epoch 1/200
+Train set...
+  0%|[35m                                                                           [39m| 0/1995 [00:00<?, ?it/s]
+[256, 3, 3, 3]
+  0%|[35m                                                                           [39m| 0/1995 [00:00<?, ?it/s]Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7f3534b0f040>
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1466, in __del__
+    self._shutdown_workers()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1430, in _shutdown_workers
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/connection.py", line 936, in wait
+    ready = selector.select(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/selectors.py", line 416, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt:
+Exception ignored in: <generator object tqdm.__iter__ at 0x7f36f9406660>
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/tqdm/std.py", line 1196, in __iter__
+    yield obj
+KeyboardInterrupt:
+  0%|[35m                                                                           [39m| 0/1995 [02:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 241, in <module>
+    main(**config)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 205, in main
+    train_epoch_metrics = train_loop(
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 44, in train_loop
+    outputs = model(images)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/parallel/data_parallel.py", line 171, in forward
+    outputs = self.parallel_apply(replicas, inputs, kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/parallel/data_parallel.py", line 181, in parallel_apply
+    return parallel_apply(replicas, inputs, kwargs, self.device_ids[:len(replicas)])
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/parallel/parallel_apply.py", line 89, in parallel_apply
+    output.reraise()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/_utils.py", line 543, in reraise
+    raise exception
+TypeError: Caught TypeError in replica 0 on device 0.
+Original Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/parallel/parallel_apply.py", line 64, in _worker
+    output = module(*input, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/newmods.py", line 159, in forward
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/newmods.py", line 139, in decode
+    result = self.decoder(result)
+TypeError: view(): argument 'size' must be tuple of SymInts, but found element of type list at pos 2

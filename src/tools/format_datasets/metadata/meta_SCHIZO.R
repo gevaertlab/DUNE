@@ -32,6 +32,9 @@ normalized[, reg_cols] <- scale(normalized[, reg_cols])
 normalized <- normalized %>% rownames_to_column("eid")
 
 
+normalized$cohort <- sample(c("train", "test"), nrow(normalized), replace = TRUE, prob = c(0.8, 0.2))
+
+
 fwrite(normalized,
     file = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/SCHIZO/metadata/0-SCHIZO_metadata_encoded.csv"
 )

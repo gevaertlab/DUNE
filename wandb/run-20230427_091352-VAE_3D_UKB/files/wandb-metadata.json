@@ -1,0 +1,260 @@
+{
+    "os": "Linux-3.10.0-1160.83.1.el7.x86_64-x86_64-with-glibc2.17",
+    "python": "3.9.0",
+    "heartbeatAt": "2023-04-27T16:13:52.999972",
+    "startedAt": "2023-04-27T16:13:52.466327",
+    "docker": null,
+    "cuda": "10.2.89",
+    "args": [
+        "--model_path",
+        "outputs/VAE/VAE3D_UKB"
+    ],
+    "state": "running",
+    "program": "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py",
+    "codePath": "src/autoencoder/train_ae.py",
+    "git": {
+        "remote": "https://github.com/gevaertlab/BrainMR_AE_datafusion.git",
+        "commit": "b5a79bef42f7473cf39e9292c2c188bed2a8fbf8"
+    },
+    "email": null,
+    "root": "/home/tbarba/projects/MultiModalBrainSurvival",
+    "host": "bmir-ct-gpu-5.stanford.edu",
+    "username": "tbarba",
+    "executable": "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/bin/python",
+    "cpu_count": 20,
+    "cpu_count_logical": 40,
+    "cpu_freq": {
+        "current": 1738.867875,
+        "min": 1200.0,
+        "max": 3400.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3259.423,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1260.498,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1200.878,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1210.253,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1250.683,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1308.251,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2981.542,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1604.003,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1271.777,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1545.263,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1231.054,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2027.929,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1200.439,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3245.8,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.244,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3361.523,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1200.0,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1487.109,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1200.0,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1200.439,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3242.871,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1360.546,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1283.789,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1297.265,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1260.644,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2074.364,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2599.951,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1599.462,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1263.72,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1698.486,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1214.355,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1627.294,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1304.443,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2832.421,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1280.859,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3215.478,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1209.96,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1380.322,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2608.593,
+            "min": 1200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1200.0,
+            "min": 1200.0,
+            "max": 3400.0
+        }
+    ],
+    "disk": {
+        "total": 59.970703125,
+        "used": 51.126094818115234
+    },
+    "gpu": "Tesla V100-SXM2-16GB",
+    "gpu_count": 4,
+    "gpu_devices": [
+        {
+            "name": "Tesla V100-SXM2-16GB",
+            "memory_total": 17179869184
+        },
+        {
+            "name": "Tesla V100-SXM2-16GB",
+            "memory_total": 17179869184
+        },
+        {
+            "name": "Tesla V100-SXM2-16GB",
+            "memory_total": 17179869184
+        },
+        {
+            "name": "Tesla V100-SXM2-16GB",
+            "memory_total": 17179869184
+        }
+    ],
+    "memory": {
+        "total": 503.6358070373535
+    }
+}

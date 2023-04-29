@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 241, in <module>
+    main(**config)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 147, in main
+    net = VAE3D(min_dims=min_dims)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/newmods.py", line 85, in __init__
+    nn.ConvTranspose3d(hidden_dims_variable[i],
+IndexError: list index out of range

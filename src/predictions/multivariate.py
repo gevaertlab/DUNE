@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import ElasticNet, Ridge, RidgeClassifier, LogisticRegression
+from sklearn.linear_model import ElasticNet, Ridge, RidgeClassifier, LogisticRegression, LinearRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
@@ -106,8 +106,8 @@ def create_train_test_datasets(merged, var, task):
     X_train, y_train = features[train_indexes], labels[train_indexes]
     X_test, y_test = features[test_indexes], labels[test_indexes]
 
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #     features, labels, test_size=0.2, random_state=12)
+
+
     
     return X_train, y_train, X_test, y_test, missing_rate
 
@@ -134,10 +134,12 @@ if __name__ == '__main__':
 
     if config["features"] == "radiomics":
         features_path = config["pyradiomics"]
-    elif config["features"] == "combined":
-        features_path = join(model_path, "autoencoding/features/features_and_radiomics.csv.gz")
-    elif config["features"] == "features":
+    elif config["features"] == "whole_brain":
         features_path = join(model_path, "autoencoding/features/features.csv.gz")
+    elif config["features"] == "tumor":
+        features_path = join(model_path, "autoencoding/features/tumor.csv.gz")
+    elif config["features"] == "combined":
+        features_path = join(model_path, "autoencoding/features/whole_and_tumor.csv.gz")
     else:
         print("Invalid feature source")
 
@@ -222,9 +224,9 @@ if __name__ == '__main__':
             y_test = np.concatenate([y_train, y_test])
         
         if not model_loaded :
-            mod = GridSearchCV(mod, dict_params, scoring=scoring, cv=3, n_jobs=-1)
+            # mod = GridSearchCV(mod, dict_params, scoring=scoring, cv=3, n_jobs=-1)
             mod.fit(X_train, y_train)
-            mod = mod.best_estimator_
+            # mod = mod.best_estimator_
 
         res = mod.score(X_test, y_test)
         

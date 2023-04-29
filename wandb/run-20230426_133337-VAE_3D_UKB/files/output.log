@@ -1,0 +1,82 @@
+
+Loading datasets...
+Epoch 1/300
+Train set...
+  0%|[35m                                                                            [39m| 0/3991 [00:00<?, ?it/s]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m                                                                 [39m| 1/3991 [00:56<62:06:32, 56.04s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m                                                                 [39m| 2/3991 [00:58<26:53:09, 24.26s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m                                                                 [39m| 3/3991 [01:00<15:43:45, 14.20s/it]
+
+  0%|[35m                                                                 [39m| 4/3991 [01:02<10:32:03,  9.51s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m                                                                  [39m| 5/3991 [01:04<7:33:25,  6.83s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m                                                                  [39m| 6/3991 [01:06<5:46:53,  5.22s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m                                                                 [39m| 7/3991 [01:27<11:22:57, 10.29s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▏                                                                 [39m| 8/3991 [01:29<8:29:38,  7.68s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▏                                                                 [39m| 9/3991 [01:31<6:32:57,  5.92s/it]
+
+  0%|[35m▏                                                                [39m| 10/3991 [01:33<5:12:46,  4.71s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▏                                                                [39m| 11/3991 [01:35<4:22:37,  3.96s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▏                                                                [39m| 12/3991 [01:38<3:46:10,  3.41s/it]
+
+  0%|[35m▏                                                               [39m| 13/3991 [02:08<12:49:28, 11.61s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▏                                                                [39m| 14/3991 [02:10<9:38:35,  8.73s/it]
+
+  0%|[35m▏                                                                [39m| 15/3991 [02:16<8:34:18,  7.76s/it]
+
+  0%|[35m▎                                                                [39m| 16/3991 [02:18<6:38:32,  6.02s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▎                                                                [39m| 17/3991 [02:20<5:24:06,  4.89s/it]
+torch.Size([2, 3, 156, 184, 148])
+
+  0%|[35m▎                                                                [39m| 18/3991 [02:39<9:46:13,  8.85s/it]
+Traceback (most recent call last):
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 245, in <module>
+    main(**config)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 209, in main
+    train_epoch_metrics = train_loop(
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 41, in train_loop
+    for idx, (imgs, _) in enumerate(tqdm(dataloader, colour=colour)):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/tqdm/std.py", line 1195, in __iter__
+    for obj in iterable:
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 628, in __next__
+    data = self._next_data()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1316, in _next_data
+    idx, data = self._get_data()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1282, in _get_data
+    success, data = self._try_get_data()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1120, in _try_get_data
+    data = self._data_queue.get(timeout=timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/queues.py", line 113, in get
+    if not self._poll(timeout):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/connection.py", line 262, in poll
+    return self._poll(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/connection.py", line 429, in _poll
+    r = wait([self], timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/connection.py", line 936, in wait
+    ready = selector.select(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/selectors.py", line 416, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt

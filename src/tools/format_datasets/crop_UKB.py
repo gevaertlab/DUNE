@@ -7,11 +7,11 @@ from tqdm import tqdm
 from multiprocessing import Pool
 
 np.random.seed(123)
-os.chdir("/home/tbarba/projects/MultiModalBrainSurvival/")
+# os.chdir("/home/tbarba/projects/MultiModalBrainSurvival/")
 DATA =  "data/MR"
 DATASET = "UKBIOBANK"
 OUTPUT_DIR = join(DATA, "UKB_crop/images")
-BBOX_DIM = [68, 94, 75]
+BBOX_DIM = [68, 94, 74]
 NUM_CENTERS = 3
 
 def ls_dir(path):
@@ -41,15 +41,20 @@ def crop_nifti(nifti, center, bbox_dim):
     halfd = depth //2
 
     lowX = max(centerX - halfw, 0)
-    highX = min(centerX + halfw, maxX)
-
+    highX = width if lowX == 0 else min(centerX + halfw, maxX)
+    # highX = min(centerX + halfw, maxX)
+    # lowX = maxX-width if highX == maxX else lowX
     
     lowY = max(centerY - halfh, 0)
-    highY = min(centerY + halfh, maxY)
-
+    highY = height if lowY == 0 else min(centerY + halfh, maxY)
+    # highY = min(centerY + halfh, maxY)
+    # lowY = maxX-height if highY == maxY else lowY
 
     lowZ = max(centerZ - halfd, 0)
-    highZ = min(centerZ + halfd, maxZ)
+    highZ = depth if lowZ == 0 else min(centerZ + halfd, maxZ)
+    # highZ = min(centerZ + halfd, maxZ)
+    # lowZ = maxZ-depth if highZ == maxZ else lowZ
+
 
     # Slicer
     cropped_nifti = nifti.slicer[lowX:highX, lowY:highY, lowZ:highZ]

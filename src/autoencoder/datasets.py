@@ -2,15 +2,14 @@ import os
 from os.path import join
 import torch
 import nibabel as nib
-from PIL import Image
 import numpy as np
 from torch.utils.data import Dataset
 from torchvision import transforms
-from scipy import ndimage
 import torchio as tio
 
+
 class BrainImages(Dataset):
-    def __init__(self, dataset, data_path, modalities, mindims, transforms=None):
+    def __init__(self, dataset, data_path, modalities, mindims, whole_brain=True, transforms=None):
 
         self.dataset = dataset
         self.data_path = data_path
@@ -21,6 +20,7 @@ class BrainImages(Dataset):
         self.transforms = transforms
         self.n_mod = len(self.modalities)
         self.depth, self.height, self.width = mindims
+        self.whole_brain = whole_brain
         
     @staticmethod
     def find_brain_center(stack):
@@ -54,7 +54,7 @@ class BrainImages(Dataset):
             self.imgAddresses.append(filepath)
         case = self.folders[idx]
         imgsPre = []
-        for i in range(0, self.n_mod):
+        for i in range(self.n_mod):
             nifti = nib.load(self.imgAddresses[i])
             # self.voxel_size = nifti.header.get_zooms()
             resample = tio.Resample(1, image_interpolation='bspline')
@@ -65,29 +65,36 @@ class BrainImages(Dataset):
             temp = temp.transpose((2, 1, 0)).astype(np.uint8)
             imgsPre.append(temp)
 
+
         imgsPre = np.array(imgsPre, dtype=np.uint8)
         imgsPre = torch.from_numpy(imgsPre)
 
-        centerZ, centerY, centerX = BrainImages.find_brain_center(imgsPre)
-        startSliceZ = max(int(centerZ - self.depth/2), 0)
-        endSliceZ = min(int(startSliceZ) + self.depth, imgsPre.shape[1]-1)
+        if self.whole_brain:
+            centerZ, centerY, centerX = BrainImages.find_brain_center(imgsPre)
+        else:
+            newdepth, newheight, newwidth = nifti.shape
+            centerZ, centerY, centerX = newdepth//2, newheight//2, newwidth//2
 
-        startSliceY = max(int(centerY - self.height/2), 0)
+        startSliceZ = max(int(centerZ - self.depth//2), 0)
+        endSliceZ = min(int(startSliceZ) + self.depth, imgsPre.shape[1]-1) #imgsPre.shape[1]-1
+
+        startSliceY = max(int(centerY - self.height//2), 0)
         endSliceY = int(startSliceY) + self.height
 
-        startSliceX = max(int(centerX - self.width/2), 0)
+        startSliceX = max(int(centerX - self.width//2), 0)
         endSliceX = int(startSliceX) + self.width
+
 
         imgsPil = torch.zeros(
             [self.n_mod, self.depth, self.height, self.width])
-
-
+        
+ 
         for i in range(0, self.n_mod):
             for z in range(startSliceZ, endSliceZ):
-                t = imgsPre[i, z, startSliceY:endSliceY,
-                            startSliceX:endSliceX]
 
-                angle = 180 if self.dataset in ("UKBIOBANK", "REMBRANDT", "SCHIZO") else 0
+                t = imgsPre[i, z, startSliceY:endSliceY, startSliceX:endSliceX]
+
+                angle = 180 if self.dataset in ("UKBIOBANK", "UKB_crop","REMBRANDT", "SCHIZO") else 0
 
                 toPil = transforms.ToPILImage()
                 t = toPil(t).rotate(angle=angle)
@@ -98,5 +105,6 @@ class BrainImages(Dataset):
 
 
         imgs = imgsPil[:, :, :, :]
+
         
         return imgs, case

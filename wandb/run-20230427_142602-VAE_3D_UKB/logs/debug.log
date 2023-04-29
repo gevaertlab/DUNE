@@ -1,0 +1,37 @@
+2023-04-27 14:26:02,453 INFO    MainThread:1712 [wandb_setup.py:_flush():76] Configure stats pid to 1712
+2023-04-27 14:26:02,454 INFO    MainThread:1712 [wandb_setup.py:_flush():76] Loading settings from /home/tbarba/.config/wandb/settings
+2023-04-27 14:26:02,454 INFO    MainThread:1712 [wandb_setup.py:_flush():76] Loading settings from /home/tbarba/projects/MultiModalBrainSurvival/wandb/settings
+2023-04-27 14:26:02,454 INFO    MainThread:1712 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-04-27 14:26:02,454 INFO    MainThread:1712 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2023-04-27 14:26:02,455 INFO    MainThread:1712 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'src/autoencoder/train_ae.py', 'program': '/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py'}
+2023-04-27 14:26:02,456 INFO    MainThread:1712 [wandb_init.py:_log_setup():507] Logging user logs to /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230427_142602-VAE_3D_UKB/logs/debug.log
+2023-04-27 14:26:02,457 INFO    MainThread:1712 [wandb_init.py:_log_setup():508] Logging internal logs to /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230427_142602-VAE_3D_UKB/logs/debug-internal.log
+2023-04-27 14:26:02,458 INFO    MainThread:1712 [wandb_init.py:init():547] calling init triggers
+2023-04-27 14:26:02,458 INFO    MainThread:1712 [wandb_init.py:init():554] wandb.init called with sweep_config: {}
+config: {'model_name': 'tAE_UCSF_augm', 'type_ae': 'oldae', 'num_blocks': 5, 'features': 8, 'model_path': 'outputs/AE_crop/tAE_UCSF_augm', 'dataset': 'UCSF_crop', 'data_path': 'data/MR', 'modalities': ['T1c_crop', 'FLAIR_crop'], 'min_dims': [75, 94, 62], 'batch_size': 15, 'whole_brain': False, 'num_epochs': 2000, 'learning_rate': 0.0001, 'num_workers': 2, 'quick': False}
+2023-04-27 14:26:02,459 INFO    MainThread:1712 [wandb_init.py:init():595] starting backend
+2023-04-27 14:26:02,460 INFO    MainThread:1712 [wandb_init.py:init():599] setting up manager
+2023-04-27 14:26:02,466 INFO    MainThread:1712 [backend.py:_multiprocessing_setup():106] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2023-04-27 14:26:02,472 INFO    MainThread:1712 [wandb_init.py:init():605] backend started and connected
+2023-04-27 14:26:02,480 INFO    MainThread:1712 [wandb_init.py:init():695] updated telemetry
+2023-04-27 14:26:02,530 INFO    MainThread:1712 [wandb_init.py:init():732] communicating run to backend with 60.0 second timeout
+2023-04-27 14:26:02,864 INFO    MainThread:1712 [wandb_run.py:_on_init():2176] communicating current version
+2023-04-27 14:26:03,006 INFO    MainThread:1712 [wandb_run.py:_on_init():2185] got version response 
+2023-04-27 14:26:03,006 INFO    MainThread:1712 [wandb_init.py:init():782] starting run threads in backend
+2023-04-27 14:26:06,178 WARNING MainThread:1712 [wandb_init.py:init():1167] interrupted
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1145, in init
+    run = wi.init()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 794, in init
+    run_start_result = run_start_handle.wait(timeout=30)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/mailbox.py", line 283, in wait
+    found, abandoned = self._slot._get_and_clear(timeout=wait_timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/mailbox.py", line 130, in _get_and_clear
+    if self._wait(timeout=timeout):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/wandb/sdk/lib/mailbox.py", line 126, in _wait
+    return self._event.wait(timeout=timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/threading.py", line 574, in wait
+    signaled = self._cond.wait(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/threading.py", line 316, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt

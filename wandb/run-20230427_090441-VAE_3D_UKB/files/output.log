@@ -1,0 +1,33 @@
+Loading datasets...
+Restoring previous...
+Epoch 1/300
+Train:   0%|[35m                                                                                                                               [39m| 0/1995 [00:00<?, ?it/s]
+0.9773803949356079
+1.6464217901229858
+Train:   0%|[35m                                                                                                                               [39m| 0/1995 [00:00<?, ?it/s]Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7f70bb1d50d0>
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1466, in __del__
+    self._shutdown_workers()
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1430, in _shutdown_workers
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/multiprocessing/connection.py", line 936, in wait
+    ready = selector.select(timeout)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/selectors.py", line 416, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt:
+Exception ignored in: <generator object tqdm.__iter__ at 0x7f727fb026d0>
+Traceback (most recent call last):
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/tqdm/std.py", line 1196, in __iter__
+    yield obj
+KeyboardInterrupt:
+Train:   0%|[35m                                                                                                                               [39m| 0/1995 [01:29<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 222, in <module>
+    main(config)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 193, in main
+    train_epoch_metrics = train_loop(
+KeyboardInterrupt

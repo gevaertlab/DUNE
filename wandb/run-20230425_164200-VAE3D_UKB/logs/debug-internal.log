@@ -1,0 +1,242 @@
+2023-04-25 16:42:00,359 INFO    StreamThr :15780 [internal.py:wandb_internal():86] W&B internal server running at pid: 15780, started at: 2023-04-25 16:42:00.356966
+2023-04-25 16:42:00,380 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status
+2023-04-25 16:42:00,386 INFO    WriterThread:15780 [datastore.py:open_for_write():85] open: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/run-VAE3D_UKB.wandb
+2023-04-25 16:42:00,405 DEBUG   SenderThread:15780 [sender.py:send():375] send: header
+2023-04-25 16:42:00,469 DEBUG   SenderThread:15780 [sender.py:send():375] send: run
+2023-04-25 16:42:00,725 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: check_version
+2023-04-25 16:42:00,725 INFO    SenderThread:15780 [dir_watcher.py:__init__():219] watching files in: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files
+2023-04-25 16:42:00,726 INFO    SenderThread:15780 [sender.py:_start_run_threads():1124] run started: VAE3D_UKB with start time 1682466120.354524
+2023-04-25 16:42:00,726 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: summary_record
+2023-04-25 16:42:00,729 INFO    SenderThread:15780 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-04-25 16:42:00,729 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: check_version
+2023-04-25 16:42:00,811 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: run_start
+2023-04-25 16:42:00,825 DEBUG   HandlerThread:15780 [system_info.py:__init__():31] System info init
+2023-04-25 16:42:00,825 DEBUG   HandlerThread:15780 [system_info.py:__init__():46] System info init done
+2023-04-25 16:42:00,825 INFO    HandlerThread:15780 [system_monitor.py:start():181] Starting system monitor
+2023-04-25 16:42:00,825 INFO    SystemMonitor:15780 [system_monitor.py:_start():145] Starting system asset monitoring threads
+2023-04-25 16:42:00,825 INFO    HandlerThread:15780 [system_monitor.py:probe():201] Collecting system info
+2023-04-25 16:42:00,827 INFO    SystemMonitor:15780 [interfaces.py:start():190] Started cpu monitoring
+2023-04-25 16:42:00,828 INFO    SystemMonitor:15780 [interfaces.py:start():190] Started disk monitoring
+2023-04-25 16:42:00,830 INFO    SystemMonitor:15780 [interfaces.py:start():190] Started gpu monitoring
+2023-04-25 16:42:00,831 INFO    SystemMonitor:15780 [interfaces.py:start():190] Started memory monitoring
+2023-04-25 16:42:00,832 INFO    SystemMonitor:15780 [interfaces.py:start():190] Started network monitoring
+2023-04-25 16:42:00,856 DEBUG   HandlerThread:15780 [system_info.py:probe():195] Probing system
+2023-04-25 16:42:00,867 DEBUG   HandlerThread:15780 [system_info.py:_probe_git():180] Probing git
+2023-04-25 16:42:00,905 DEBUG   HandlerThread:15780 [system_info.py:_probe_git():188] Probing git done
+2023-04-25 16:42:00,906 DEBUG   HandlerThread:15780 [system_info.py:probe():240] Probing system done
+2023-04-25 16:42:00,906 DEBUG   HandlerThread:15780 [system_monitor.py:probe():210] {'os': 'Linux-3.10.0-1160.83.1.el7.x86_64-x86_64-with-glibc2.17', 'python': '3.9.0', 'heartbeatAt': '2023-04-25T23:42:00.856808', 'startedAt': '2023-04-25T23:42:00.246605', 'docker': None, 'cuda': '10.2.89', 'args': ('--model_path', 'outputs/VAE/VAE3D_UKB'), 'state': 'running', 'program': '/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py', 'codePath': 'src/autoencoder/train_ae.py', 'git': {'remote': 'https://github.com/gevaertlab/BrainMR_AE_datafusion.git', 'commit': 'b5a79bef42f7473cf39e9292c2c188bed2a8fbf8'}, 'email': None, 'root': '/home/tbarba/projects/MultiModalBrainSurvival', 'host': 'bmir-ct-gpu-5.stanford.edu', 'username': 'tbarba', 'executable': '/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/bin/python', 'cpu_count': 20, 'cpu_count_logical': 40, 'cpu_freq': {'current': 2358.434675000001, 'min': 1200.0, 'max': 3400.0}, 'cpu_freq_per_core': [{'current': 2892.773, 'min': 1200.0, 'max': 3400.0}, {'current': 2741.894, 'min': 1200.0, 'max': 3400.0}, {'current': 2073.925, 'min': 1200.0, 'max': 3400.0}, {'current': 1270.312, 'min': 1200.0, 'max': 3400.0}, {'current': 2809.863, 'min': 1200.0, 'max': 3400.0}, {'current': 1270.019, 'min': 1200.0, 'max': 3400.0}, {'current': 2881.787, 'min': 1200.0, 'max': 3400.0}, {'current': 1929.931, 'min': 1200.0, 'max': 3400.0}, {'current': 2708.789, 'min': 1200.0, 'max': 3400.0}, {'current': 2338.33, 'min': 1200.0, 'max': 3400.0}, {'current': 2872.265, 'min': 1200.0, 'max': 3400.0}, {'current': 1395.849, 'min': 1200.0, 'max': 3400.0}, {'current': 2679.052, 'min': 1200.0, 'max': 3400.0}, {'current': 1200.292, 'min': 1200.0, 'max': 3400.0}, {'current': 2890.576, 'min': 1200.0, 'max': 3400.0}, {'current': 2251.904, 'min': 1200.0, 'max': 3400.0}, {'current': 1367.138, 'min': 1200.0, 'max': 3400.0}, {'current': 2041.845, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2115.673, 'min': 1200.0, 'max': 3400.0}, {'current': 2820.41, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2675.83, 'min': 1200.0, 'max': 3400.0}, {'current': 2629.98, 'min': 1200.0, 'max': 3400.0}, {'current': 2603.466, 'min': 1200.0, 'max': 3400.0}, {'current': 1298.73, 'min': 1200.0, 'max': 3400.0}, {'current': 2689.892, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2606.835, 'min': 1200.0, 'max': 3400.0}, {'current': 2357.519, 'min': 1200.0, 'max': 3400.0}, {'current': 1310.742, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 1205.126, 'min': 1200.0, 'max': 3400.0}, {'current': 2737.353, 'min': 1200.0, 'max': 3400.0}, {'current': 2638.769, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2871.679, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}], 'disk': {'total': 59.970703125, 'used': 51.14394760131836}, 'gpu': 'Tesla V100-SXM2-16GB', 'gpu_count': 4, 'gpu_devices': [{'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}, {'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}, {'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}, {'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}], 'memory': {'total': 503.6358070373535}}
+2023-04-25 16:42:00,906 INFO    HandlerThread:15780 [system_monitor.py:probe():211] Finished collecting system info
+2023-04-25 16:42:00,907 INFO    HandlerThread:15780 [system_monitor.py:probe():214] Publishing system info
+2023-04-25 16:42:00,907 DEBUG   HandlerThread:15780 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-04-25 16:42:00,910 DEBUG   HandlerThread:15780 [system_info.py:_save_pip():67] Saving pip packages done
+2023-04-25 16:42:00,910 DEBUG   HandlerThread:15780 [system_info.py:_save_conda():74] Saving list of conda packages installed into the current environment
+2023-04-25 16:42:01,731 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/requirements.txt
+2023-04-25 16:42:01,732 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-summary.json
+2023-04-25 16:42:01,733 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/conda-environment.yaml
+2023-04-25 16:42:11,724 DEBUG   HandlerThread:15780 [system_info.py:_save_conda():86] Saving conda packages done
+2023-04-25 16:42:11,729 INFO    HandlerThread:15780 [system_monitor.py:probe():216] Finished publishing system info
+2023-04-25 16:42:11,742 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/conda-environment.yaml
+2023-04-25 16:42:11,743 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-metadata.json
+2023-04-25 16:42:11,756 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:11,756 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: keepalive
+2023-04-25 16:42:11,757 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:11,758 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: keepalive
+2023-04-25 16:42:11,758 DEBUG   SenderThread:15780 [sender.py:send():375] send: files
+2023-04-25 16:42:11,759 INFO    SenderThread:15780 [sender.py:_save_file():1378] saving file wandb-metadata.json with policy now
+2023-04-25 16:42:11,774 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:42:11,775 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:42:11,869 DEBUG   SenderThread:15780 [sender.py:send():375] send: telemetry
+2023-04-25 16:42:12,235 INFO    wandb-upload_0:15780 [upload_job.py:push():137] Uploaded file /tmp/tmp9weylzliwandb/yf5y0xi4-wandb-metadata.json
+2023-04-25 16:42:15,748 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:42:16,558 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:17,750 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:42:21,559 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:26,560 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:26,774 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:42:26,775 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:42:31,841 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:32,769 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/config.yaml
+2023-04-25 16:42:37,040 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:41,773 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:42:41,775 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:42:42,846 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:47,847 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:52,848 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:42:56,774 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:42:56,775 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:42:58,846 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:00,833 DEBUG   SystemMonitor:15780 [system_monitor.py:_start():159] Starting system metrics aggregation loop
+2023-04-25 16:43:00,837 DEBUG   SenderThread:15780 [sender.py:send():375] send: stats
+2023-04-25 16:43:04,841 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:07,811 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:43:09,813 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:43:10,171 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:11,776 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:43:11,777 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:43:15,850 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:20,851 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:25,852 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:26,774 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:43:26,775 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:43:30,839 DEBUG   SenderThread:15780 [sender.py:send():375] send: stats
+2023-04-25 16:43:31,842 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:36,843 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:41,775 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:43:41,776 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:43:41,860 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:46,861 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:51,862 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:43:56,775 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:43:56,776 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:43:57,849 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:00,842 DEBUG   SenderThread:15780 [sender.py:send():375] send: stats
+2023-04-25 16:44:03,844 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:08,853 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:11,777 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:44:11,779 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:44:14,850 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:19,851 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:24,852 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:26,775 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: stop_status
+2023-04-25 16:44:26,776 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: stop_status
+2023-04-25 16:44:30,845 DEBUG   SenderThread:15780 [sender.py:send():375] send: stats
+2023-04-25 16:44:30,850 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:35,850 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:40,851 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:40,995 DEBUG   SenderThread:15780 [sender.py:send():375] send: exit
+2023-04-25 16:44:40,995 INFO    SenderThread:15780 [sender.py:send_exit():598] handling exit code: 1
+2023-04-25 16:44:40,997 INFO    SenderThread:15780 [sender.py:send_exit():600] handling runtime: 160
+2023-04-25 16:44:41,001 INFO    SenderThread:15780 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-04-25 16:44:41,002 INFO    SenderThread:15780 [sender.py:send_exit():606] send defer
+2023-04-25 16:44:41,003 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:41,004 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 0
+2023-04-25 16:44:41,004 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:41,005 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 0
+2023-04-25 16:44:41,005 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 1
+2023-04-25 16:44:41,005 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:41,006 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 1
+2023-04-25 16:44:41,006 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:41,006 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 1
+2023-04-25 16:44:41,007 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 2
+2023-04-25 16:44:41,007 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:41,007 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 2
+2023-04-25 16:44:41,008 INFO    HandlerThread:15780 [system_monitor.py:finish():190] Stopping system monitor
+2023-04-25 16:44:41,009 INFO    HandlerThread:15780 [interfaces.py:finish():202] Joined cpu monitor
+2023-04-25 16:44:41,010 INFO    HandlerThread:15780 [interfaces.py:finish():202] Joined disk monitor
+2023-04-25 16:44:41,011 DEBUG   SystemMonitor:15780 [system_monitor.py:_start():166] Finished system metrics aggregation loop
+2023-04-25 16:44:41,012 DEBUG   SystemMonitor:15780 [system_monitor.py:_start():170] Publishing last batch of metrics
+2023-04-25 16:44:41,964 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-summary.json
+2023-04-25 16:44:42,086 INFO    HandlerThread:15780 [interfaces.py:finish():202] Joined gpu monitor
+2023-04-25 16:44:42,086 INFO    HandlerThread:15780 [interfaces.py:finish():202] Joined memory monitor
+2023-04-25 16:44:42,086 INFO    HandlerThread:15780 [interfaces.py:finish():202] Joined network monitor
+2023-04-25 16:44:42,087 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: poll_exit
+2023-04-25 16:44:42,088 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:42,089 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 2
+2023-04-25 16:44:42,089 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 3
+2023-04-25 16:44:42,089 DEBUG   SenderThread:15780 [sender.py:send():375] send: stats
+2023-04-25 16:44:42,089 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:42,090 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: poll_exit
+2023-04-25 16:44:42,090 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 3
+2023-04-25 16:44:42,092 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:42,092 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 3
+2023-04-25 16:44:42,092 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 4
+2023-04-25 16:44:42,093 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:42,093 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 4
+2023-04-25 16:44:42,094 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:42,094 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 4
+2023-04-25 16:44:42,094 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 5
+2023-04-25 16:44:42,095 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:42,095 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 5
+2023-04-25 16:44:42,096 DEBUG   SenderThread:15780 [sender.py:send():375] send: summary
+2023-04-25 16:44:42,099 INFO    SenderThread:15780 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-04-25 16:44:42,100 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:42,100 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 5
+2023-04-25 16:44:42,101 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 6
+2023-04-25 16:44:42,101 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:42,101 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 6
+2023-04-25 16:44:42,102 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:42,103 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 6
+2023-04-25 16:44:42,103 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 7
+2023-04-25 16:44:42,103 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:42,104 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:42,105 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 7
+2023-04-25 16:44:42,106 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:42,106 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 7
+2023-04-25 16:44:42,965 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-summary.json
+2023-04-25 16:44:42,997 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: poll_exit
+2023-04-25 16:44:43,966 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:44:45,294 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 8
+2023-04-25 16:44:45,294 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: poll_exit
+2023-04-25 16:44:45,294 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:45,296 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 8
+2023-04-25 16:44:45,297 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:45,297 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 8
+2023-04-25 16:44:45,323 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 9
+2023-04-25 16:44:45,324 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:45,324 DEBUG   SenderThread:15780 [sender.py:send():375] send: artifact
+2023-04-25 16:44:45,325 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 9
+2023-04-25 16:44:45,969 INFO    Thread-12 :15780 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:44:46,007 INFO    wandb-upload_0:15780 [upload_job.py:push():92] Skipped uploading /home/tbarba/.local/share/wandb/artifacts/staging/tmpoc_e_w_a
+2023-04-25 16:44:46,329 INFO    wandb-upload_1:15780 [upload_job.py:push():95] Uploaded file /home/tbarba/.local/share/wandb/artifacts/staging/tmpkhivfxee
+2023-04-25 16:44:47,257 INFO    SenderThread:15780 [sender.py:send_artifact():1474] sent artifact job-https___github.com_gevaertlab_BrainMR_AE_datafusion.git_src_autoencoder_train_ae.py - {'id': 'QXJ0aWZhY3Q6NDMzNDU5MTkz', 'digest': 'db1560ecc89bcc4bedb4a7b8f8196c42', 'state': 'PENDING', 'aliases': [], 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjY0NTUyNzA0', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6NDMzNDQxMjY2', 'versionIndex': 0}}, 'version': 'latest'}
+2023-04-25 16:44:47,257 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:47,258 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: status_report
+2023-04-25 16:44:47,258 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 9
+2023-04-25 16:44:47,259 INFO    SenderThread:15780 [dir_watcher.py:finish():365] shutting down directory watcher
+2023-04-25 16:44:47,971 INFO    SenderThread:15780 [dir_watcher.py:finish():395] scan: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files
+2023-04-25 16:44:47,972 INFO    SenderThread:15780 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/config.yaml config.yaml
+2023-04-25 16:44:47,973 INFO    SenderThread:15780 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-summary.json wandb-summary.json
+2023-04-25 16:44:47,973 INFO    SenderThread:15780 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/requirements.txt requirements.txt
+2023-04-25 16:44:47,984 INFO    SenderThread:15780 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/conda-environment.yaml conda-environment.yaml
+2023-04-25 16:44:47,986 INFO    SenderThread:15780 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-metadata.json wandb-metadata.json
+2023-04-25 16:44:47,986 INFO    SenderThread:15780 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log output.log
+2023-04-25 16:44:47,986 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 10
+2023-04-25 16:44:47,987 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:47,988 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 10
+2023-04-25 16:44:47,988 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:47,989 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 10
+2023-04-25 16:44:47,989 INFO    SenderThread:15780 [file_pusher.py:finish():168] shutting down file pusher
+2023-04-25 16:44:48,005 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: keepalive
+2023-04-25 16:44:48,404 INFO    wandb-upload_1:15780 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/wandb-summary.json
+2023-04-25 16:44:48,468 INFO    wandb-upload_0:15780 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/config.yaml
+2023-04-25 16:44:48,633 INFO    wandb-upload_2:15780 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/requirements.txt
+2023-04-25 16:44:48,640 INFO    wandb-upload_3:15780 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/conda-environment.yaml
+2023-04-25 16:44:48,641 INFO    wandb-upload_4:15780 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/files/output.log
+2023-04-25 16:44:48,842 INFO    Thread-11 :15780 [sender.py:transition_state():626] send defer: 11
+2023-04-25 16:44:48,843 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:48,843 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 11
+2023-04-25 16:44:48,844 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:48,844 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 11
+2023-04-25 16:44:48,844 INFO    SenderThread:15780 [file_pusher.py:join():173] waiting for file pusher
+2023-04-25 16:44:48,845 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 12
+2023-04-25 16:44:48,845 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:48,845 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 12
+2023-04-25 16:44:48,845 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:48,846 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 12
+2023-04-25 16:44:49,156 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 13
+2023-04-25 16:44:49,156 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:49,156 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 13
+2023-04-25 16:44:49,157 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:49,158 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 13
+2023-04-25 16:44:49,158 INFO    SenderThread:15780 [sender.py:transition_state():626] send defer: 14
+2023-04-25 16:44:49,159 DEBUG   SenderThread:15780 [sender.py:send():375] send: final
+2023-04-25 16:44:49,160 DEBUG   SenderThread:15780 [sender.py:send():375] send: footer
+2023-04-25 16:44:49,159 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: defer
+2023-04-25 16:44:49,160 INFO    HandlerThread:15780 [handler.py:handle_request_defer():170] handle defer: 14
+2023-04-25 16:44:49,161 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: defer
+2023-04-25 16:44:49,161 INFO    SenderThread:15780 [sender.py:send_request_defer():622] handle sender defer: 14
+2023-04-25 16:44:49,163 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: poll_exit
+2023-04-25 16:44:49,163 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: poll_exit
+2023-04-25 16:44:49,164 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: server_info
+2023-04-25 16:44:49,165 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: get_summary
+2023-04-25 16:44:49,166 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: sampled_history
+2023-04-25 16:44:49,165 DEBUG   SenderThread:15780 [sender.py:send_request():402] send_request: server_info
+2023-04-25 16:44:49,231 INFO    MainThread:15780 [wandb_run.py:_footer_history_summary_info():3476] rendering history
+2023-04-25 16:44:49,231 INFO    MainThread:15780 [wandb_run.py:_footer_history_summary_info():3508] rendering summary
+2023-04-25 16:44:49,232 INFO    MainThread:15780 [wandb_run.py:_footer_sync_info():3434] logging synced files
+2023-04-25 16:44:49,233 DEBUG   HandlerThread:15780 [handler.py:handle_request():144] handle_request: shutdown
+2023-04-25 16:44:49,234 INFO    HandlerThread:15780 [handler.py:finish():845] shutting down handler
+2023-04-25 16:44:50,165 INFO    WriterThread:15780 [datastore.py:close():298] close: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230425_164200-VAE3D_UKB/run-VAE3D_UKB.wandb
+2023-04-25 16:44:50,231 INFO    SenderThread:15780 [sender.py:finish():1550] shutting down sender
+2023-04-25 16:44:50,231 INFO    SenderThread:15780 [file_pusher.py:finish():168] shutting down file pusher
+2023-04-25 16:44:50,231 INFO    SenderThread:15780 [file_pusher.py:join():173] waiting for file pusher
