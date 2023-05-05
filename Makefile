@@ -1,6 +1,6 @@
 # BRAIN AUTOENCODER
-MODEL=AE_crop/tAE_UCSF_augm
-CUDA=0,1
+MODEL=VAE3D/VAE3D_UCSF_b10
+CUDA=2,3
 #
 #TRAIN AE
 train_ae:
@@ -20,6 +20,10 @@ extract_radiomics:
 
 combine_feature_and_radiomics:
 	python src/tools/format_datasets/metadata/combine_radiomics.py \
+	--model_path outputs/$(MODEL)
+
+combine_brain_and_tumor_feat:
+	python src/tools/format_datasets/metadata/combine_whole_brain_and_tumor_features.py \
 	--model_path outputs/$(MODEL)
 
 extract:

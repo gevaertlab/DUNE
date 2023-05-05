@@ -1,0 +1,22 @@
+
+Total epochs = 100
+Loading datasets...
+Model VAE3D_UCSF_b10 - ep 1/100 - Train:   0%|[33m                          [39m| 0/49 [02:24<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 236, in <module>
+    main(config)
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 208, in main
+    train_epoch_metrics = train_loop(
+  File "/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py", line 129, in train_loop
+    ssimloss = ssim_func(images, reconst, data_range=images.max())
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/monai/losses/ssim_loss.py", line 95, in forward
+    [
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/monai/losses/ssim_loss.py", line 96, in <listcomp>
+    SSIMLoss(self.win_size, self.k1, self.k2, self.spatial_dims)(
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/monai/losses/ssim_loss.py", line 116, in forward
+    uxy = conv(x * y, w)  # mu_xy
+RuntimeError: The size of tensor a (155) must match the size of tensor b (156) at non-singleton dimension 2

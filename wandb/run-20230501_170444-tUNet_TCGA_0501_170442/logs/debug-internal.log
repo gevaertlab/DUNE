@@ -1,0 +1,133 @@
+2023-05-01 17:04:44,689 INFO    StreamThr :3077 [internal.py:wandb_internal():86] W&B internal server running at pid: 3077, started at: 2023-05-01 17:04:44.687956
+2023-05-01 17:04:44,691 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: status
+2023-05-01 17:04:44,695 INFO    WriterThread:3077 [datastore.py:open_for_write():85] open: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/run-tUNet_TCGA_0501_170442.wandb
+2023-05-01 17:04:44,697 DEBUG   SenderThread:3077 [sender.py:send():375] send: header
+2023-05-01 17:04:44,734 DEBUG   SenderThread:3077 [sender.py:send():375] send: run
+2023-05-01 17:04:45,015 INFO    SenderThread:3077 [dir_watcher.py:__init__():219] watching files in: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files
+2023-05-01 17:04:45,015 INFO    SenderThread:3077 [sender.py:_start_run_threads():1124] run started: tUNet_TCGA_0501_170442 with start time 1682985884.690347
+2023-05-01 17:04:45,015 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: summary_record
+2023-05-01 17:04:45,018 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: check_version
+2023-05-01 17:04:45,018 INFO    SenderThread:3077 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-01 17:04:45,019 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: check_version
+2023-05-01 17:04:45,104 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: run_start
+2023-05-01 17:04:45,122 DEBUG   HandlerThread:3077 [system_info.py:__init__():31] System info init
+2023-05-01 17:04:45,122 DEBUG   HandlerThread:3077 [system_info.py:__init__():46] System info init done
+2023-05-01 17:04:45,122 INFO    HandlerThread:3077 [system_monitor.py:start():181] Starting system monitor
+2023-05-01 17:04:45,123 INFO    SystemMonitor:3077 [system_monitor.py:_start():145] Starting system asset monitoring threads
+2023-05-01 17:04:45,123 INFO    HandlerThread:3077 [system_monitor.py:probe():201] Collecting system info
+2023-05-01 17:04:45,123 INFO    SystemMonitor:3077 [interfaces.py:start():190] Started cpu monitoring
+2023-05-01 17:04:45,124 INFO    SystemMonitor:3077 [interfaces.py:start():190] Started disk monitoring
+2023-05-01 17:04:45,125 INFO    SystemMonitor:3077 [interfaces.py:start():190] Started gpu monitoring
+2023-05-01 17:04:45,125 INFO    SystemMonitor:3077 [interfaces.py:start():190] Started memory monitoring
+2023-05-01 17:04:45,126 INFO    SystemMonitor:3077 [interfaces.py:start():190] Started network monitoring
+2023-05-01 17:04:45,174 DEBUG   HandlerThread:3077 [system_info.py:probe():195] Probing system
+2023-05-01 17:04:45,192 DEBUG   HandlerThread:3077 [system_info.py:_probe_git():180] Probing git
+2023-05-01 17:04:45,236 DEBUG   HandlerThread:3077 [system_info.py:_probe_git():188] Probing git done
+2023-05-01 17:04:45,237 DEBUG   HandlerThread:3077 [system_info.py:probe():240] Probing system done
+2023-05-01 17:04:45,237 DEBUG   HandlerThread:3077 [system_monitor.py:probe():210] {'os': 'Linux-3.10.0-1160.83.1.el7.x86_64-x86_64-with-glibc2.17', 'python': '3.9.0', 'heartbeatAt': '2023-05-02T00:04:45.174944', 'startedAt': '2023-05-02T00:04:44.623583', 'docker': None, 'cuda': '10.2.89', 'args': ('--model_path', 'outputs/UNet_crop/tUNet_TCGA'), 'state': 'running', 'program': '/home/tbarba/projects/MultiModalBrainSurvival/src/autoencoder/train_ae.py', 'codePath': 'src/autoencoder/train_ae.py', 'git': {'remote': 'https://github.com/gevaertlab/BrainMR_AE_datafusion.git', 'commit': '96aa36191c0a5c37b411f1a148fc36d3d4342557'}, 'email': None, 'root': '/home/tbarba/projects/MultiModalBrainSurvival', 'host': 'bmir-ct-gpu-5.stanford.edu', 'username': 'tbarba', 'executable': '/labs/gevaertlab/users/thomas/miniconda/envs/multimodal/bin/python', 'cpu_count': 20, 'cpu_count_logical': 40, 'cpu_freq': {'current': 2604.02315, 'min': 1200.0, 'max': 3400.0}, 'cpu_freq_per_core': [{'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2603.613, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2600.097, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.365, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2600.097, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2600.097, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2600.39, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2600.39, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2600.097, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}, {'current': 2599.951, 'min': 1200.0, 'max': 3400.0}], 'disk': {'total': 59.970703125, 'used': 52.76192092895508}, 'gpu': 'Tesla V100-SXM2-16GB', 'gpu_count': 4, 'gpu_devices': [{'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}, {'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}, {'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}, {'name': 'Tesla V100-SXM2-16GB', 'memory_total': 17179869184}], 'memory': {'total': 503.6358070373535}}
+2023-05-01 17:04:45,237 INFO    HandlerThread:3077 [system_monitor.py:probe():211] Finished collecting system info
+2023-05-01 17:04:45,237 INFO    HandlerThread:3077 [system_monitor.py:probe():214] Publishing system info
+2023-05-01 17:04:45,237 DEBUG   HandlerThread:3077 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-05-01 17:04:45,241 DEBUG   HandlerThread:3077 [system_info.py:_save_pip():67] Saving pip packages done
+2023-05-01 17:04:45,241 DEBUG   HandlerThread:3077 [system_info.py:_save_conda():74] Saving list of conda packages installed into the current environment
+2023-05-01 17:04:46,019 INFO    Thread-12 :3077 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/wandb-summary.json
+2023-05-01 17:04:46,019 INFO    Thread-12 :3077 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/requirements.txt
+2023-05-01 17:04:46,019 INFO    Thread-12 :3077 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/conda-environment.yaml
+2023-05-01 17:04:53,027 INFO    Thread-12 :3077 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/conda-environment.yaml
+2023-05-01 17:04:53,052 DEBUG   HandlerThread:3077 [system_info.py:_save_conda():86] Saving conda packages done
+2023-05-01 17:04:53,055 INFO    HandlerThread:3077 [system_monitor.py:probe():216] Finished publishing system info
+2023-05-01 17:04:53,070 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: status_report
+2023-05-01 17:04:53,071 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: keepalive
+2023-05-01 17:04:53,072 DEBUG   SenderThread:3077 [sender.py:send():375] send: exit
+2023-05-01 17:04:53,072 INFO    SenderThread:3077 [sender.py:send_exit():598] handling exit code: 255
+2023-05-01 17:04:53,073 INFO    SenderThread:3077 [sender.py:send_exit():600] handling runtime: 7
+2023-05-01 17:04:53,077 INFO    SenderThread:3077 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-01 17:04:53,077 INFO    SenderThread:3077 [sender.py:send_exit():606] send defer
+2023-05-01 17:04:53,077 DEBUG   SenderThread:3077 [sender.py:send():375] send: files
+2023-05-01 17:04:53,077 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,077 INFO    SenderThread:3077 [sender.py:_save_file():1378] saving file wandb-metadata.json with policy now
+2023-05-01 17:04:53,078 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 0
+2023-05-01 17:04:53,079 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,079 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 0
+2023-05-01 17:04:53,079 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 1
+2023-05-01 17:04:53,079 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,079 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 1
+2023-05-01 17:04:53,080 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,080 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 1
+2023-05-01 17:04:53,080 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 2
+2023-05-01 17:04:53,080 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,080 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 2
+2023-05-01 17:04:53,080 INFO    HandlerThread:3077 [system_monitor.py:finish():190] Stopping system monitor
+2023-05-01 17:04:53,080 DEBUG   SystemMonitor:3077 [system_monitor.py:_start():159] Starting system metrics aggregation loop
+2023-05-01 17:04:53,081 INFO    HandlerThread:3077 [interfaces.py:finish():202] Joined cpu monitor
+2023-05-01 17:04:53,081 DEBUG   SystemMonitor:3077 [system_monitor.py:_start():166] Finished system metrics aggregation loop
+2023-05-01 17:04:53,082 INFO    HandlerThread:3077 [interfaces.py:finish():202] Joined disk monitor
+2023-05-01 17:04:53,082 DEBUG   SystemMonitor:3077 [system_monitor.py:_start():170] Publishing last batch of metrics
+2023-05-01 17:04:53,093 INFO    HandlerThread:3077 [interfaces.py:finish():202] Joined gpu monitor
+2023-05-01 17:04:53,094 INFO    HandlerThread:3077 [interfaces.py:finish():202] Joined memory monitor
+2023-05-01 17:04:53,094 INFO    HandlerThread:3077 [interfaces.py:finish():202] Joined network monitor
+2023-05-01 17:04:53,095 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,095 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 2
+2023-05-01 17:04:53,095 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 3
+2023-05-01 17:04:53,096 DEBUG   SenderThread:3077 [sender.py:send():375] send: stats
+2023-05-01 17:04:53,096 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,096 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 3
+2023-05-01 17:04:53,097 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,097 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 3
+2023-05-01 17:04:53,097 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 4
+2023-05-01 17:04:53,097 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,097 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 4
+2023-05-01 17:04:53,098 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,098 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 4
+2023-05-01 17:04:53,098 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 5
+2023-05-01 17:04:53,098 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,098 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 5
+2023-05-01 17:04:53,099 DEBUG   SenderThread:3077 [sender.py:send():375] send: summary
+2023-05-01 17:04:53,101 INFO    SenderThread:3077 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-01 17:04:53,101 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,101 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 5
+2023-05-01 17:04:53,101 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 6
+2023-05-01 17:04:53,102 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,102 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 6
+2023-05-01 17:04:53,102 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,102 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 6
+2023-05-01 17:04:53,102 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 7
+2023-05-01 17:04:53,103 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: status_report
+2023-05-01 17:04:53,103 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,103 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 7
+2023-05-01 17:04:53,104 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,104 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 7
+2023-05-01 17:04:53,104 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 8
+2023-05-01 17:04:53,104 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,104 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 8
+2023-05-01 17:04:53,105 DEBUG   SenderThread:3077 [sender.py:send_request():402] send_request: defer
+2023-05-01 17:04:53,105 INFO    SenderThread:3077 [sender.py:send_request_defer():622] handle sender defer: 8
+2023-05-01 17:04:53,124 INFO    SenderThread:3077 [sender.py:transition_state():626] send defer: 9
+2023-05-01 17:04:53,125 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: defer
+2023-05-01 17:04:53,125 DEBUG   SenderThread:3077 [sender.py:send():375] send: artifact
+2023-05-01 17:04:53,125 INFO    HandlerThread:3077 [handler.py:handle_request_defer():170] handle defer: 9
+2023-05-01 17:04:53,137 DEBUG   HandlerThread:3077 [handler.py:handle_request():144] handle_request: poll_exit
+2023-05-01 17:04:53,510 INFO    wandb-upload_0:3077 [upload_job.py:push():137] Uploaded file /tmp/tmpodkwv7eswandb/gwtjipqs-wandb-metadata.json
+2023-05-01 17:04:53,700 WARNING StreamThr :3077 [internal.py:is_dead():414] Internal process exiting, parent pid 2872 disappeared
+2023-05-01 17:04:53,700 ERROR   StreamThr :3077 [internal.py:wandb_internal():152] Internal process shutdown.
+2023-05-01 17:04:53,944 INFO    wandb-upload_1:3077 [upload_job.py:push():92] Skipped uploading /home/tbarba/.local/share/wandb/artifacts/staging/tmp22yzicth
+2023-05-01 17:04:54,028 INFO    Thread-12 :3077 [dir_watcher.py:_on_file_modified():295] file/dir modified: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/wandb-summary.json
+2023-05-01 17:04:54,029 INFO    Thread-12 :3077 [dir_watcher.py:_on_file_created():278] file/dir created: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/wandb-metadata.json
+2023-05-01 17:04:54,137 INFO    HandlerThread:3077 [handler.py:finish():845] shutting down handler
+2023-05-01 17:04:54,138 INFO    WriterThread:3077 [datastore.py:close():298] close: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/run-tUNet_TCGA_0501_170442.wandb
+2023-05-01 17:04:54,311 INFO    wandb-upload_0:3077 [upload_job.py:push():95] Uploaded file /home/tbarba/.local/share/wandb/artifacts/staging/tmpxt0bb6x3
+2023-05-01 17:04:55,334 INFO    SenderThread:3077 [sender.py:send_artifact():1474] sent artifact job-https___github.com_gevaertlab_BrainMR_AE_datafusion.git_src_autoencoder_train_ae.py - {'id': 'QXJ0aWZhY3Q6NDM4OTM3Mzky', 'digest': '24b6c53c6574fa976dc3685e32ce264e', 'state': 'PENDING', 'aliases': [], 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjY0NTUyNzA0', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6NDM4OTEzNzkz', 'versionIndex': 5}}, 'version': 'latest'}
+2023-05-01 17:04:55,334 INFO    SenderThread:3077 [sender.py:finish():1550] shutting down sender
+2023-05-01 17:04:55,334 INFO    SenderThread:3077 [dir_watcher.py:finish():365] shutting down directory watcher
+2023-05-01 17:04:56,031 INFO    SenderThread:3077 [dir_watcher.py:finish():395] scan: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files
+2023-05-01 17:04:56,031 INFO    SenderThread:3077 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/config.yaml config.yaml
+2023-05-01 17:04:56,032 INFO    SenderThread:3077 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/wandb-summary.json wandb-summary.json
+2023-05-01 17:04:56,037 INFO    SenderThread:3077 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/requirements.txt requirements.txt
+2023-05-01 17:04:56,044 INFO    SenderThread:3077 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/conda-environment.yaml conda-environment.yaml
+2023-05-01 17:04:56,049 INFO    SenderThread:3077 [dir_watcher.py:finish():409] scan save: /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/wandb-metadata.json wandb-metadata.json
+2023-05-01 17:04:56,049 INFO    SenderThread:3077 [file_pusher.py:finish():168] shutting down file pusher
+2023-05-01 17:04:56,050 INFO    SenderThread:3077 [file_pusher.py:join():173] waiting for file pusher
+2023-05-01 17:04:56,435 INFO    wandb-upload_0:3077 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/wandb-summary.json
+2023-05-01 17:04:56,468 INFO    wandb-upload_1:3077 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/config.yaml
+2023-05-01 17:04:56,485 INFO    wandb-upload_3:3077 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/conda-environment.yaml
+2023-05-01 17:04:56,501 INFO    wandb-upload_2:3077 [upload_job.py:push():137] Uploaded file /home/tbarba/projects/MultiModalBrainSurvival/wandb/run-20230501_170444-tUNet_TCGA_0501_170442/files/requirements.txt

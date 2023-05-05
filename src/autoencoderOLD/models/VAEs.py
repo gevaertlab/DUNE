@@ -1,13 +1,128 @@
 from abc import abstractmethod
-
 from torch import nn
-from torch.nn import functional as F
-
 from torch import tensor as Tensor
 import torch
 from typing import List, Any
 
 
+
+### U-shaped VAE (no skip connections)
+class U_VAE(nn.Module):
+    def __init__(self, in_channels, init_features, num_blocks, input_dim, hidden_size=2048):
+        super(U_VAE, self).__init__()
+
+        self.num_mod = in_channels
+        self.num_blocks = num_blocks
+        self._type = "U_VAE"
+        self.hidden_size = hidden_size
+
+        # ENCODER BLOCKS
+        feature_list = [init_features*(2**n) for n in range(num_blocks)]
+        self.enc_blocks = nn.ModuleList()
+        self.pool = nn.MaxPool3d(2, 2, 0)
+        for n in feature_list:
+            enc_block = U_VAE._block(in_channels, n)
+            self.enc_blocks.append(enc_block)
+            in_channels = n
+
+        # BOTTLENECK EXTRACTION
+        enc_shape, size = U_VAE._get_encoded_shape(input_dim, feature_list)
+        self.mu = nn.Linear(size, self.hidden_size)
+        self.sigma = nn.Linear(size, self.hidden_size)
+        self.decoder_input = nn.Linear(self.hidden_size, size)
+
+        # DECODER BLOCKS
+        feature_list = feature_list[::-1]
+        self.dec_blocks = nn.ModuleList()
+        self.transposers = nn.ModuleList()
+        for n in feature_list:
+            upconv = nn.ConvTranspose3d(enc_shape[0], n, 2, 2, 0)
+            dec_block = U_VAE._block(n, n)
+            self.transposers.append(upconv)
+            self.dec_blocks.append(dec_block)
+            enc_shape[0] = n
+
+        # FINAL CONVOLUTION
+        self.last_conv = nn.Conv3d(feature_list[-1], self.num_mod, 1, 1, 0)
+
+    def reparametrize(self, mu, sigma):
+        eps = torch.randn_like(sigma)
+        return eps * sigma + mu
+
+    def encode(self, x):
+        encodings = []
+
+        for k in range(self.num_blocks):
+            enc = self.enc_blocks[k](x)
+            encodings.append(enc)
+            x = self.pool(enc)
+
+        return x, encodings
+
+    def decode(self, x, encodings):
+        for k in range(self.num_blocks):
+            x = self.transposers[k](x, output_size=encodings[k].shape)
+            x = self.dec_blocks[k](x)
+
+        return self.last_conv(x)
+
+    def forward(self, x):
+        # ENCODING
+        enc, encodings = self.encode(x)
+
+        # REPRESENTATION EXTRACTION
+        mu = self.mu(enc.view(enc.size(0), -1))
+        sigma = self.sigma(enc.view(enc.size(0), -1))
+        sigma =  torch.exp(0.5 * sigma)
+        bottleneck = self.reparametrize(mu, sigma)
+
+        # DECODING
+        encodings.reverse()
+        dec = self.decoder_input(bottleneck)
+        dec = dec.view(enc.shape)
+        dec = self.decode(dec, encodings)
+
+        return torch.sigmoid(dec), bottleneck, (mu, sigma)
+
+    @staticmethod
+    def _block(in_channels, features):
+        block = nn.Sequential(
+            nn.Conv3d(in_channels, features, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(features),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(features, features, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(features),
+            nn.ReLU(inplace=True)
+        )
+        return block
+
+    @staticmethod
+    def _get_encoded_shape(input_dim, feature_list):
+
+        def block_shaping(dim):
+            k, s, p = 3, 1, 1
+            dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # block conv1
+            dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # block conv2
+
+            k, s, p = 2, 2, 0
+            dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # maxpool
+            return dim
+
+        D, H, W = input_dim
+        for C in feature_list:
+            D = block_shaping(D)
+            H = block_shaping(H)
+            W = block_shaping(W)
+
+        C = feature_list[-1]
+
+        return [C, D, H, W], int(C*D*H*W)
+
+
+
+
+#### Terry's VAE
 class VAEBackbone(nn.Module):
 
     def __init__(self) -> None:
@@ -72,6 +187,7 @@ class VAE3D(VAEBackbone):
 
         self.encoded_shapes, flatten_shape = VAE3D._get_encoded_shape(min_dims, hidden_dims)
 
+        print("laaatent", flatten_shape)
         self.fc_mu = nn.Linear(flatten_shape, latent_dim)
         self.fc_var = nn.Linear(flatten_shape, latent_dim)
 

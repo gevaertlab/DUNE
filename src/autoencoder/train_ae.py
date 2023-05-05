@@ -1,25 +1,27 @@
-import os
-from os.path import join
-from os.path import exists
-from datetime import datetime
-import humanfriendly
+import wandb
+from datetime import datetime as dt
+from tqdm import tqdm
+from os.path import exists, join
+import matplotlib
 import numpy as np
 import torch
-from torch.optim import Adam, lr_scheduler
 import torch.nn as nn
-from torchvision import transforms as transforms
+from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
-from tqdm import tqdm
+from torchvision import transforms as transforms
 from monai.losses.ssim_loss import SSIMLoss
-from models import AutoEncoder, VAE, RNet, OldAE
-from newmods import VAE3D
-from datasets import BrainImages
-from utils import *
-import matplotlib
-import wandb
-matplotlib.use('Agg') 
 
+from utils import *
+from datasets import BrainImages
+
+from models.oldmodels import OldAE
+from models.classicalAE import BaseAE
+from models.resnetAE import RNet
+from models.VAEs import U_VAE, VAE3D
+
+
+matplotlib.use('Agg') 
 
 def import_data(        
          model_path,
@@ -47,7 +49,7 @@ def import_data(
         testLoader = torch.load(model_path + "/autoencoding/exported_data/testLoader.pth")
 
     else:
-        data_path = os.path.join(data_path, dataset, "images")
+        data_path = join(data_path, dataset, "images")
         totalData = BrainImages(dataset, data_path, modalities,
                                 min_dims, whole_brain=whole_brain, transforms=normalTransform)
         trainData, testData = random_split(
@@ -67,31 +69,40 @@ def import_data(
     return trainLoader, testLoader
 
 
-def import_model(type_ae, modalities, features, num_blocks, min_dims, num_epochs, **kwargs):
-
+def import_model(type_ae, modalities, features, num_blocks, min_dims, num_epochs, **config):
+    
     net, beta_dict = None, None
     # Initialize a model of our autoEncoder class on the device
     if type_ae.lower() in ["ae", "unet"]:
-        net = AutoEncoder(len(modalities), features, num_blocks, type_ae=type_ae)
-    elif type_ae.lower() == "vae":
-        net = VAE(len(modalities),  features, num_blocks, min_dims, hidden_size=2048)
-        beta_dict = {i:frange_cycle_sigmoid(0.0, 1.0, num_epochs, 3)[i] for i in range(num_epochs)}
-    elif type_ae.lower() == "rnet":
-        net = RNet(len(modalities))
+        net = BaseAE(len(modalities), features, num_blocks, type_ae=type_ae)
     elif type_ae.lower() in ["oldae", "oldaeu"]:
         net = OldAE(len(modalities), features, num_blocks, type_ae=type_ae)
+    elif type_ae.lower() == "u_vae":
+        net = U_VAE(len(modalities),  features, num_blocks, min_dims, hidden_size=2048)
     elif type_ae.lower() in ["vae3d"]:
-        net = VAE3D(min_dims=min_dims)
-        # beta_dict = {i:frange_cycle_sigmoid(0.0, 1.0, num_epochs, 3)[i] for i in range(num_epochs)}
-
+        if config["latent_dim"]:
+            net = VAE3D(latent_dim = config["latent_dim"], min_dims=min_dims)
+        else:
+            net = VAE3D(min_dims=min_dims)
+    elif type_ae.lower() == "rnet":
+        net = RNet(len(modalities))
 
     else:
         print("AE type should be one of followings : AE, UNet, VAE, RNet")
-    
+    try:
+        beta = config["beta"]
+
+        if beta=="sigmoid":
+            beta_dict = {i:frange_cycle_sigmoid(0.0, 0.02, num_epochs, 5)[i] for i in range(num_epochs)}
+        else:
+            beta_dict = {i:float(beta) for i in range(num_epochs)}
+    except:
+        pass
+
     return net, beta_dict
 
 
-def train_loop(model, beta, dataloader, optimizer, device, epoch, train, **config):
+def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config):
     
     model_name = config["model_name"]
     quick = config["quick"]
@@ -100,12 +111,12 @@ def train_loop(model, beta, dataloader, optimizer, device, epoch, train, **confi
     ssim_func = SSIMLoss(spatial_dims=3).to(device)
     loss_list, ssim_list, bottleneck = [], [], torch.tensor(0)
 
-    log, colour = (f"Model {model_name} - ep {epoch}/{num_epochs} - Train", "magenta") if train else (f"Model {model_name} - ep {epoch}/{num_epochs} - Val", "cyan")
+    log, colour = (f"Model {model_name} - ep {epoch+1}/{num_epochs} - Train", "yellow") if train else (f"Model {model_name} - ep {epoch+1}/{num_epochs} - Val", "blue")
     model.train() if train else model.eval()
 
     with torch.set_grad_enabled(train):
-        for imgs, _ in tqdm(dataloader, desc=log, colour=colour):
-
+        for idx, batch in enumerate(tqdm(dataloader, desc=log, colour=colour)):
+            imgs, _ = batch
             images = imgs.to(device)
             reconst, bottleneck, distrib = model(images)
 
@@ -116,7 +127,7 @@ def train_loop(model, beta, dataloader, optimizer, device, epoch, train, **confi
                 kld=0
 
             ssimloss = ssim_func(images, reconst, data_range=images.max())
-            loss = ssimloss + beta*kld
+            loss = ssimloss + bet*kld
             ssim_list.append(1 - ssimloss.item())
             loss_list.append(loss.item())
            
@@ -129,7 +140,7 @@ def train_loop(model, beta, dataloader, optimizer, device, epoch, train, **confi
                 loss.backward()
                 optimizer.step()
 
-            if quick:
+            if quick and idx == 50:
                 break
     
     val_loss = np.mean(loss_list)
@@ -158,9 +169,11 @@ def export_model(net, model_path, epoch, test_epoch_metrics, best_test_loss):
 
 def main(config):
 
+    quick = config['quick'] 
+    config['num_epochs'] = 10 if quick else config['num_epochs']
     model_path = config['model_path'] 
-    num_epochs = config['num_epochs'] 
     batch_size = config['batch_size'] 
+    num_epochs = config['num_epochs'] 
 
     print(f"Total epochs = {num_epochs}")
 
@@ -190,7 +203,7 @@ def main(config):
 
     for epoch in range(num_epochs):
         
-        beta = beta_dict[epoch] if beta_dict else 1
+        beta = beta_dict[epoch] if beta_dict else 0
 
         train_epoch_metrics = train_loop(
             net, beta,  trainLoader, optimizer, device, epoch, train=True, **config)
@@ -218,7 +231,8 @@ def main(config):
 if __name__ == "__main__":
 
     config = parse_arguments()
-    wandb.init(project="Brain_VAE", id=config["model_name"], config=config)
+    now = dt.now().strftime("%m%d_%H%M%S")
+    wandb.init(project="Brain_VAE", id=f"{config['model_name']}_{now}", config=config)
     main(config)
 
 

@@ -32,16 +32,17 @@ def parse_arguments():
     data = dict(conf_parser["data"])
 
     model["model_path"] = args.model_path
-    model['num_blocks']  = eval(model['num_blocks'])
-    model['features']  = eval(model['features'])
-    config['num_epochs'] = eval(config['num_epochs'])
-    config['learning_rate']  = eval(config['learning_rate'])
-    config['num_workers']  = eval(config['num_workers'])
-    config['quick']  = eval(config['quick'])
-    data['batch_size']  = eval(data['batch_size'])
-    data['modalities']  = eval(data['modalities'])
-    data['min_dims']  = eval(data['min_dims'])
-    data['whole_brain']  = eval(data['whole_brain'])
+    model['num_blocks']  = eval(model.get('num_blocks'))
+    model['features']  = eval(model.get('features'))
+    model['latent_dim']  = eval(model.get('latent_dim'))
+    config['num_epochs'] = eval(config.get('num_epochs'))
+    config['learning_rate']  = eval(config.get('learning_rate'))
+    config['num_workers']  = eval(config.get('num_workers'))
+    config['quick']  = eval(config.get('quick'))
+    data['batch_size']  = eval(data.get('batch_size'))
+    data['modalities']  = eval(data.get('modalities'))
+    data['min_dims']  = eval(data.get('min_dims'))
+    data['whole_brain']  = eval(data.get('whole_brain'))
 
 
     return {**model, **data, **config}

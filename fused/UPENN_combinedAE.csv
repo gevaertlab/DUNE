@@ -1,0 +1,4 @@
+code,var,category,group,task,description,keep_model,ibs,performance,variance,num_classes,missing_rate,model,metric,restored_model
+survival,death,survivals,survivals,survival,,True,0.2006,0.5631,,,0.26,as_concordance_index_ipcw_scorer,,False
+cancer,IDH_glob_bin,cancer,cancer,classification,,True,,0.9902,0.2176,2.0,0.16,RidgeClassifier,f1_weighted,False
+global,Gender,global,global,classification,,True,,0.7934,0.969,2.0,0.0,RidgeClassifier,f1_weighted,False

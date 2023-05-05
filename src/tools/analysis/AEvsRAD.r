@@ -7,7 +7,7 @@ suppressMessages({
 
 INPUT_FILE <- "/home/tbarba/projects/MultiModalBrainSurvival/outputs/tumor_crop.csv"
 
-var_levels <- c("death","IDH_glob_bin", "Gender", "grade")
+var_levels <- c("death","IDH_glob_bin", "Sex")
 AE_levels <- c("AE_UCSF_segm", "AE_TCGA_segm", "AE_UPENN_segm")
 feat_levels <- c("whole_brain","tumor", "combined", "radiomics")
 cols <- c("#1e28af", "#911212","#5a1074", "#0c6625")
@@ -49,3 +49,30 @@ df %>%
 #     theme_stata() +
 #     scale_fill_manual(values = cols) +
 #     scale_alpha_discrete(range = c(1, 0.5))
+
+
+
+
+INPUT_FILE <- "/home/tbarba/projects/MultiModalBrainSurvival/outputs/tumor_crop.csv"
+df <- read_csv(INPUT_FILE) 
+
+feat_levels <- c("wholebrain", "tumorAE",  "combinedAE", "tumorUNET","combinedUNET", "radiomics")
+
+cols <- c("#1e28af", "#911212", "#B75E5E", "#5a1074", "#b172c8", "#0c6625")
+
+
+df %>% 
+    mutate(
+        features = factor(feat, feat_levels),
+        dataset = factor(dataset, c("UCSF","UPENN","TCGA"))
+
+        ) %>%
+    filter(var != "grade") %>%
+    ggplot(
+        aes(x = var, y = performance, fill=features)
+    ) + 
+    geom_col(position = "dodge", col = "black", alpha = 0.8) +
+        scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1)) +
+        theme_stata() +
+        facet_wrap(~dataset, ncol=3) +
+        scale_fill_manual(values= cols)
