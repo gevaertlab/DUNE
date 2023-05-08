@@ -1,17 +1,15 @@
 # BRAIN AUTOENCODER
-MODEL=VAE3D/VAE3D_UCSF_b10
+MODEL=AE/AE_UKB_segm
 CUDA=2,3
 #
 #TRAIN AE
 train_ae:
 	CUDA_VISIBLE_DEVICES=$(CUDA) \
-	python src/autoencoder/train_ae.py \
-		--model_path outputs/$(MODEL)
+	python src/autoencoder/train_ae.py -c $(MODEL)
 
 extract_vae_features:
 	CUDA_VISIBLE_DEVICES=$(CUDA)  \
-	python src/autoencoder/feature_extraction.py \
-		-m outputs/$(MODEL)
+	python src/autoencoder/feature_extraction.py -c $(MODEL)
 
 
 extract_radiomics:
@@ -38,8 +36,7 @@ univariate:
 
 
 multivariate:
-	python src/predictions/multivariate.py \
-		--model_path outputs/$(MODEL)
+	python src/autoencoder/multivariate.py -c $(MODEL)
 
 
 predict:

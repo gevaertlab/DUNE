@@ -1,261 +1,140 @@
 # %%
-import os
 from os.path import join
-import configparser
+import joblib
+import warnings
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import ElasticNet, Ridge, RidgeClassifier, LogisticRegression, LinearRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn import metrics
-
-from sklearn.preprocessing import StandardScaler
-from sksurv.linear_model import CoxnetSurvivalAnalysis
-from sksurv.ensemble import RandomSurvivalForest
-from sksurv.metrics import integrated_brier_score, as_concordance_index_ipcw_scorer
-from tqdm import tqdm
-import argparse
-from scipy.stats import entropy
 from termcolor import colored
-import warnings
-import joblib
+import matplotlib.pyplot as plt
 
+from sklearn.utils.multiclass import type_of_target
+from sklearn.model_selection import KFold, StratifiedKFold, GridSearchCV
 
-# %%
+from utils_ae import parse_arguments
+from utils_pred import *
+
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 plt.switch_backend('agg')
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str,
-                        help='model_path')
-    parser.add_argument('--output_name', type=str,
-                        help='output_name', required=False)
-    parser.add_argument('--features', type=str,
-                        help='output_name', required=False)
-    args = parser.parse_args()
 
-    config_file = join(args.model_path, "config/multivariate.cfg")
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    config = dict(config["config"])
-    
-    config["load_models"] = eval(config["load_models"])
-    config["model_path"] = args.model_path
+def initialize_model(task, var, restore_models):
 
+    assert task in ["survival","classification","regression"]
 
-    if args.output_name:
-        config["output_name"] = args.output_name
-    
-    if args.features:
-        config["features"] = args.features
+    if task == "survival":
+        mod, hyperparams = init_survival_predictor(var, restore_models)
+        scoring = None
 
-    return config
+    elif task == "regression":
+        mod, hyperparams = init_regressor(var, restore_models)
+        scoring = "r2"
 
+    elif task == "classification":
+        mod, hyperparams = init_classifier(var, restore_models)
+        scoring = "f1_weighted"
 
-def create_dependencies(model_dir):
-
-    output_dirs = join(model_dir, "multivariate", "models")
-    os.makedirs(output_dirs, exist_ok=True)
-
-    return join(model_dir, "multivariate")
-
-
-def create_fulldataset(csv_paths, metadata_path):
-
-    metadata = pd.read_csv(metadata_path, index_col="eid")
-    features = pd.read_csv(csv_paths)
-    features = features.set_index("eid")
-
-    merged = metadata.merge(features, how="inner",
-                            left_index=True, right_index=True)
-
-    return merged
-
-
-def create_train_test_datasets(merged, var, task):
-    
-    nrow_init = merged.shape[0]
-
-
-    if task != "survival":
-        labels = merged[var]
-        labels = np.array(labels)
-    
-        merged = merged.loc[~np.isnan(labels)]
-        labels = labels[~np.isnan(labels)]
     else:
-        time = merged[f"{var}_delay"].astype(float)
-        event = merged[f"{var}_event"].astype(bool)
-        labels = np.array([(e, t) for e, t in zip(event, time)], dtype=[
-                          ('Status', '?'), ('Survival_in_days', '<f8')])
-
-        merged = merged.loc[~np.isnan(time)]
-        labels = labels[~np.isnan(time)]
-
-
-    features = merged[[k for k in merged.columns if k.isdigit()]]    
-    missing_rate = round(1-(features.shape[0] / nrow_init),2)
-
-    train_indexes = list(merged["cohort"] == "train")
-    test_indexes = list(merged["cohort"] == "test")
-    X_train, y_train = features[train_indexes], labels[train_indexes]
-    X_test, y_test = features[test_indexes], labels[test_indexes]
-
-
-
+        mod, hyperparams, scoring = None, None, None
     
-    return X_train, y_train, X_test, y_test, missing_rate
+    return mod, hyperparams, scoring
+
+
+def cross_validate(X_train, y_train, X_test, y_test):
+
+    num_classes, variance = None, None
+    if task == "regression":
+        num_classes, variance = None, np.var(y_train)
+    elif task == "classification":
+        num_classes, variance = calc_entropy(y_train)
+
+    mod, hyperparams, scoring = initialize_model(task, var, restore_models)
+
+    # Model training
+    if not restore_models:
+        mod = GridSearchCV(mod, hyperparams, scoring=scoring, cv=3, n_jobs=-1)
+        mod.fit(X_train, y_train)
+        mod = mod.best_estimator_
+
+    else:
+        # Use the whole dataset as test set
+        X_test = pd.concat([X_train, X_test], axis=0)
+        y_test = np.concatenate([y_train, y_test])
+
+    # Scoring
+    res = mod.score(X_test, y_test)    
+    ibs = compute_brier(mod, X_test, y_test,  y_train) if task == "survival" else None
+
+    # Saving model
+    model_type = str(type(mod)).split(".")[-1].replace("'>","")
+    if not restore_models:
+        model_name = f"{var}_{split+1}_{model_type}_{scoring}.sav"
+        joblib.dump(mod, join(output_dir, "models", model_name))
+
+    # Return results
+    results = {"variable":var,
+            "split":split+1,
+            "performance": round(res,4),
+            "metric": scoring,
+            "ibs": ibs,
+            "variance": variance,
+            "num_classes": [num_classes],
+            "missing_rate": missing_rate,
+            "model": model_type,
+            "restored": restore_models
+            }
+    
+    return results
+
 
 
 # %%
 if __name__ == '__main__':
 
     np.random.seed(334)
-    config = parse_arguments()
+    config = parse_arguments("pred")
 
-    # ########
-    # os.chdir("/home/tbarba/projects/MultiModalBrainSurvival")
-    # config = configparser.ConfigParser()
-    # config.read("/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/UNet_6b_8f_UKfull/config/multivariate.cfg")
-    # config = dict(config["config"])
-    # config["model_path"] = "/home/tbarba/projects/MultiModalBrainSurvival/outputs/UNet/pretraining/UNet_6b_8f_UKfull"
-    # #######
-
-    output_dir = create_dependencies(config['model_path'])
 
     # Importing datasets
     model_path = config['model_path']
-    metadata_path = config["metadata"]
-
-    if config["features"] == "radiomics":
-        features_path = config["pyradiomics"]
-    elif config["features"] == "whole_brain":
-        features_path = join(model_path, "autoencoding/features/features.csv.gz")
-    elif config["features"] == "tumor":
-        features_path = join(model_path, "autoencoding/features/tumor.csv.gz")
-    elif config["features"] == "combined":
-        features_path = join(model_path, "autoencoding/features/whole_and_tumor.csv.gz")
-    else:
-        print("Invalid feature source")
-
-    merged = create_fulldataset(features_path, metadata_path)
+    output_dir = join(config['model_path'] , "multivariate")
+    output_file = join(output_dir, f"{config['output_name']}.csv")
+    merged = create_fulldataset(**config)
 
     # Importing task list
-    tasks = pd.read_csv(config["variables"])
-    tasks = tasks[tasks["keep_model"]]
-    task_list = {k: task for k, task in zip(
-        tasks["var"], tasks["task"])}
-    variables = list(task_list.keys())
+    variables = join(config["data_path"], config["dataset"], "metadata", config["variables"])
+    variables = pd.read_csv(variables)
+    variables = variables.query("keep_model")
+    variables = {k: task for k, task in zip(variables["var"], variables["task"])}
 
     # Create empty results
-    results_df = tasks.copy()
-    results_df['ibs'] = np.nan
+    results_df = pd.DataFrame()
 
-    for _, var in enumerate(bar := tqdm(variables, colour="yellow")):
-        task = task_list[var]
-        bar.set_description(colored(f"\n{var} - {task}", "yellow"))
+    for _, var in enumerate(bar := tqdm(variables.keys(), colour="yellow")):
+        bar.set_description(colored(f"\n{var}", "yellow"))
+        task = variables[var]
+        restore_models = config["load_models"]
 
-        # create dataset
-        X_train, y_train, X_test, y_test, missing_rate = create_train_test_datasets(
-            merged, var, task)
-        
-        
-        n_feat = X_train.shape[1]
-        num_classes = np.nan
-        variance = np.nan
-        scoring = None
+        # Create subdataset
+        features, labels , missing_rate = create_var_datasets(merged, var, task)
 
-        
-        if task == "survival":
-            lower, upper = np.nanpercentile(merged.query("cohort =='train'")["death_delay"], [10, 90])
-            times = np.arange(lower, upper,10)
-
-            mod = RandomSurvivalForest(max_depth=1, random_state=123)
-            mod = as_concordance_index_ipcw_scorer(mod, tau=times[-1])
-            dict_params = {"estimator__n_estimators": np.arange(250, 500, 50),
-                           "estimator__min_samples_split": np.arange(2, 10)
-                           }
-            # mod = CoxnetSurvivalAnalysis(fit_baseline_model=True)
-            # dict_params = {"alpha_min_ratio": np.logspace(-6, -4, 3),
-            #                "l1_ratio": np.linspace(0.005,1, 20)
-            #                }
-            # scoring = "ci"
-
-        elif task == "regression":
-            mod = Ridge(alpha=0.014)
-            dict_params = {"alpha": np.logspace(-4, 1, 30)}
-            variance = np.var(y_train)
-            scoring = "r2"
-
-        elif task == "classification":
-            num_classes = int(len(set(y_train)))
-            _, px = np.unique(y_train, return_counts=True)
-            px = px / len(y_train)
-            variance = entropy(px, base=2)
-
-            mod = RidgeClassifier(alpha=0.014)
-            dict_params = {"alpha":np.logspace(-4,1, 30)}
-            # mod = RandomForestClassifier(random_state=123)
-            # dict_params = {"n_estimators": np.arange(100, 500, 100),
-                        #    "min_samples_split": np.arange(2, 5)}
-            scoring = "f1_weighted"
-
+        if type_of_target(labels) in ["binary","multiclass"]:
+            skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
         else:
-            print("Unknown task.")
-            break
-        
-        model_loaded = False
-        if config["load_models"]:
-            models_dir = join(output_dir, "models")
-            try:
-                mod = [m for m in os.listdir(models_dir) if var in m][0]
-                mod = joblib.load(join(models_dir, mod))
-                model_loaded = True
-            except IndexError:
-                pass
+            skf = KFold(n_splits=5, shuffle=True, random_state=1)
 
-            # Use the whole dataset as test set
-            X_test = pd.concat([X_train, X_test], axis=0)
-            y_test = np.concatenate([y_train, y_test])
-        
-        if not model_loaded :
-            # mod = GridSearchCV(mod, dict_params, scoring=scoring, cv=3, n_jobs=-1)
-            mod.fit(X_train, y_train)
-            # mod = mod.best_estimator_
+        # Cross-validation loop
+        for split, (train_index, test_index) in enumerate(skf.split(features, labels)):
+            X_train = features[train_index]
+            y_train = labels[train_index]
+            X_test = features[test_index]
+            y_test = labels[test_index]
 
-        res = mod.score(X_test, y_test)
-        
-        # if task=="classification":
-        #     plt.plot()
-        #     metrics.plot_roc_curve(mod, X_test, y_test, pos_label=1)
-        #     plt.savefig(f"{var}.pdf")
+            results = cross_validate(X_train, y_train, X_test, y_test)
 
-        if task == "survival":
-            surv_probs = np.row_stack([
-                fn(times) for fn in mod.predict_survival_function(X_test)])
-            ibs = integrated_brier_score(y_train, y_test, surv_probs, times)
-            results_df.loc[results_df['var'] == var, "ibs"] = round(ibs, 4)
-
-        # Logging results
-        model_type = str(type(mod)).split(".")[-1].replace("'>","")
-        results_df.loc[results_df['var'] == var, "performance"] = round(res, 4)
-        results_df.loc[results_df['var'] == var,
-                       "variance"] = round(variance, 4)
-        results_df.loc[results_df['var'] == var, "num_classes"] = num_classes
-        results_df.loc[results_df['var'] == var, "missing_rate"] = missing_rate
-        results_df.loc[results_df['var'] == var, "model"] = model_type
-        results_df.loc[results_df['var'] == var, "metric"] = scoring
-        results_df.loc[results_df['var'] == var, "restored_model"] = model_loaded
-
-        output_file = join(output_dir, f"{config['output_name']}.csv")
-        results_df.to_csv(output_file, index=False)
-
-        # Saving model
-        if not model_loaded:
-            model_name = f"{var}_{model_type}_{scoring}.sav"
-            joblib.dump(mod, join(output_dir, "models", model_name))
+            # Exporting results
+            results = pd.DataFrame.from_dict(results, orient="columns")
+            results_df = pd.concat([results_df, results], ignore_index=True)
+            results_df.to_csv(output_file, index=False)

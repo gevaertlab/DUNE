@@ -1,106 +1,20 @@
 import wandb
 from datetime import datetime as dt
 from tqdm import tqdm
-from os.path import exists, join
+from os.path import exists
 import matplotlib
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.optim import Adam, lr_scheduler
-from torch.utils.data import DataLoader
-from torch.utils.data.dataset import random_split
 from torchvision import transforms as transforms
 from monai.losses.ssim_loss import SSIMLoss
 
-from utils import *
-from datasets import BrainImages
+from utils_ae import *
 
-from models.oldmodels import OldAE
-from models.classicalAE import BaseAE
-from models.resnetAE import RNet
-from models.VAEs import U_VAE, VAE3D
 
 
 matplotlib.use('Agg') 
-
-def import_data(        
-         model_path,
-         data_path,
-         dataset,
-         modalities,
-         whole_brain,
-         min_dims,
-         batch_size,
-         num_workers,
-         **kwargs):
-
-    train_prop = 0.8
-
-    # Data transformers
-    normalTransform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
-
-    # Dataloaders
-    print("\nLoading datasets...")
-    if exists(model_path + "/autoencoding/exported_data/trainLoader.pth"):
-        print("Restoring previous...")
-        trainLoader = torch.load(model_path + "/autoencoding/exported_data/trainLoader.pth")
-        testLoader = torch.load(model_path + "/autoencoding/exported_data/testLoader.pth")
-
-    else:
-        data_path = join(data_path, dataset, "images")
-        totalData = BrainImages(dataset, data_path, modalities,
-                                min_dims, whole_brain=whole_brain, transforms=normalTransform)
-        trainData, testData = random_split(
-            totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
-
-        trainLoader = DataLoader(
-            trainData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
-        testLoader = DataLoader(
-            testData, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
-        
-        # Saving datasets
-        torch.save(
-            trainLoader, f'{model_path}/autoencoding/exported_data/trainLoader.pth')
-        torch.save(
-            testLoader, f'{model_path}/autoencoding/exported_data/testLoader.pth')
-
-    return trainLoader, testLoader
-
-
-def import_model(type_ae, modalities, features, num_blocks, min_dims, num_epochs, **config):
-    
-    net, beta_dict = None, None
-    # Initialize a model of our autoEncoder class on the device
-    if type_ae.lower() in ["ae", "unet"]:
-        net = BaseAE(len(modalities), features, num_blocks, type_ae=type_ae)
-    elif type_ae.lower() in ["oldae", "oldaeu"]:
-        net = OldAE(len(modalities), features, num_blocks, type_ae=type_ae)
-    elif type_ae.lower() == "u_vae":
-        net = U_VAE(len(modalities),  features, num_blocks, min_dims, hidden_size=2048)
-    elif type_ae.lower() in ["vae3d"]:
-        if config["latent_dim"]:
-            net = VAE3D(latent_dim = config["latent_dim"], min_dims=min_dims)
-        else:
-            net = VAE3D(min_dims=min_dims)
-    elif type_ae.lower() == "rnet":
-        net = RNet(len(modalities))
-
-    else:
-        print("AE type should be one of followings : AE, UNet, VAE, RNet")
-    try:
-        beta = config["beta"]
-
-        if beta=="sigmoid":
-            beta_dict = {i:frange_cycle_sigmoid(0.0, 0.02, num_epochs, 5)[i] for i in range(num_epochs)}
-        else:
-            beta_dict = {i:float(beta) for i in range(num_epochs)}
-    except:
-        pass
-
-    return net, beta_dict
-
 
 def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config):
     
@@ -152,20 +66,6 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
     return metric_results
 
 
-def export_model(net, model_path, epoch, test_epoch_metrics, best_test_loss):        
-    if epoch % 20 == 0:
-        torch.save(
-            net.state_dict(), model_path +
-            f"/autoencoding/exported_data/model_ep{epoch}.pt")
-
-    if test_epoch_metrics['loss'] < best_test_loss:
-        torch.save(
-            net.state_dict(),
-            model_path+f"/autoencoding/exported_data/best_model.pt")
-        best_test_loss = test_epoch_metrics['loss']
-
-    return best_test_loss
-
 
 def main(config):
 
@@ -179,7 +79,6 @@ def main(config):
 
 
     # Initialization
-    create_dependencies(model_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     best_test_loss = np.inf
 
@@ -192,12 +91,12 @@ def main(config):
     # Allocate model on several GPUs
     net = nn.DataParallel(net)
     net = net.to(device)
-    if exists(model_path + "/autoencoding/exported_data/best_model.pt"):
+    if exists(model_path + "/exports/best_model.pt"):
         net.load_state_dict(
-            torch.load(model_path + "/autoencoding/exported_data/best_model.pt"))
+            torch.load(model_path + "/exports/best_model.pt"))
 
 
-    trainLoader, testLoader = import_data(**config)
+    trainLoader, testLoader = import_datasets(**config)
     train_cases, val_cases = len(trainLoader)*batch_size, len(testLoader)*batch_size
     
 
@@ -223,17 +122,15 @@ def main(config):
             net, model_path, epoch, test_epoch_metrics, best_test_loss)   
 
            
-        wandb.log(test_epoch_metrics)
+        # wandb.log(test_epoch_metrics)
 
 
 
 
 if __name__ == "__main__":
 
-    config = parse_arguments()
+    config = parse_arguments("ae")
     now = dt.now().strftime("%m%d_%H%M%S")
-    wandb.init(project="Brain_VAE", id=f"{config['model_name']}_{now}", config=config)
+    # wandb.init(project="Brain_VAE", id=f"{config['model_name']}_{now}", config=config)
     main(config)
-
-
-    wandb.finish()
+    # wandb.finish()

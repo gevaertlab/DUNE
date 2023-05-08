@@ -21,31 +21,23 @@ def main():
         ["AE", "AE_TCGA_segm", "whole_brain", "TCGA_wholebrain"],
         ["AE", "AE_UPENN_segm", "whole_brain", "UPENN_wholebrain"],
 
-        ["AE", "AE_UCSF_segm", "tumor", "UCSF_tumor_only"],
-        ["AE", "AE_TCGA_segm", "tumor", "TCGA_tumor_only"],
-        ["AE", "AE_UPENN_segm", "tumor", "UPENN_tumor_only"],
-
-        ["AE", "AE_UCSF_segm", "combined", "UCSF_combined"],
-        ["AE", "AE_TCGA_segm", "combined", "TCGA_combined"],
-        ["AE", "AE_UPENN_segm", "combined", "UPENN_combined"],
-  
-        ["AE", "AE_UCSF_segm", "radiomics", "UCSF_radiomics"],
-        ["AE", "AE_TCGA_segm", "radiomics", "TCGA_radiomics"],
-        ["AE", "AE_UPENN_segm", "radiomics", "UPENN_radiomics"]
+        ["UNet", "UNet_UCSF_segm", "whole_brain", "UCSF_wholebrain"],
+        ["UNet", "UNet_TCGA_segm", "whole_brain", "TCGA_wholebrain"],
+        ["UNet", "UNet_UPENN_segm", "whole_brain", "UPENN_wholebrain"],
   
         ]
 
     overall = pd.DataFrame()
     for cond in tqdm(list_cond, colour="red"):
         folder, model, features, output_name = cond
-        model_dir = join(MODEL_DIR, folder)
-        cmd = f"python src/predictions/multivariate.py --model_path {model_dir}/{model} --features {features} --output_name {output_name}"
+
+        cmd = f"python src/autoencoder/multivariate.py -c {folder}/{model} --features {features} --output_name {output_name}"
 
         os.system(cmd)
 
 
         try:
-            mod_summ = pd.read_csv(join(model_dir, model, "multivariate",f"{output_name}.csv"))
+            mod_summ = pd.read_csv(join(folder, model, "multivariate",f"{output_name}.csv"))
             # b, f = re.findall(r'\d+', model)
             mod_summ['AE'] = model
             mod_summ['features'] = features
@@ -53,7 +45,7 @@ def main():
             overall = pd.concat([overall, mod_summ])
         except FileNotFoundError:
             pass    
-        overall.to_csv(MODEL_DIR + "tumor_crop.csv", index=False)
+        overall.to_csv(MODEL_DIR + "whole_brain_CV.csv", index=False)
 
 
 
