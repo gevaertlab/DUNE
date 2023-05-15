@@ -1,5 +1,9 @@
 # BRAIN AUTOENCODER
+<<<<<<< HEAD
 MODEL=UNet/UNet_TCGA_segm
+=======
+MODEL=AE/AE_UKB_segm
+>>>>>>> 63fbb1a63e777760c3fac191ef0c0e4000e29408
 CUDA=2,3
 #
 #TRAIN AE
