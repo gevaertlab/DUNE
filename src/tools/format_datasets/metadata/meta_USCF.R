@@ -35,7 +35,7 @@ export$IDH <- ordered(export$IDH)
 export$IDH_glob_bin <- ordered(export$IDH %in% c("wildtype", "mutated (NOS)"), levels = c("FALSE", "TRUE"))
 export$Biopsy_prior_to_imaging <- ordered(export$Biopsy_prior_to_imaging, levels = c("No", "Yes"))
 
-export <- export  %>% filter(!is.na(death_delay))
+# export <- export  %>% filter(!is.na(death_delay))
 
 # ENCODING
 

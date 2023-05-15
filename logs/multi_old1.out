@@ -1,0 +1,15 @@
+Processing model = UNet/UNet_UKB_segm
+Importing outputs/UNet/UNet_UPENN_segm/config.cfg...
+  0%|[33m          [0m| 0/3 [00:00<?, ?it/s]
+IDH_glob_bin:   0%|[33m          [0m| 0/3 [00:00<?, ?it/s]slurmstepd-secure-11: error: *** JOB 10291 ON secure-11 CANCELLED AT 2023-05-15T16:18:57 ***
+
+Dried_fruit_intake:  45%|[33m████▌     [0m| 68/150 [40:09:50<45:26:33, 1995.04s/it]
+Oily_fish_intake:  45%|[33m████▌     [0m| 68/150 [40:09:50<45:26:33, 1995.04s/it]  
+Oily_fish_intake:  46%|[33m████▌     [0m| 69/150 [40:40:01<43:38:38, 1939.74s/it]
+Non_oily_fish_intake:  46%|[33m████▌     [0m| 69/150 [40:40:01<43:38:38, 1939.74s/it]
+Non_oily_fish_intake:  47%|[33m████▋     [0m| 70/150 [41:10:17<42:16:56, 1902.71s/it]
+Processed_meat_intake:  47%|[33m████▋     [0m| 70/150 [41:10:17<42:16:56, 1902.71s/it]
+Processed_meat_intake:  47%|[33m████▋     [0m| 71/150 [41:40:32<41:10:17, 1876.17s/it]
+Poultry_intake:  47%|[33m████▋     [0m| 71/150 [41:40:32<41:10:17, 1876.17s/it]       
+Poultry_intake:  48%|[33m████▊     [0m| 72/150 [42:10:46<40:15:01, 1857.71s/it]
+Beef_intake:  48%|[33m████▊     [0m| 72/150 [42:10:46<40:15:01, 1857.71s/it]   
