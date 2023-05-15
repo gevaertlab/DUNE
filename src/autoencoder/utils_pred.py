@@ -37,7 +37,6 @@ def create_fulldataset(**config):
     else:
         print("Invalid feature source")
 
-
     features = pd.read_csv(features_path).set_index("eid")
 
     metadata = join(config["data_path"], config["dataset"], "metadata", config["metadata"])

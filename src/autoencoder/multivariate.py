@@ -3,8 +3,12 @@ from os.path import join
 import joblib
 import warnings
 from tqdm import tqdm
+import joblib
+import warnings
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
+from termcolor import colored
 from termcolor import colored
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -57,6 +61,11 @@ def export_cm():
 
     return fig
 
+    # Saving model
+    model_type = str(type(mod)).split(".")[-1].replace("'>","")
+    if not restore_models:
+        model_name = f"{var}_{split+1}_{model_type}_{scoring}.sav"
+        joblib.dump(mod, join(output_dir, "models", model_name))
 
 def export_scatter():
     feat = config["features"]
