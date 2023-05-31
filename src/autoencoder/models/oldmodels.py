@@ -4,12 +4,12 @@ import numpy as np
 import torch.nn as nn
 from collections import OrderedDict
 from torch.utils.data import Dataset
-
+from models.attention import SelfAttention
 
 #######
 # Old Unet and U shaped AE with named blocks (for reusing old experiments)
 class OldAE(nn.Module):
-    def __init__(self, in_channels=1, init_features=4, num_blocks=5, type_ae="oldae"):
+    def __init__(self, in_channels=1, init_features=4, num_blocks=5, attention=False, type_ae="oldae"):
         super(OldAE, self).__init__()
 
         self.in_channels = in_channels
@@ -17,6 +17,7 @@ class OldAE(nn.Module):
         self.num_blocks = num_blocks
         self._type = type_ae
         self.skip_connections = True if type_ae.lower() =="oldaeu" else False
+        self.attention = attention
 
         
         # ENCODER BLOCKS
@@ -25,9 +26,9 @@ class OldAE(nn.Module):
         self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
         for i, n in enumerate(feature_list):
             if i ==0:
-                enc_block = OldAE._block(self.in_channels, n, name=f"enc{i}")
+                enc_block = OldAE._block(self.in_channels, n, name=f"enc{i}", attn=self.attention)
             else:
-                enc_block = OldAE._block(feature_list[i-1], n, name=f"enc{i}")
+                enc_block = OldAE._block(feature_list[i-1], n, name=f"enc{i}", attn=self.attention)
 
             self.enc_blocks.append(enc_block)
         
@@ -44,10 +45,10 @@ class OldAE(nn.Module):
         for i, n in enumerate(feature_list):
             if i==0:
                 upconv = nn.ConvTranspose3d(bottleneck_features, n, kernel_size=2, stride=2)
-                dec_block = OldAE._block(n*enlarger, n, name=f"dec{i}")
+                dec_block = OldAE._block(n*enlarger, n, name=f"dec{i}", attn=self.attention)
             else: 
                 upconv = nn.ConvTranspose3d(feature_list[i-1], n, kernel_size=2, stride=2)
-                dec_block = OldAE._block(n*enlarger, n, name=f"dec{i}")
+                dec_block = OldAE._block(n*enlarger, n, name=f"dec{i}", attn=self.attention)
             
             self.transposers.append(upconv)
             self.dec_blocks.append(dec_block)
@@ -85,8 +86,8 @@ class OldAE(nn.Module):
         return torch.sigmoid(self.last_conv(dec)), bottleneck, None
 
     @staticmethod
-    def _block(in_channels, features, name):
-        return nn.Sequential(
+    def _block(in_channels, features, name, attn):
+        block = nn.Sequential(
             OrderedDict(
                 [
                     (
@@ -117,4 +118,9 @@ class OldAE(nn.Module):
             )
         )
 
+        if attn:
+            attention = SelfAttention(features)  # Add attention mechanism
+            block = nn.Sequential(block, attention)            
+
+        return block
 

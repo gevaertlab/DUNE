@@ -1,110 +1,44 @@
 import os
-from os.path import join
+from os.path import join, isdir, basename
 import torch
 import nibabel as nib
 import numpy as np
 from torch.utils.data import Dataset
-from torchvision import transforms
 import torchio as tio
 
-
 class BrainImages(Dataset):
-    def __init__(self, dataset, data_path, modalities, mindims, whole_brain=True, transforms=None):
-
-        self.dataset = dataset
-        self.data_path = data_path
-        self.folders = [case for case in os.listdir(
-            data_path) if os.path.isdir(join(data_path, case))]
+    def __init__(self, data_path, modalities):
+        
+        self.data_path = [join(dp, "processed") for dp in data_path]
+        self.cases = []
+        for dp in self.data_path:
+            self.cases.extend([join(dp, c) for c in os.listdir(dp) if isdir(join(dp, c))])
 
         self.modalities = modalities
-        self.transforms = transforms
         self.n_mod = len(self.modalities)
-        self.depth, self.height, self.width = mindims
-        self.whole_brain = whole_brain
-        
-    @staticmethod
-    def find_brain_center(stack):
-        """
-        Find coordinates of the brain center
-        """
-        sequence = stack[0]
-        D, H, W = sequence.shape
-        z_limits = [z for z in range(D) if sequence[z, :, :].sum().item() > 0]
-        y_limits = [y for y in range(H) if sequence[:, y, :].sum().item() > 0]
-        x_limits = [x for x in range(W) if sequence[:, :, x].sum().item() > 0]
+        # self.depth, self.height, self.width = mindims
 
-        center = (
-            int((z_limits[-1] + z_limits[0])/2),
-            int((y_limits[-1] + y_limits[0])/2),
-            int((x_limits[-1] + x_limits[0])/2))
+        print(len(self.cases))
 
-        return center
 
     def __len__(self):
-        return len(self.folders)
+        return len(self.cases)
 
     def __getitem__(self, idx):
-        self.imgAddresses = []
+        self.NIFTIs = []
+        case = self.cases[idx]
+        
         for mod in self.modalities:
             mod = mod.lower() + ".nii"
-            folderpath = join(self.data_path, self.folders[idx])
-
-            filepath = [join(folderpath, f) for f in os.listdir(
-                folderpath) if mod in f.lower()][0]
-            self.imgAddresses.append(filepath)
-        case = self.folders[idx]
-        imgsPre = []
-        for i in range(self.n_mod):
-            nifti = nib.load(self.imgAddresses[i])
-            # self.voxel_size = nifti.header.get_zooms()
-            resample = tio.Resample(1, image_interpolation='bspline')
-            rescale = tio.RescaleIntensity(out_min_max=(0,255.0))
-            nifti = resample(nifti)
-            nifti = rescale(nifti)
-            temp = nifti.get_fdata()
-            temp = temp.transpose((2, 1, 0)).astype(np.uint8)
-            imgsPre.append(temp)
-
-
-        imgsPre = np.array(imgsPre, dtype=np.uint8)
-        imgsPre = torch.from_numpy(imgsPre)
-
-        if self.whole_brain:
-            centerZ, centerY, centerX = BrainImages.find_brain_center(imgsPre)
-        else:
-            newdepth, newheight, newwidth = nifti.shape
-            centerZ, centerY, centerX = newdepth//2, newheight//2, newwidth//2
-
-        startSliceZ = max(int(centerZ - self.depth//2), 0)
-        endSliceZ = min(int(startSliceZ) + self.depth, imgsPre.shape[1]-1) #imgsPre.shape[1]-1
-
-        startSliceY = max(int(centerY - self.height//2), 0)
-        endSliceY = int(startSliceY) + self.height
-
-        startSliceX = max(int(centerX - self.width//2), 0)
-        endSliceX = int(startSliceX) + self.width
-
-
-        imgsPil = torch.zeros(
-            [self.n_mod, self.depth, self.height, self.width])
+            nifti_files = [join(case, f) for f in os.listdir(case) if mod in f.lower()][0]
+            self.NIFTIs.append(nifti_files)
         
- 
-        for i in range(0, self.n_mod):
-            for z in range(startSliceZ, endSliceZ):
+        rescale = tio.RescaleIntensity(out_min_max=(0,1))
 
-                t = imgsPre[i, z, startSliceY:endSliceY, startSliceX:endSliceX]
-
-                angle = 180 if self.dataset in ("UKBIOBANK", "UKB_crop","REMBRANDT", "SCHIZO") else 0
-
-                toPil = transforms.ToPILImage()
-                t = toPil(t).rotate(angle=angle)
-                toTensor = transforms.ToTensor()
-                t = toTensor(t)
-
-                imgsPil[i, z-startSliceZ, :, :] = t[0,:,:]
-
-
-        imgs = imgsPil[:, :, :, :]
+        imgs = [nib.load(self.NIFTIs[i]) for i in range(self.n_mod)]
+        imgs = [rescale(i).get_fdata() for i in imgs]
+        imgs = np.array(imgs, dtype=np.float16).transpose((0, 3, 2, 1))
+        imgs = torch.Tensor(imgs)
 
         
-        return imgs, case
+        return imgs, basename(case)

@@ -54,7 +54,7 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
                 loss.backward()
                 optimizer.step()
 
-            if quick and idx == 50:
+            if quick and idx == 5:
                 break
     
     val_loss = np.mean(loss_list)
@@ -66,7 +66,6 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
     return metric_results
 
 
-
 def main(config):
 
     quick = config['quick'] 
@@ -74,9 +73,6 @@ def main(config):
     model_path = config['model_path'] 
     batch_size = config['batch_size'] 
     num_epochs = config['num_epochs'] 
-
-    print(f"Total epochs = {num_epochs}")
-
 
     # Initialization
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

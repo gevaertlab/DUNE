@@ -60,13 +60,7 @@ def plot_graph(var, embedding, metadata):
         embedding[:, 1], s=1,
         c=metadata[var]
     )
-    # legend = ax.legend(*scatter.legend_elements(),
-    #                    loc="upper left",
-    #                    prop={"size": "small"}, fontsize="small",
-    #                    markerscale=0.5,
-    #                    title_fontsize="small",
-    #                    title="Legend")
-    # ax.add_artist(legend)
+
     ax.set_title(var)
     plt.close()
 
@@ -78,7 +72,12 @@ if __name__ == "__main__":
 
     config = parse_arguments()
     mod = config["model_path"]
-    features = join(mod, "exports/features/whole_brain.csv.gz")
+
+    if config["features"] == "radiomics":
+        features = join(config["data_path"], config["dataset"],
+                "metadata", config["pyradiomics"])
+    else:
+        features = join(mod, "exports/features/whole_brain.csv.gz")
     meta = join(config["data_path"], config["dataset"],
                 "metadata", config["metadata"])
     variables = join(config["data_path"], config["dataset"],

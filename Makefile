@@ -47,4 +47,4 @@ predict:
 
 
 make links:
-	python src/tools/misc/create_config_links.py
+	python src/tools/misc/refresh_links.py

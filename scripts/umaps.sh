@@ -1,8 +1,8 @@
 #!/usr/bin/bash
-#SBATCH --job-name=umap_UNet_UCSF_segm
-#SBATCH --output=logs/umap_UNet_UCSF_segm%a.out
-#SBATCH --error=logs/umap_UNet_UCSF_segm%a.out
-#SBATCH --time=1:00:00
+#SBATCH --job-name=umAEatt
+#SBATCH --output=logs/umAEatt%a.out
+#SBATCH --error=logs/umAEatt%a.out
+#SBATCH --time=3:00:00
 #SBATCH --partition=normal
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=8G
@@ -11,23 +11,19 @@
 #SBATCH --array=0-0:1
 
 
+#INIT
 source ~/.bashrc
 conda activate analysis
 nvidia-smi --list-gpus
+cd ~/projects/MultiModalBrainSurvival
 
-# export mod=( \
-# "UNet/other/UNet_UKB_5b4f" \
-# "UNet/other/UNet_UKB_5b8f" \
-# "UNet/other/UNet_UKB_6b4f" \
-# "UNet/other/UNet_UKB_6b8f" \
-# )
+# VARBIABLES
 export mod=( \
-"UNet/UNet_UCSF_segm" \
+"uVAE/uVAE_UKB_b1e-4" \
+# "AE/AE_UKB_segm_attn" \
+# "radiomics/RAD_UKB" \
 )
 
-cd /home/tbarba/projects/MultiModalBrainSurvival
+# SCRIPT
+echo -e "Processing model = ${mod[SLURM_ARRAY_TASK_ID]}"
 python src/autoencoder/compute_umaps.py -c ${mod[SLURM_ARRAY_TASK_ID]}
-
-
-conda activate multimodal
-python src/autoencoder/multivariate.py -c ${mod} -f whole_brain -o WB_oversampling

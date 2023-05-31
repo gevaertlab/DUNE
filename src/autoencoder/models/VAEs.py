@@ -3,25 +3,26 @@ from torch import nn
 from torch import tensor as Tensor
 import torch
 from typing import List, Any
-
+from models.attention import SelfAttention
 
 
 ### U-shaped VAE (no skip connections)
 class U_VAE(nn.Module):
-    def __init__(self, in_channels, init_features, num_blocks, input_dim, hidden_size=2048):
+    def __init__(self, in_channels, init_features, num_blocks, input_dim, attention=False, hidden_size=2048):
         super(U_VAE, self).__init__()
 
         self.num_mod = in_channels
         self.num_blocks = num_blocks
         self._type = "U_VAE"
         self.hidden_size = hidden_size
+        self.attention = attention
 
         # ENCODER BLOCKS
         feature_list = [init_features*(2**n) for n in range(num_blocks)]
         self.enc_blocks = nn.ModuleList()
         self.pool = nn.MaxPool3d(2, 2, 0)
         for n in feature_list:
-            enc_block = U_VAE._block(in_channels, n)
+            enc_block = U_VAE._block(in_channels, n, attn=self.attention)
             self.enc_blocks.append(enc_block)
             in_channels = n
 
@@ -37,13 +38,14 @@ class U_VAE(nn.Module):
         self.transposers = nn.ModuleList()
         for n in feature_list:
             upconv = nn.ConvTranspose3d(enc_shape[0], n, 2, 2, 0)
-            dec_block = U_VAE._block(n, n)
+            dec_block = U_VAE._block(n, n, attn=self.attention)
             self.transposers.append(upconv)
             self.dec_blocks.append(dec_block)
             enc_shape[0] = n
 
         # FINAL CONVOLUTION
         self.last_conv = nn.Conv3d(feature_list[-1], self.num_mod, 1, 1, 0)
+        self.sigmoid = nn.Sigmoid()
 
     def reparametrize(self, mu, sigma):
         eps = torch.randn_like(sigma)
@@ -80,12 +82,13 @@ class U_VAE(nn.Module):
         encodings.reverse()
         dec = self.decoder_input(bottleneck)
         dec = dec.view(enc.shape)
-        dec = self.decode(dec, encodings)
+        output = self.decode(dec, encodings)
+        output = self.sigmoid(output)
 
-        return torch.sigmoid(dec), bottleneck, (mu, sigma)
+        return output, bottleneck, (mu, sigma)
 
     @staticmethod
-    def _block(in_channels, features):
+    def _block(in_channels, features, attn):
         block = nn.Sequential(
             nn.Conv3d(in_channels, features, 3, 1, 1, bias=False),
             nn.BatchNorm3d(features),
@@ -95,6 +98,11 @@ class U_VAE(nn.Module):
             nn.BatchNorm3d(features),
             nn.ReLU(inplace=True)
         )
+        
+        if attn:
+            attention = SelfAttention(features)  # Add attention mechanism
+            block = nn.Sequential(block, attention)            
+
         return block
 
     @staticmethod

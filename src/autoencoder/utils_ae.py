@@ -56,6 +56,8 @@ def parse_arguments(exp):
     predictions = {k:eval(v) for k, v in dict(conf_parser["predictions"]).items()}
     model["model_path"] = join(model["model_path"], model['model_name'])
 
+    
+
     create_dependencies(model["model_path"])
 
 
@@ -89,8 +91,6 @@ def import_datasets(
          data_path,
          dataset,
          modalities,
-         whole_brain,
-         min_dims,
          batch_size,
          num_workers,
          **kwargs):
@@ -98,9 +98,9 @@ def import_datasets(
     train_prop = 0.8
 
     # Data transformers
-    normalTransform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
+    # normalTransform = transforms.Compose([
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
 
     # Dataloaders
     print("\nLoading datasets...")
@@ -110,9 +110,12 @@ def import_datasets(
         testLoader = torch.load(model_path + "/exports/testLoader.pth")
 
     else:
-        data_path = join(data_path, dataset, "images")
-        totalData = BrainImages(dataset, data_path, modalities,
-                                min_dims, whole_brain=whole_brain, transforms=normalTransform)
+        if type(dataset) == list:
+            data_path = [join(data_path, z) for z in dataset]
+        else:
+            data_path = [join(data_path, dataset)]
+            
+        totalData = BrainImages(data_path, modalities)
         trainData, testData = random_split(
             totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
 
@@ -150,15 +153,17 @@ def frange_cycle_sigmoid(start, stop, n_epoch, n_cycle=4, ratio=0.5):
 def import_model(type_ae, modalities, features, num_blocks, min_dims, **config):
 
     # Initialize a model of our autoEncoder class on the device
-    assert type_ae.lower() in ["ae","unet","oldae","oldaeu","u_vae","vae3d","rnet"]
+    assert type_ae.lower() in ["ae","unet","oldae","oldaeu","u_vae", "vae3d","rnet"]
+    attn = config['attention'] 
+
 
     if type_ae.lower() in ["ae", "unet"]:
-        net = BaseAE(len(modalities), features, num_blocks, type_ae=type_ae)
+        net = BaseAE(len(modalities), features, num_blocks, type_ae=type_ae, attention=attn)
     elif type_ae.lower() in ["oldae", "oldaeu"]:
-        net = OldAE(len(modalities), features, num_blocks, type_ae=type_ae)
+        net = OldAE(len(modalities), features, num_blocks, type_ae=type_ae, attention=attn)
     elif type_ae.lower() == "u_vae":
         net = U_VAE(len(modalities),  features,
-                    num_blocks, min_dims, hidden_size=2048)
+                    num_blocks, min_dims, attention=attn, hidden_size=2048)
     elif type_ae.lower() in ["vae3d"]:
         if config["latent_dim"]:
             net = VAE3D(in_channels=len(modalities), latent_dim=config["latent_dim"], min_dims=min_dims)
@@ -275,6 +280,8 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
     )
 
     concat = torch.cat([orig, reconstructed])
+    print("conc ", concat.size())
+    concat = torch.flip(concat, dims=(2,))
 
     save_image(
         make_grid(concat, nrow=nmod*batch_size),
