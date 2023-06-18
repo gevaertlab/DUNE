@@ -1,0 +1,16 @@
+variable,split,performance,metric,ibs,variance,num_classes,N,missing_rate,model,restored
+IDH_glob_bin,1,0.9053,f1_weighted,,1.0,2,169,0.0,RidgeClassifier,False
+IDH_glob_bin,2,0.9112,f1_weighted,,1.0,2,169,0.0,RidgeClassifier,False
+IDH_glob_bin,3,0.8876,f1_weighted,,1.0,2,169,0.0,RidgeClassifier,False
+IDH_glob_bin,4,0.9112,f1_weighted,,1.0,2,169,0.0,RidgeClassifier,False
+IDH_glob_bin,5,0.8571,f1_weighted,,1.0,2,168,0.0,RidgeClassifier,False
+death,1,0.64,,0.20559587055760634,,,99,0.0,RandomSurvivalForest,False
+death,2,0.631,,0.1966230607276514,,,99,0.0,RandomSurvivalForest,False
+death,3,0.6201,,0.19531679289842574,,,99,0.0,RandomSurvivalForest,False
+death,4,0.6524,,0.2138072544084301,,,98,0.0,RandomSurvivalForest,False
+death,5,0.6923,,0.2136079389857954,,,98,0.0,RandomSurvivalForest,False
+sex,1,0.6218,f1_weighted,,1.0,2,119,0.0,RidgeClassifier,False
+sex,2,0.605,f1_weighted,,1.0,2,119,0.0,RidgeClassifier,False
+sex,3,0.7203,f1_weighted,,1.0,2,118,0.0,RidgeClassifier,False
+sex,4,0.661,f1_weighted,,1.0,2,118,0.0,RidgeClassifier,False
+sex,5,0.6271,f1_weighted,,1.0,2,118,0.0,RidgeClassifier,False

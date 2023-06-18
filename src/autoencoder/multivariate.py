@@ -61,11 +61,11 @@ def export_cm():
 
     return fig
 
-    # Saving model
-    model_type = str(type(mod)).split(".")[-1].replace("'>","")
-    if not restore_models:
-        model_name = f"{var}_{split+1}_{model_type}_{scoring}.sav"
-        joblib.dump(mod, join(output_dir, "models", model_name))
+    # # Saving model
+    # model_type = str(type(mod)).split(".")[-1].replace("'>","")
+    # if not restore_models:
+    #     model_name = f"{var}_{split+1}_{model_type}_{scoring}.sav"
+        # joblib.dump(mod, join(output_dir, "models", model_name))
 
 def export_scatter():
     feat = config["features"]
@@ -195,7 +195,7 @@ if __name__ == '__main__':
             results_df.to_csv(output_file, index=False)
 
             if split == NUM_SPLITS-1:
-                export_model(mod, results["metric"])
+                # export_model(mod, results["metric"])
                 if task == "classification":
                     pp.savefig(export_cm())
                 elif task == "regression":

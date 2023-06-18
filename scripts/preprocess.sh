@@ -1,7 +1,7 @@
 #!/usr/bin/bash
-#SBATCH --job-name=UKB1
-#SBATCH --output=logs/dump.out
-#SBATCH --error=logs/tqdmUKB1.out
+#SBATCH --job-name=vestseg
+#SBATCH --output=logs/vestseg.out
+#SBATCH --error=logs/dump.out
 #SBATCH --time=48:00:00
 #SBATCH --partition=normal
 #SBATCH --cpus-per-task=10

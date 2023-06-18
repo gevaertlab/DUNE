@@ -18,17 +18,26 @@ def parse_arguments():
 
     args = parser.parse_args()
 
-    config_file = join(args.model_path, "config/ae.cfg")
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    config = dict(config["config"])
+    config_file = join(args.model_path, "config.cfg")
+    conf_parser = configparser.ConfigParser()
+    conf_parser.read(config_file)
+    # conf_parser = dict(config["config"])
+
+
+    conf = {k: eval(v) for k, v in dict(conf_parser["config"]).items()}
+    model = {k: eval(v) for k, v in dict(conf_parser["model"]).items()}
+    data = {k: eval(v) for k, v in dict(conf_parser["data"]).items()}
+    predictions = {k: eval(v) for k, v in dict(conf_parser["predictions"]).items()}
+
+    config = {**conf, **model, **data, **predictions}
+
 
     config['model_path'] = args.model_path
     config['radiomics_path'] = join(
-        config['data_path'], config['dataset'], "metadata/0-pyradiomics.csv.gz")
+        config['data_path'], config['dataset'], "metadata/0-WB_pyradiomics.csv.gz")
     
     config['features_path'] = join(
-        args.model_path, "autoencoding/features/features.csv.gz")
+        args.model_path, "exports/features/whole_brain.csv.gz")
 
     return config
 
@@ -46,8 +55,8 @@ def main():
     merged.columns = [i for i in range(merged.shape[1])]
     merged = merged.sort_index()
 
-    merged.to_csv(join(model_dir, "autoencoding/features",
-                  'features_and_radiomics.csv.gz'), index=True)
+    merged.to_csv(join(model_dir, "exports/features",
+                  'wb_and_radiomics.csv.gz'), index=True)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+
+[1;35mUMAP for model = test/SCHIZO[0m
+/share/pi/ogevaert/thomas/miniconda/envs/analysis/lib/python3.9/site-packages/umap/distances.py:1063: NumbaDeprecationWarning: The 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
+  @numba.jit()
+/share/pi/ogevaert/thomas/miniconda/envs/analysis/lib/python3.9/site-packages/umap/distances.py:1071: NumbaDeprecationWarning: The 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
+  @numba.jit()
+/share/pi/ogevaert/thomas/miniconda/envs/analysis/lib/python3.9/site-packages/umap/distances.py:1086: NumbaDeprecationWarning: The 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
+  @numba.jit()
+/share/pi/ogevaert/thomas/miniconda/envs/analysis/lib/python3.9/site-packages/umap/umap_.py:660: NumbaDeprecationWarning: The 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
+  @numba.jit()
+  0%|[34m          [0m| 0/4 [00:00<?, ?it/s] 25%|[34m██▌       [0m| 1/4 [00:00<00:00,  4.17it/s] 50%|[34m█████     [0m| 2/4 [00:00<00:00,  5.51it/s] 75%|[34m███████▌  [0m| 3/4 [00:00<00:00,  5.26it/s]100%|[34m██████████[0m| 4/4 [00:00<00:00,  5.81it/s]100%|[34m██████████[0m| 4/4 [00:00<00:00,  5.51it/s]

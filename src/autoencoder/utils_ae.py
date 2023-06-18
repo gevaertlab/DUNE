@@ -10,13 +10,13 @@ from torchvision.utils import save_image, make_grid
 import numpy as np
 
 from torchvision import transforms as transforms
-from datasets import BrainImages
+from datasets import BrainImages, SingleMod
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
 
 
 from models.oldmodels import OldAE
-from models.classicalAE import BaseAE
+from models.classicalAE import BaseAE, GuidedAE
 from models.resnetAE import RNet
 from models.VAEs import U_VAE, VAE3D
 
@@ -39,68 +39,100 @@ def parse_arguments(exp):
                         help='config file path')
     parser.add_argument('-o', '--output_name', type=str,
                         help='output_name - for predictions only', required=False)
-    parser.add_argument('-f','--features', type=str,
+    parser.add_argument('-f', '--features', type=str,
                         help='output_name - for predictions only', required=False)
 
-    args = parser.parse_args()
+    parser.add_argument('-m', '--other_model', type=str, nargs='+',
+                        help='alternate model path and type_ae', required=False)
+    
+    parser.add_argument('-k', '--keep_single', type=str, default="False",
+                        help='for feature extraction - keep single modalities', required=False)
 
+    args = parser.parse_args()
     config_file = join("outputs", args.config_file, "config.cfg")
 
     print(f"Importing {config_file}...")
     conf_parser = configparser.ConfigParser()
     conf_parser.read(config_file)
 
-    conf = {k:eval(v) for k, v in dict(conf_parser["config"]).items()}
-    model = {k:eval(v) for k, v in dict(conf_parser["model"]).items()}
-    data = {k:eval(v) for k, v in dict(conf_parser["data"]).items()}
-    predictions = {k:eval(v) for k, v in dict(conf_parser["predictions"]).items()}
+    conf = {k: eval(v) for k, v in dict(conf_parser["config"]).items()}
+    model = {k: eval(v) for k, v in dict(conf_parser["model"]).items()}
+    data = {k: eval(v) for k, v in dict(conf_parser["data"]).items()}
+    predictions = {k: eval(v) for k, v in dict(
+        conf_parser["predictions"]).items()}
     model["model_path"] = join(model["model_path"], model['model_name'])
-
-    
 
     create_dependencies(model["model_path"])
 
-
     if exp == "ae":
-        export = [{"model":model, "data":data, "config":conf }]
+        export = [{"model": model, "data": data, "config": conf}]
         config = {**model, **data, **conf}
+        config["keep_single"] = eval(args.keep_single)
+        if args.other_model:
+            config["other_model"] = args.other_model[0]
+            config["type_ae"] = args.other_model[1]
+
     else:
-        export = [{"model":model, "data":data, "predictions":predictions,}]
+        export = [{"model": model, "data": data, "predictions": predictions}]
         config = {**model, **data, **predictions}
-    
-        
+
         if args.features:
             config["features"] = args.features
-            choices = ["radiomics", "whole_brain","tumor","combined"]
+            choices = [
+                "WB_radiomics", "TUM_radiomics", "whole_brain", "tumor", "combined"]
             assert args.features in choices, f"args.features should be in {choices}"
             config["output_name"] = args.features
 
         if args.output_name:
             config["output_name"] = args.output_name
-            
+        
 
     # exporting config
-    with open(join(model["model_path"], f"logs/config_{exp}.yaml"),"w") as file:
+    with open(join(model["model_path"], f"logs/config_{exp}.yaml"), "w") as file:
         yaml.dump(export, file)
 
     return config
 
 # %% datasets
-def import_datasets(        
-         model_path,
-         data_path,
-         dataset,
-         modalities,
-         batch_size,
-         num_workers,
-         **kwargs):
 
+def new_dataset(model_path, **kwargs):
+
+    dataset = kwargs["dataset"]
+    data_path = kwargs["data_path"]
+    modalities = kwargs["modalities"]
+    num_workers = kwargs['num_workers'] 
+    batch_size = kwargs['batch_size'] 
     train_prop = 0.8
 
-    # Data transformers
-    # normalTransform = transforms.Compose([
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.5, 0.5,), (0.5, 0.5,))])
+    if type(dataset) == list:
+        data_path = [join(data_path, z) for z in dataset]
+    else:
+        data_path = [join(data_path, dataset)]
+
+    if kwargs["single_mod"]:
+        totalData = SingleMod(data_path, modalities)
+    else:
+        totalData = BrainImages(data_path, modalities)
+
+    trainData, testData = random_split(
+        totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
+
+    fullLoader = DataLoader(
+        totalData, batch_size=1, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
+    trainLoader = DataLoader(
+        trainData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
+    testLoader = DataLoader(
+        testData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
+
+    # Saving datasets
+    torch.save(fullLoader, f'{model_path}/exports/fullLoader.pth')
+    torch.save(trainLoader, f'{model_path}/exports/trainLoader.pth')
+    torch.save(testLoader, f'{model_path}/exports/testLoader.pth')
+
+    return trainLoader, testLoader
+
+
+def import_datasets(model_path, **kwargs):
 
     # Dataloaders
     print("\nLoading datasets...")
@@ -110,75 +142,54 @@ def import_datasets(
         testLoader = torch.load(model_path + "/exports/testLoader.pth")
 
     else:
-        if type(dataset) == list:
-            data_path = [join(data_path, z) for z in dataset]
-        else:
-            data_path = [join(data_path, dataset)]
-            
-        totalData = BrainImages(data_path, modalities)
-        trainData, testData = random_split(
-            totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
+        trainLoader, testLoader = new_dataset(model_path, **kwargs)
 
-        fullLoader = DataLoader(
-            totalData, batch_size=1, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
-        trainLoader = DataLoader(
-            trainData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
-        testLoader = DataLoader(
-            testData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
-        
-        # Saving datasets
-        torch.save(fullLoader, f'{model_path}/exports/fullLoader.pth')
-        torch.save(trainLoader, f'{model_path}/exports/trainLoader.pth')
-        torch.save(testLoader, f'{model_path}/exports/testLoader.pth')
 
     return trainLoader, testLoader
 
+# %%
 
-# %% Models
-def frange_cycle_sigmoid(start, stop, n_epoch, n_cycle=4, ratio=0.5):
-    L = np.ones(n_epoch)
-    period = n_epoch/n_cycle
-    step = (stop-start)/(period*ratio)  # step is in [0,1]
-
-    for c in range(n_cycle):
-
-        v, i = start, 0
-        while v <= stop:
-            L[int(i+c*period)] = 1.0/(1.0 + np.exp(- (v*12.-6.)))
-            v += step
-            i += 1
-    return L
-
-
-def import_model(type_ae, modalities, features, num_blocks, min_dims, **config):
+def import_model(type_ae, modalities, features, num_blocks, min_dims, device, **config):
 
     # Initialize a model of our autoEncoder class on the device
-    assert type_ae.lower() in ["ae","unet","oldae","oldaeu","u_vae", "vae3d","rnet"]
-    attn = config['attention'] 
+    assert type_ae.lower() in ["ae", "gae", "unet", "oldae",
+                               "oldaeu", "u_vae", "vae3d", "rnet"]
+    attn = config['attention']
+    dropout = config['dropout']
 
+    in_channels = 1 if config['single_mod'] else len(modalities)
 
     if type_ae.lower() in ["ae", "unet"]:
-        net = BaseAE(len(modalities), features, num_blocks, type_ae=type_ae, attention=attn)
+        net = BaseAE(in_channels, features, num_blocks,
+                     type_ae=type_ae, dropout=dropout, attention=attn)
+
+    elif type_ae.lower() in ["gae"]:
+        template = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/templates/MNI/MNI152_mixed_template_zscore.nii.gz"
+        net = GuidedAE(
+            in_channels, features, num_blocks,
+            dropout, template, device, attention=attn)
+
     elif type_ae.lower() in ["oldae", "oldaeu"]:
-        net = OldAE(len(modalities), features, num_blocks, type_ae=type_ae, attention=attn)
+        net = OldAE(in_channels, features, num_blocks,
+                    type_ae=type_ae, attention=attn)
     elif type_ae.lower() == "u_vae":
-        net = U_VAE(len(modalities),  features,
+        net = U_VAE(in_channels,  features,
                     num_blocks, min_dims, attention=attn, hidden_size=2048)
     elif type_ae.lower() in ["vae3d"]:
         if config["latent_dim"]:
-            net = VAE3D(in_channels=len(modalities), latent_dim=config["latent_dim"], min_dims=min_dims)
+            net = VAE3D(min_dims, in_channels, latent_dim=config["latent_dim"])
         else:
-            net = VAE3D(in_channels=len(modalities), min_dims=min_dims)
+            net = VAE3D(min_dims, in_channels)
     elif type_ae.lower() == "rnet":
-        net = RNet(len(modalities))
+        net = RNet(in_channels)
     else:
-        print("Wrong type_ae (should be in ae, unet, oldae, oldaeu, u_vae, vae3d, rnet) : using ae")
+        print("Wrong type_ae (should be in ae, gae, unet, oldae, oldaeu, u_vae, vae3d, rnet) : using ae")
         net = BaseAE(len(modalities), features, num_blocks, type_ae=type_ae)
 
     beta_dict = None
     try:
         beta = config["beta"]
-        num_epochs = config['num_epochs'] 
+        num_epochs = config['num_epochs']
 
         if beta == "sigmoid":
             beta_dict = {i: frange_cycle_sigmoid(0.0, 0.02, num_epochs, 5)[
@@ -280,7 +291,7 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
     )
 
     concat = torch.cat([orig, reconstructed])
-    print("conc ", concat.size())
+
     concat = torch.flip(concat, dims=(2,))
 
     save_image(

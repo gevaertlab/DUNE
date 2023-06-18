@@ -1,7 +1,0 @@
-/var/spool/slurmd/job11780/slurm_script: line 19: nvidia-smi: command not found
-Processing model = norm/fused
-Importing outputs/norm/fused/config.cfg...
-
-Loading datasets...
-20449
-Model fused - ep 1/10 - Train:   0%|[33m          [0m| 0/2045 [00:00<?, ?it/s]slurmstepd-secure-2: error: *** JOB 11780 ON secure-2 CANCELLED AT 2023-05-31T19:33:19 ***

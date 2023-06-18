@@ -75,7 +75,7 @@ class U_VAE(nn.Module):
         # REPRESENTATION EXTRACTION
         mu = self.mu(enc.view(enc.size(0), -1))
         sigma = self.sigma(enc.view(enc.size(0), -1))
-        sigma =  torch.exp(0.5 * sigma)
+        sigma = torch.exp(0.5 * sigma)
         bottleneck = self.reparametrize(mu, sigma)
 
         # DECODING
@@ -117,7 +117,7 @@ class U_VAE(nn.Module):
             dim = int(((dim + 2*p - (k-1) - 1) / s) + 1)  # maxpool
             return dim
 
-        D, H, W = input_dim
+        W, H, D = input_dim
         for C in feature_list:
             D = block_shaping(D)
             H = block_shaping(H)
@@ -164,7 +164,6 @@ class VAE3D(VAEBackbone):
                  in_channels: int = 3,
                  latent_dim: int = 2048,
                  hidden_dims: List = None,
-                 example_input_shape=None,
                  **kwargs):  # -> None
         super(VAE3D, self).__init__()
 
@@ -183,7 +182,7 @@ class VAE3D(VAEBackbone):
             modules.append(
                 nn.Sequential(
                     nn.Conv3d(in_channels=in_channels,
-                              out_channels=h_dim,  
+                              out_channels=h_dim,
                               kernel_size=3,
                               stride=2,
                               padding=1),
@@ -230,7 +229,7 @@ class VAE3D(VAEBackbone):
             nn.LeakyReLU(),
             nn.Conv3d(hidden_dims_variable[-1], out_channels=self.in_channels,
                       kernel_size=3, padding=1),  
-            nn.Sigmoid()) 
+            nn.Sigmoid())
 
 
     def encode(self, input: Tensor):  # -> List[torch.Tensor@encode]
@@ -324,13 +323,13 @@ class VAE3D(VAEBackbone):
 
             return dim
 
-        D, H, W = input_dim
+        W, H, D = input_dim
         shapes = []
         for C in feature_list:
             D = block_shaping(D)
             H = block_shaping(H)
             W = block_shaping(W)
-            shapes.append([C, D,H,W])
+            shapes.append([C, D, H, W])
         
         final_size = int(C*D*H*W)
 

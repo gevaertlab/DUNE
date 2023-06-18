@@ -17,7 +17,7 @@ conda activate MRnorm
 
 
 ## VARS
-MNItemplate=/home/tbarba/projects/MultiModalBrainSurvival/data/MR/templates/MNI152_T1_1mm_Brain.nii.gz
+MNItemplate=/home/tbarba/projects/MultiModalBrainSurvival/data/MR/templates/MNI/MNI152_T1_1mm_Brain.nii.gz
 
 
 # REGISTRATION 

@@ -16,6 +16,7 @@ raw <- fread("/home/tbarba/projects/MultiModalBrainSurvival/data/MR/SCHIZO/metad
 export <- raw %>%
     column_to_rownames("eid")
 
+
 export$dx <- fct_collapse(export$dx,
         normal = c("No_Known_Disorder", "Schizoaffective"),
         schizo = c("Schizophrenia_Broad", "Schizophrenia_Strict")

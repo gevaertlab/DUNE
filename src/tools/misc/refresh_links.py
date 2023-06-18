@@ -6,7 +6,7 @@ models = "/home/tbarba/projects/MultiModalBrainSurvival/outputs"
 target = "/home/tbarba/projects/MultiModalBrainSurvival/configs"
 
 if __name__ == "__main__":
-    files = glob(models + "/*/*/config*")  
+    files = glob(models + "/*/*/config.cfg") + glob(models + "/*/*/*/config.cfg")
     
     try:
         shutil.rmtree(target)

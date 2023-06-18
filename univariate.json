@@ -1,8 +1,0 @@
-{
-    "model_path": "outputs/UNet/pretraining/UNet_6b_4f_UKfull",
-    "metadata_path": "data/metadata/UKB/MR_cohort/0-imputed.csv.gz",
-    "variables_path": "data/metadata/UKB/MR_cohort/0-variable_list.csv.gz",
-    "feature_path": "/autoencoding/features/",
-    "output_path": "/univariate",
-    "umap": "TRUE"
-}

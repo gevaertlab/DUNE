@@ -26,20 +26,26 @@ def create_fulldataset(**config):
     features = config["features"]
 
     features_path = str()
-    if features == "radiomics":
-        features_path = join(config["data_path"], config["dataset"], "metadata/0-pyradiomics.csv.gz")
+    if features == "TUM_radiomics":
+        features_path = join(config["data_path"], config["dataset"], "metadata/0-TUM_pyradiomics.csv.gz")
+    elif features == "WB_radiomics":
+        features_path = join(config["data_path"], config["dataset"], "metadata/0-WB_pyradiomics.csv.gz")
     elif features == "whole_brain":
         features_path = join(model_path, "exports/features/whole_brain.csv.gz")
     elif features == "tumor":
         features_path = join(model_path, "exports/features/tumor.csv.gz")
     elif features == "combined":
-        features_path = join(model_path, "exports/features/whole_and_tumor.csv.gz")
+        features_path = join(model_path, "exports/features/wb_and_radiomics.csv.gz")
     else:
         print("Invalid feature source")
 
     features = pd.read_csv(features_path).set_index("eid")
 
-    metadata = join(config["data_path"], config["dataset"], "metadata", config["metadata"])
+    if type(config["dataset"]) == list:
+        metadata = config["metadata"]
+    else:
+        metadata = join(config["data_path"], config["dataset"], "metadata", config["metadata"])
+
     metadata = pd.read_csv(metadata, index_col="eid")
 
     merged = metadata.merge(features, how="inner",
