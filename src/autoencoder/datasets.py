@@ -6,7 +6,7 @@ import numpy as np
 from torch.utils.data import Dataset
 import torchio as tio
 import glob
-import random
+
 
 
 class BrainImages(Dataset):
@@ -103,11 +103,19 @@ class CrossMod(Dataset):
         self.n_mod = len(self.modalities)
 
         self.nifti_files = []
+        self.corresp = {}
         for case in self.cases:
+            mods = []
             for mod in self.modalities:
                 mod += ".nii.gz"
                 files = glob.glob(join(case, mod))
                 self.nifti_files.extend(files)
+                mods.extend(files)
+
+            self.corresp[mods[0]] = mods[1]
+            self.corresp[mods[1]] = mods[0]
+
+        self.corresp = list(self.corresp.items())
 
     def __len__(self):
 
@@ -127,10 +135,11 @@ class CrossMod(Dataset):
 
     def __getitem__(self, idx):
 
-        nifti = self.nifti_files[idx]
+        inp, out = self.corresp[idx]
 
-        case = nifti.split("/")[-2]
-        mod = nifti.split("/")[-1].rstrip(".nii.gz")
-        imgs = self.import_nifti(nifti)
+        # case = inp.split("/")[-2]
+        # mod = inp.split("/")[-1].rstrip(".nii.gz")
+        inp = self.import_nifti(inp)
+        out = self.import_nifti(out)
 
-        return imgs, f"{case}__{mod}"
+        return inp, out

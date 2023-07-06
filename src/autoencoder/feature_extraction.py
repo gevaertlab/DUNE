@@ -51,7 +51,7 @@ def main():
         dict_path = f"{config['other_model']}/exports/best_model.pt"
     else:
         dict_path = f"{model_path}/exports/best_model.pt"
-    net.load_state_dict(torch.load(dict_path))
+    net.load_state_dict(torch.load(dict_path, map_location=torch.device('cpu')))
 
     # Restoring dataset
     fullLoader = torch.load(f"{model_path}/exports/fullLoader.pth")

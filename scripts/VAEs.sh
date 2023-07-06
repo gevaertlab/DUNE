@@ -1,13 +1,14 @@
 #!/usr/bin/bash
-#SBATCH --job-name=aAE
-#SBATCH --output=logs/aAE%a.out
-#SBATCH --error=logs/aAE%a.out
+#SBATCH --job-name=UVAEsel3
+#SBATCH --output=logs/UVAEsel3%a.out
+#SBATCH --error=logs/UVAEsel3%a.out
 #SBATCH --time=48:00:00
-#SBATCH --partition=gpu
+#SBATCH --partition=ogevaert-a100
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=2
 #SBATCH --nodes=1
-#SBATCH --mem=64G
+#SBATCH --mem=32G
+#SBATCH -C GPU_MEM:32GB
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=tbarba@stanford.edu
 #SBATCH --array=0-0
@@ -26,12 +27,12 @@ export mod=( \
 # "norm/AE_selection_attn" \
 # "norm/VAE3D_selection" \
 # "norm/AE_selection" \
-# "norm/UVAE_selection" \
+"norm/UVAE_selection3" \
 # "norm/VAE3D_selection2" \
 # "norm/AE_selection2" \
-"test/all_cohorts2" \
+# "test/all_cohorts2" \
 # "norm/GAE_selection2" \
-# "norm/UVAE_selection2" \
+# "norm/VAE3D_selection3" \
 # "norm/VAE3D_selection" \
 )   
 

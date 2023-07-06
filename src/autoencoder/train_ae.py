@@ -87,7 +87,7 @@ def main(config):
 
     optimizer = Adam(net.parameters(), lr=config['learning_rate'])
     scheduler = lr_scheduler.ReduceLROnPlateau(
-        optimizer, patience=10, verbose=True)
+        optimizer, patience=200, verbose=True)
 
     # Allocate model on several GPUs
     net = nn.DataParallel(net)

@@ -10,7 +10,7 @@ from torchvision.utils import save_image, make_grid
 import numpy as np
 
 from torchvision import transforms as transforms
-from datasets import BrainImages, SingleMod
+from datasets import BrainImages, SingleMod, CrossMod
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
 
@@ -300,3 +300,55 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
     )
 
     return
+
+
+# %% crossdatasets
+
+def cross_dataset(model_path, **kwargs):
+
+    dataset = kwargs["dataset"]
+    data_path = kwargs["data_path"]
+    modalities = kwargs["modalities"]
+    num_workers = kwargs['num_workers'] 
+    batch_size = kwargs['batch_size'] 
+    train_prop = 0.8
+
+    if type(dataset) == list:
+        data_path = [join(data_path, z) for z in dataset]
+    else:
+        data_path = [join(data_path, dataset)]
+
+    totalData = CrossMod(data_path, modalities)
+
+    trainData, testData = random_split(
+        totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
+
+    fullLoader = DataLoader(
+        totalData, batch_size=1, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
+    trainLoader = DataLoader(
+        trainData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
+    testLoader = DataLoader(
+        testData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
+
+    # Saving datasets
+    torch.save(fullLoader, f'{model_path}/exports/fullLoader.pth')
+    torch.save(trainLoader, f'{model_path}/exports/trainLoader.pth')
+    torch.save(testLoader, f'{model_path}/exports/testLoader.pth')
+
+    return trainLoader, testLoader
+
+
+def import_cds(model_path, **kwargs):
+
+    # Dataloaders
+    print("\nLoading datasets...")
+    if exists(model_path + "/exports/trainLoader.pth"):
+        print("Restoring previous...")
+        trainLoader = torch.load(model_path + "/exports/trainLoader.pth")
+        testLoader = torch.load(model_path + "/exports/testLoader.pth")
+
+    else:
+        trainLoader, testLoader = cross_dataset(model_path, **kwargs)
+
+
+    return trainLoader, testLoader
