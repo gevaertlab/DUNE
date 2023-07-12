@@ -1,0 +1,24 @@
+# Fdb version 3
+["xdvipdfmx"] 1689124389 "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.pdf" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1" 1689124394
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" 1689124389 616 f2d7bd093622164c14deed2b44f8e7d0 "xelatex"
+  (generated)
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.pdf"
+["xelatex"] 1689124388 "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.tex" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" "V1" 1689124394
+  "/etc/texmf/web2c/texmf.cnf" 1688156055 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.aux" 1689124389 8 a94a2480d3289e625eea47cd1b285758 ""
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.tex" 1689124394 115 2805740b9e5d32f1195d4ded3265f691 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/article.cls" 1580683321 20023 e427dd9e17e239bf926ef3aab67fe35e ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo" 1580683321 8446 9874cccac5fee462272c582807dbbf56 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd" 1580683321 2431 b6cead9f069ed55f4fba0c637aa047b6 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-xdvipdfmx.def" 1580854751 24128 c4ebbe7ec59ef4686329b8f63a49f10b ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
+  "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1688156410 4647313 052b28a87872879e9339cf0fe3633a2d ""
+  "V1.aux" 1689124389 8 a94a2480d3289e625eea47cd1b285758 "xelatex"
+  "V1.tex" 1689124394 115 2805740b9e5d32f1195d4ded3265f691 ""
+  (generated)
+  "V1.aux"
+  "V1.log"
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.log"
+  "V1.xdv"
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv"

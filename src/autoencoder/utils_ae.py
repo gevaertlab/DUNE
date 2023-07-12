@@ -10,7 +10,7 @@ from torchvision.utils import save_image, make_grid
 import numpy as np
 
 from torchvision import transforms as transforms
-from datasets import BrainImages, SingleMod, CrossMod
+from datasets import BrainImages, SingleMod
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
 
@@ -38,7 +38,8 @@ def parse_arguments(exp):
                         type=str,
                         help='config file path')
     parser.add_argument('-o', '--output_name', type=str,
-                        help='output_name - for predictions only', required=False)
+                        help='output_name - either feature extractions or predictions', required=False)
+    
     parser.add_argument('-f', '--features', type=str,
                         help='output_name - for predictions only', required=False)
 
@@ -78,14 +79,10 @@ def parse_arguments(exp):
 
         if args.features:
             config["features"] = args.features
-            choices = [
-                "WB_radiomics", "TUM_radiomics", "whole_brain", "tumor", "combined"]
-            assert args.features in choices, f"args.features should be in {choices}"
-            config["output_name"] = args.features
 
-        if args.output_name:
-            config["output_name"] = args.output_name
-        
+    if args.output_name:
+        config["output_name"] = args.output_name
+            
 
     # exporting config
     with open(join(model["model_path"], f"logs/config_{exp}.yaml"), "w") as file:
@@ -172,7 +169,7 @@ def import_model(type_ae, modalities, features, num_blocks, min_dims, device, **
     elif type_ae.lower() in ["oldae", "oldaeu"]:
         net = OldAE(in_channels, features, num_blocks,
                     type_ae=type_ae, attention=attn)
-    elif type_ae.lower() == "u_vae":
+    elif type_ae.lower() == "uvae":
         net = U_VAE(in_channels,  features,
                     num_blocks, min_dims, attention=attn, hidden_size=2048)
     elif type_ae.lower() in ["vae3d"]:
@@ -212,6 +209,7 @@ def export_model(net, model_path, epoch, test_epoch_metrics, best_test_loss):
         torch.save(
             net.state_dict(),
             model_path+f"/exports/best_model.pt")
+        
         best_test_loss = test_epoch_metrics['loss']
 
     return best_test_loss
@@ -301,54 +299,3 @@ def reconstruct_image(net, device, output_dir, testloader, **kwargs):
 
     return
 
-
-# %% crossdatasets
-
-def cross_dataset(model_path, **kwargs):
-
-    dataset = kwargs["dataset"]
-    data_path = kwargs["data_path"]
-    modalities = kwargs["modalities"]
-    num_workers = kwargs['num_workers'] 
-    batch_size = kwargs['batch_size'] 
-    train_prop = 0.8
-
-    if type(dataset) == list:
-        data_path = [join(data_path, z) for z in dataset]
-    else:
-        data_path = [join(data_path, dataset)]
-
-    totalData = CrossMod(data_path, modalities)
-
-    trainData, testData = random_split(
-        totalData, [int(len(totalData)*train_prop), len(totalData)-int(len(totalData)*train_prop)])
-
-    fullLoader = DataLoader(
-        totalData, batch_size=1, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
-    trainLoader = DataLoader(
-        trainData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
-    testLoader = DataLoader(
-        testData, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=num_workers, pin_memory=True)
-
-    # Saving datasets
-    torch.save(fullLoader, f'{model_path}/exports/fullLoader.pth')
-    torch.save(trainLoader, f'{model_path}/exports/trainLoader.pth')
-    torch.save(testLoader, f'{model_path}/exports/testLoader.pth')
-
-    return trainLoader, testLoader
-
-
-def import_cds(model_path, **kwargs):
-
-    # Dataloaders
-    print("\nLoading datasets...")
-    if exists(model_path + "/exports/trainLoader.pth"):
-        print("Restoring previous...")
-        trainLoader = torch.load(model_path + "/exports/trainLoader.pth")
-        testLoader = torch.load(model_path + "/exports/testLoader.pth")
-
-    else:
-        trainLoader, testLoader = cross_dataset(model_path, **kwargs)
-
-
-    return trainLoader, testLoader

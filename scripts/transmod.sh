@@ -33,5 +33,5 @@ echo -e "\n${COL}\nProcessing model = ${mod[SLURM_ARRAY_TASK_ID]}${NC}"
 nvidia-smi --list-gpus
 
 CUDA_VISIBLE_DEVICES=0,1 \
-    python src/autoencoder/train_ae2.py -c ${mod[SLURM_ARRAY_TASK_ID]}
+    python src/transmodality/train_ae.py -c ${mod[SLURM_ARRAY_TASK_ID]}
 

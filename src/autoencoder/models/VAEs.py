@@ -3,7 +3,11 @@ from torch import nn
 from torch import tensor as Tensor
 import torch
 from typing import List, Any
-from models.attention import SelfAttention
+import torchio as tio
+import numpy as np
+import nibabel as nib
+
+from .attention import SelfAttention
 
 
 ### U-shaped VAE (no skip connections)
@@ -86,6 +90,21 @@ class U_VAE(nn.Module):
         output = self.sigmoid(output)
 
         return output, bottleneck, (mu, sigma)
+
+    def process_nifti(self, nifti_path):
+
+        imgs = nib.load(nifti_path)
+        rescale = tio.RescaleIntensity(out_min_max=(0, 1))
+        imgs = rescale(imgs).get_fdata()
+        imgs = np.array(imgs, dtype=np.float16)
+        imgs = np.expand_dims(imgs, axis=0)  # adding channel dim
+        imgs = imgs.transpose((0, 3, 2, 1))  # reorder channels
+        imgs = np.expand_dims(imgs, axis=0)  # adding batch dim
+        imgs = torch.Tensor(imgs)
+
+        reconstructed, embedding, _ = self.forward(imgs)
+
+        return reconstructed, embedding
 
     @staticmethod
     def _block(in_channels, features, attn):
@@ -286,6 +305,22 @@ class VAE3D(VAEBackbone):
         z = self.reparameterize(mu, sigma)
         reconst = self.decode(z)
         return reconst, z, (mu, sigma)
+
+
+    def process_nifti(self, nifti_path):
+
+        imgs = nib.load(nifti_path)
+        rescale = tio.RescaleIntensity(out_min_max=(0, 1))
+        imgs = rescale(imgs).get_fdata()
+        imgs = np.array(imgs, dtype=np.float16)
+        imgs = np.expand_dims(imgs, axis=0)  # adding channel dim
+        imgs = imgs.transpose((0, 3, 2, 1))  # reorder channels
+        imgs = np.expand_dims(imgs, axis=0)  # adding batch dim
+        imgs = torch.Tensor(imgs)
+
+        reconstructed, embedding, _ = self.forward(imgs)
+
+        return reconstructed, embedding
 
 
     def sample(self,

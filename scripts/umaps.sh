@@ -28,11 +28,11 @@ export mod=( \
     # "test/UPENN" \
     # "test/UCSF" \
     # "test/SCHIZO" \
-    "test/all_cohorts2" \
+    "test/all_cohorts" \
     # "test/UKB" \
 )
 
-keep_single=True
+keep_single=False
 
 
 # CUDA_VISIBLE_DEVICES=0,1 \

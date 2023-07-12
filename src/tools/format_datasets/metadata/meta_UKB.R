@@ -38,5 +38,5 @@ export <- export %>%
 
 
 fwrite(export,
-    file = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/UKBIOBANK/metadata/0-UKB_metadata_encoded.csv.gz",
+    file = "/home/tbarba/projects/MultiModalBrainSurvival/data/MR/UKBIOBANK/metadata/0-UKB_metadata_encoded2.csv.gz",
 )

@@ -12,18 +12,31 @@ from termcolor import colored
 from termcolor import colored
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from itertools import cycle
 import seaborn as sns
 
-from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import label_binarize, OneHotEncoder
+from sklearn.metrics import confusion_matrix, roc_curve, auc, RocCurveDisplay
 from sklearn.utils.multiclass import type_of_target
 from sklearn.model_selection import KFold, StratifiedKFold, GridSearchCV
 
+from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
+from lifelines.plotting import add_at_risk_counts
 
 from utils_ae import parse_arguments
 from utils_pred import *
 
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
+import sys
+import os
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
+    os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses
+
+
 plt.switch_backend('agg')
 
 
@@ -49,50 +62,110 @@ def initialize_model(task, var, restore_models, path):
     return mod, hyperparams, scoring
 
 
+def export_roc_curve():
+
+    num_classes = len(pred_probas[0])
+
+    gt = np.array(ground_truth)
+    pb = np.array(pred_probas)
+    df = np.array(decision_functions)
+
+    fig, ax = plt.subplots(figsize=(4, 4))
+
+    if num_classes == 2:
+        RocCurveDisplay.from_predictions(
+            gt,
+            df,
+            name=f"ROC curve for class 1",
+            ax=ax
+        )
+    else:
+        gt = label_binarize(ground_truth, classes=list(set(ground_truth)))
+        colors = cycle(["aqua", "darkorange", "darkturquoise"])
+        for class_id, color in zip(range(num_classes), colors):
+            RocCurveDisplay.from_predictions(
+                gt[:, class_id],
+                pb[:, class_id],
+                name=f"ROC curve for class {class_id}",
+                color=color,
+                ax=ax,
+            )
+
+    ax.set_title(var)
+    plt.close()
+
+    return fig
+
+
+def export_km_curves():
+
+    event, time = zip(*ground_truth)
+    event, time = np.array(event), np.array(time)
+    group = np.where(predictions > np.median(predictions), "high", "low")
+
+    kmf_high = KaplanMeierFitter()
+    kmf_low = KaplanMeierFitter()
+    high_risk = (group == "high")
+
+    pval = logrank_test(time[high_risk], time[~high_risk],
+                        event[high_risk], event[~high_risk]).p_value
+
+    fig, ax = plt.subplots(figsize=(4, 5))
+    kmf_high.fit(time[high_risk], event[high_risk], label="High risk")
+    kmf_low.fit(time[~high_risk], event[~high_risk], label="Low risk")
+
+    kmf_high.plot_survival_function(c="darkred", show_censors=True, ax=ax)
+    kmf_low.plot_survival_function(c="darkblue", show_censors=True, ax=ax)
+    add_at_risk_counts(kmf_high, kmf_low, ax=ax)
+
+    ax.set_xlabel("Time from inclusion (days)")
+    ax.set_ylabel("Survival")
+    ax.set_title(var)
+    ax.text(x=0, y=0.12, s=f"p={pval:.3f}")
+    fig.tight_layout()
+    fig.savefig(join(output_dir, f"test.pdf"))
+
+    plt.close()
+
+    return fig
+
+
 def export_cm():
     feat = config["features"]
 
     fig, ax = plt.subplots(figsize=(4, 4))
     cm = confusion_matrix(ground_truth, predictions)
     cm = sns.heatmap(data=cm, annot=True, fmt=',d', ax=ax)
-    cm.set(xlabel='Predicted', ylabel='Truth', title=f"{var}/{feat}_{split+1}/{NUM_SPLITS}")
-    plt.savefig(join(output_dir, f"conf_mat/cm_{var}_{feat}.png"))
+    cm.set(xlabel='Predicted', ylabel='Truth',
+           title=f"{var}/{feat}_{split+1}/{NUM_SPLITS}")
+    # plt.savefig(join(output_dir, f"conf_mat/cm_{var}_{feat}.png"))
     plt.close()
 
     return fig
 
-    # # Saving model
-    # model_type = str(type(mod)).split(".")[-1].replace("'>","")
-    # if not restore_models:
-    #     model_name = f"{var}_{split+1}_{model_type}_{scoring}.sav"
-        # joblib.dump(mod, join(output_dir, "models", model_name))
 
 def export_scatter():
-    feat = config["features"]
 
     fig, ax = plt.subplots(figsize=(4, 4))
 
     ax.scatter(
         ground_truth,
         predictions, s=1
-        )
-    
-    ax.plot(np.linspace(-3, 4, 500),np.linspace(-3, 4, 500), "-r" )
+    )
+
+    ax.plot(np.linspace(-3, 4, 500), np.linspace(-3, 4, 500), "-r")
 
     ax.set_xlabel("ground_truth")
     ax.set_ylabel("prediction")
     ax.set_title(var)
-    plt.savefig(join(output_dir, f"conf_mat/scatter_{var}_{feat}.png"))
+
     plt.close()
 
     return fig
 
 
 def export_model(mod, metric):
-    model_type = str(type(mod)).split(".")[-1].replace("'>", "")
-    if not restore_models:
-        model_name = f"{var}_{model_type}_{metric}.sav"
-        joblib.dump(mod, join(output_dir, "models", model_name))
+        joblib.dump(mod, "RF_survival")
 
 
 def run_split(X_train, y_train, X_test, y_test):
@@ -164,16 +237,17 @@ if __name__ == '__main__':
         bar.set_description(colored(f"\n{var}", "yellow"))
         task = variables[var]
         restore_models = config["load_models"]
-        predictions, ground_truth = [], []
-        models_perf = []
+        predictions, pred_probas, decision_functions, ground_truth = [], [], [], []
+        performances = []
+        # identifiers = []
 
         # Create subdataset
         features, labels, missing_rate = create_var_datasets(merged, var, task)
 
-
         NUM_SPLITS = 5
         if task == "classification" and type_of_target(labels) in ["binary", "multiclass"]:
-            skf = StratifiedKFold(n_splits=NUM_SPLITS, shuffle=True, random_state=1)
+            skf = StratifiedKFold(n_splits=NUM_SPLITS,
+                                  shuffle=True, random_state=1)
         else:
             skf = KFold(n_splits=NUM_SPLITS, shuffle=True, random_state=1)
 
@@ -184,10 +258,16 @@ if __name__ == '__main__':
             X_test = features[test_index]
             y_test = labels[test_index]
 
+
             mod, results = run_split(X_train, y_train, X_test, y_test)
             ground_truth.extend(y_test)
             predictions.extend(mod.predict(X_test))
-            models_perf.append((mod, results["performance"]))
+            # identifiers.extend(idx[test_index])
+
+            performances.append((mod, results["performance"]))
+            if task == "classification":
+                decision_functions.extend(mod.decision_function(X_test))
+                pred_probas.extend(mod.predict_proba(X_test))
 
             # Exporting results
             results = pd.DataFrame.from_dict(results, orient="columns")
@@ -195,10 +275,13 @@ if __name__ == '__main__':
             results_df.to_csv(output_file, index=False)
 
             if split == NUM_SPLITS-1:
-                # export_model(mod, results["metric"])
                 if task == "classification":
                     pp.savefig(export_cm())
+                    pp.savefig(export_roc_curve())
                 elif task == "regression":
                     pp.savefig(export_scatter())
+                elif task == "survival":
+                    export_model(mod, "survival")
+                    pp.savefig(export_km_curves())
 
     pp.close()

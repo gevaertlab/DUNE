@@ -1,0 +1,16 @@
+/var/spool/slurmd/job14388/slurm_script: line 19: nvidia-smi: command not found
+
+[1;34mExtracting features = test/TCGA[0m
+
+[1;34mMultivariate analysis for model = test/TCGA[0m
+Importing outputs/test/TCGA/config.cfg...
+  0%|[33m          [0m| 0/4 [00:00<?, ?it/s]
+IDH_glob_bin:   0%|[33m          [0m| 0/4 [00:00<?, ?it/s]
+IDH_glob_bin:  25%|[33m██▌       [0m| 1/4 [00:16<00:49, 16.62s/it]
+Gender:  25%|[33m██▌       [0m| 1/4 [00:16<00:49, 16.62s/it]      
+Gender:  50%|[33m█████     [0m| 2/4 [00:26<00:25, 12.77s/it]
+death:  50%|[33m█████     [0m| 2/4 [00:26<00:25, 12.77s/it] 
+death:  75%|[33m███████▌  [0m| 3/4 [07:32<03:21, 201.36s/it]
+grade:  75%|[33m███████▌  [0m| 3/4 [07:32<03:21, 201.36s/it]
+grade: 100%|[33m██████████[0m| 4/4 [07:44<00:00, 126.72s/it]
+grade: 100%|[33m██████████[0m| 4/4 [07:44<00:00, 116.19s/it]

@@ -8,12 +8,12 @@ import utils_ae as ut
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def extract_features(net, fullLoader, device):
+def extract_features(net, model_path, fullLoader, device):
 
     net.eval()
     results = {}
 
-    for imgs, case in tqdm(fullLoader, colour="blue", desc="Features extraction"):
+    for imgs, case in tqdm(fullLoader, colour="blue", desc=f"Features extraction : {model_path}"):
         case = case[0]
         imgs = imgs.to(device)
         with torch.no_grad():
@@ -57,7 +57,7 @@ def main():
     fullLoader = torch.load(f"{model_path}/exports/fullLoader.pth")
 
     # Extracting features
-    features = extract_features(net, fullLoader, device)
+    features = extract_features(net, model_path, fullLoader, device)
     features = pd.DataFrame.from_dict(features, orient="index")
     features = features.sort_index()
     features.index.name = "eid"
@@ -65,7 +65,11 @@ def main():
     if config["single_mod"] and not keep_single:
         features = rearrange_df(features)
 
-    output = "whole_brain" if not keep_single else "wb_per_mod"
+
+    if config["output_name"]:
+        output = config['output_name']
+    else:
+        output = "whole_brain" if not keep_single else "wb_per_mod"
 
     features.to_csv(
         f"{model_path}/exports/features/{output}.csv.gz", index=True)

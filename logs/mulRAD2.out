@@ -1,0 +1,22 @@
+/var/spool/slurmd/job14395/slurm_script: line 19: nvidia-smi: command not found
+
+[1;34mMultivariate analysis for model = radiomics/WB_RAD_TCGA[0m
+Importing outputs/radiomics/WB_RAD_TCGA/config.cfg...
+  0%|[33m          [0m| 0/4 [00:00<?, ?it/s]
+IDH_glob_bin:   0%|[33m          [0m| 0/4 [00:00<?, ?it/s]/share/pi/ogevaert/thomas/miniconda/envs/multimodal/lib/python3.9/site-packages/sklearn/linear_model/_logistic.py:458: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+
+IDH_glob_bin:  25%|[33m██▌       [0m| 1/4 [00:21<01:05, 21.85s/it]
+Gender:  25%|[33m██▌       [0m| 1/4 [00:21<01:05, 21.85s/it]      
+Gender:  50%|[33m█████     [0m| 2/4 [00:40<00:39, 19.69s/it]
+death:  50%|[33m█████     [0m| 2/4 [00:40<00:39, 19.69s/it] 
+death:  75%|[33m███████▌  [0m| 3/4 [05:43<02:29, 149.18s/it]
+grade:  75%|[33m███████▌  [0m| 3/4 [05:43<02:29, 149.18s/it]
+grade: 100%|[33m██████████[0m| 4/4 [05:59<00:00, 96.67s/it] 
+grade: 100%|[33m██████████[0m| 4/4 [05:59<00:00, 89.87s/it]

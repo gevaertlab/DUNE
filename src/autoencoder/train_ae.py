@@ -87,7 +87,7 @@ def main(config):
 
     optimizer = Adam(net.parameters(), lr=config['learning_rate'])
     scheduler = lr_scheduler.ReduceLROnPlateau(
-        optimizer, patience=200, verbose=True)
+        optimizer, patience=100, verbose=True)
 
     # Allocate model on several GPUs
     net = nn.DataParallel(net)
@@ -128,6 +128,6 @@ if __name__ == "__main__":
 
     config = parse_arguments("ae")
     now = dt.now().strftime("%m%d_%H%M%S")
-    # wandb.init(project="Brain_VAE", id=f"{config['model_name']}_{now}", config=config)
+
     main(config)
-    # wandb.finish()
+

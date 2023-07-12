@@ -1,36 +1,56 @@
 #!/usr/bin/bash
-#SBATCH --job-name=att_multi
-#SBATCH --output=logs/att_multi%a.out
-#SBATCH --error=logs/att_multi%a.out
+#SBATCH --job-name=multi
+#SBATCH --output=logs/multi%a.out
+#SBATCH --error=logs/multi%a.out
 #SBATCH --time=48:00:00
 #SBATCH --partition=normal
-#SBATCH --cpus-per-task=10
-#SBATCH --mem-per-cpu=16G
+#SBATCH --gres=gpu:0
+#SBATCH --cpus-per-task=5
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=tbarba@stanford.edu
-#SBATCH --array=0-1:1
+#SBATCH --array=0-0
+#SBATCH --mem-per-cpu=8G
+
 
 
 # INIT
 source ~/.bashrc
 conda activate multimodal
-cd ~/projects/MultiModalBrainSurvival
+
+
+COL='\033[1;34m'
+NC='\033[0m' # No Color
 
 
 # VARIABLES
 export mod=( \
-	     "uVAE/uVAE_UKB_b1e-4_att" \
-		 "AE/AE_UKB_segm_attn" \
-		#  "UNet/other/UNet_UKB_5b8f" \
-		#  "UNet/other/UNet_UKB_6b4f" \
-		#  "UNet/other/UNet_UKB_6b8f" \
-		#  "UNet/UNet_UPENN" \
-		#  "UNet/UNet_UKB_segm" \
-		#  "UNet/UNet_UCSF" \
+    # "test/ADNI" \
+    "test/TCGA" \
+    # "test/SCHIZO" \
+    # "test/UPENN" \
+    # "test/UCSF" \
+    # "test/UKB" \
+
 )
 
-# SCRIPT
-echo -e "Processing model = ${mod[SLURM_ARRAY_TASK_ID]}"
-python src/autoencoder/multivariate.py -c ${mod[SLURM_ARRAY_TASK_ID]} -f whole_brain -o WB_oversampling
-python src/autoencoder/compute_umaps.py -c ${mod[SLURM_ARRAY_TASK_ID]}
+model=AE_sel2
+architecture=ae
+keep_single=False
 
+# SCRIPT
+
+python src/autoencoder/feature_extraction.py  \
+    -c ${mod[SLURM_ARRAY_TASK_ID]} \
+    --other_model outputs/norm/$model $architecture \
+    --output_name wb_$model \
+    -k $keep_single
+
+
+# #Multi
+echo -e "\n${COL}Multivariate analysis for model = ${mod[SLURM_ARRAY_TASK_ID]}${NC}"
+python src/autoencoder/multivariate.py \
+    -c ${mod[SLURM_ARRAY_TASK_ID]} \
+    -f wb_$model \
+    -o wb_$model
+
+    # -f wb_$model \
