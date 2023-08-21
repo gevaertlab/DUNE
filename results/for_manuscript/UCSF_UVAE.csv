@@ -1,0 +1,16 @@
+variable,split,performance,metric,ibs,variance,num_classes,N,missing_rate,model,restored
+IDH_glob_bin,1,1.0,f1_weighted,,1.0,2,169,0.0,LogisticRegression,False
+IDH_glob_bin,2,0.9882,f1_weighted,,1.0,2,169,0.0,LogisticRegression,False
+IDH_glob_bin,3,0.9941,f1_weighted,,1.0,2,169,0.0,LogisticRegression,False
+IDH_glob_bin,4,1.0,f1_weighted,,1.0,2,169,0.0,LogisticRegression,False
+IDH_glob_bin,5,0.9643,f1_weighted,,1.0,2,168,0.0,LogisticRegression,False
+Sex,1,0.6723,f1_weighted,,1.0,2,119,0.0,LogisticRegression,False
+Sex,2,0.7059,f1_weighted,,1.0,2,119,0.0,LogisticRegression,False
+Sex,3,0.6949,f1_weighted,,1.0,2,118,0.0,LogisticRegression,False
+Sex,4,0.7203,f1_weighted,,1.0,2,118,0.0,LogisticRegression,False
+Sex,5,0.7288,f1_weighted,,1.0,2,118,0.0,LogisticRegression,False
+death,1,0.5174,,0.2135742668350901,,,99,0.0,RandomSurvivalForest,False
+death,2,0.463,,0.20535425904378812,,,99,0.0,RandomSurvivalForest,False
+death,3,0.5505,,0.20146132402738046,,,99,0.0,RandomSurvivalForest,False
+death,4,0.5753,,0.2211837260523199,,,98,0.0,RandomSurvivalForest,False
+death,5,0.5747,,0.22567948229899945,,,98,0.0,RandomSurvivalForest,False

@@ -1,0 +1,8 @@
+GPU 0: Tesla P100-PCIE-16GB (UUID: GPU-f23de388-9ea4-6cf7-340c-09c4eb5368ec)
+
+[1;34mExtracting features = test/SCHIZO_rec[0m
+Importing outputs/test/SCHIZO_rec/config.cfg...
+Using other model :  outputs/norm/UNet_sel2
+
+[1;34mMultivariate analysis for model = test/SCHIZO_rec[0m
+Importing outputs/test/SCHIZO_rec/config.cfg...

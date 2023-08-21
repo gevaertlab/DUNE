@@ -1,12 +1,22 @@
 # Fdb version 3
-["xdvipdfmx"] 1689124389 "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.pdf" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1" 1689124394
-  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" 1689124389 616 f2d7bd093622164c14deed2b44f8e7d0 "xelatex"
+["xdvipdfmx"] 1689275337 "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.pdf" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1" 1689275338
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" 1689275337 1836 48568d8453bfd48057fc087d7d697837 "xelatex"
   (generated)
   "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.pdf"
-["xelatex"] 1689124388 "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.tex" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" "V1" 1689124394
+["xelatex"] 1689275337 "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.tex" "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv" "V1" 1689275338
   "/etc/texmf/web2c/texmf.cnf" 1688156055 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.aux" 1689124389 8 a94a2480d3289e625eea47cd1b285758 ""
-  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.tex" 1689124394 115 2805740b9e5d32f1195d4ded3265f691 ""
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.aux" 1689275337 388 1b6d2712985beaf1c97ec494dacf4529 ""
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.tex" 1689275338 213 0e7e974f599733bdd9935a5efa234d9b ""
+  "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1136768653 1524 4414a8315f39513458b80dfc63bff03a ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1136768653 1512 f21f83efb36853c0b70002322c1ab3ad ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1136768653 1520 eccf95517727cb11801f4f1aee3a21b4 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr6.tfm" 1136768653 1300 b62933e007d01cfd073f79b963c01526 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr8.tfm" 1136768653 1292 21c1c5bfeaebccffdb478fd231a0997d ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm" 1136768653 1124 6c73e740cf17375f03eec0ee63599741 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1136768653 1116 933a60c408fc0a863a92debe84b2d294 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1136768653 1120 8b7d695260f3cff42e636090a8002094 ""
   "/usr/share/texlive/texmf-dist/tex/latex/base/article.cls" 1580683321 20023 e427dd9e17e239bf926ef3aab67fe35e ""
   "/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo" 1580683321 8446 9874cccac5fee462272c582807dbbf56 ""
   "/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd" 1580683321 2431 b6cead9f069ed55f4fba0c637aa047b6 ""
@@ -14,11 +24,11 @@
   "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
   "/usr/share/texmf/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
   "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1688156410 4647313 052b28a87872879e9339cf0fe3633a2d ""
-  "V1.aux" 1689124389 8 a94a2480d3289e625eea47cd1b285758 "xelatex"
-  "V1.tex" 1689124394 115 2805740b9e5d32f1195d4ded3265f691 ""
+  "V1.aux" 1689275337 388 1b6d2712985beaf1c97ec494dacf4529 "xelatex"
+  "V1.tex" 1689275338 213 0e7e974f599733bdd9935a5efa234d9b ""
   (generated)
   "V1.aux"
-  "V1.log"
-  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.log"
   "V1.xdv"
+  "V1.log"
   "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.xdv"
+  "/home/tbarba/projects/MultiModalBrainSurvival/MS/V1.log"

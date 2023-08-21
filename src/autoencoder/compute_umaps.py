@@ -1,13 +1,17 @@
-import pandas as pd
-import umap
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-from tqdm import tqdm
-from argparse import ArgumentParser
-from os.path import join
-import configparser
-import os
+import warnings
+warnings.filterwarnings('ignore')
+
+
 import seaborn as sns
+import os
+import configparser
+from os.path import join
+from argparse import ArgumentParser
+from tqdm import tqdm
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+import umap
+import pandas as pd
 
 
 def parse_arguments():
@@ -17,7 +21,10 @@ def parse_arguments():
                         help='config file path')
 
     parser.add_argument('-k', '--keep_single', type=str, default="False",
-                    help='for feature extraction - keep single modalities', required=False)
+                        help='for feature extraction - keep single modalities', required=False)
+
+    parser.add_argument('-f', '--features', type=str,
+                        help='features files', required=True)
 
     args = parser.parse_args()
 
@@ -37,7 +44,7 @@ def parse_arguments():
     conf["keep_single"] = eval(args.keep_single)
 
     config = {**model, **data, **conf, **predictions}
-
+    config["features"] = args.features
     return config
 
 
@@ -63,12 +70,18 @@ def create_embeddings(features_path, meta_path, variables):
     return embedding, variables
 
 
-def plot_graph(embedding, var):
-
+def plot_graph(embedding, var, pal):
     sns.set_theme(style="white")
     fig, ax = plt.subplots(figsize=(6, 6))
-    sns.scatterplot(ax=ax, data=embedding,
-                    x=0, y=1, hue=var, s=8, edgecolor="black", alpha=0.6)
+
+    g = sns.scatterplot(ax=ax, data=embedding,
+                        x=0, y=1, hue=var, s=9,
+                        edgecolor="black",
+                        linewidth=0.05,
+                        palette=pal,
+                        alpha=1)
+    # sns.move_legend(g, "center right", bbox_to_anchor=(.55, .45))
+    g._legend.remove()
     ax.set_title(var)
 
     plt.close()
@@ -82,12 +95,7 @@ if __name__ == "__main__":
     config = parse_arguments()
     mod = config["model_path"]
 
-    if config["features"] == "radiomics":
-        features = join(config["data_path"], config["dataset"],
-                        "metadata", config["pyradiomics"])
-    else:
-        wb_feats = "whole_brain" if not config["keep_single"] else "wb_per_mod"
-        features = join(mod, f"exports/features/{wb_feats}.csv.gz")
+    features = join(mod, f"exports/features/{config['features']}.csv.gz")
 
     if type(config["dataset"]) == list:
         meta = config["metadata"]
@@ -104,10 +112,34 @@ if __name__ == "__main__":
     embedding, variables = create_embeddings(
         features, meta, variables)
 
-    output_file = join(mod, "umap", mod.split("/")[-1]+".pdf")
-    os.makedirs(join(mod, "umap"), exist_ok=True)
+    output_file = join(mod, "multivariate", config["features"] + "_UMAP.pdf")
+    os.makedirs(join(mod, "multivariate"), exist_ok=True)
+
+    to_plot = {
+        "Volume_of_grey_matter": "plasma",
+        "Sexe": "Spectral",
+        "Alcohol_intake_frequency": "plasma",
+        "Scanner_transverse_Y_brain_position": "plasma",
+        "UK_Biobank_assessment_centre": "Spectral",
+        # "Volumetric_scaling_from_T1_head_image_to_standard_space":"plasma",
+    }
 
     pp = PdfPages(output_file)
-    for var in tqdm(variables, colour="blue"):
-        pp.savefig(plot_graph(embedding, var))
+    embedding.to_csv(output_file + ".csv.gz", index=True)
+
+    fig, ax = plt.subplots(len(to_plot), 1)
+    for idx, var in tqdm(enumerate(to_plot), desc=config['features']):
+        print(var)
+        g=sns.scatterplot(data=embedding,
+                            x=0, y=1, hue=var, s=9,
+                            edgecolor="black",
+                            linewidth=0.05,
+                            palette=to_plot[var],
+                            alpha=1,
+                            ax=ax[idx])
+        g._legend.remove()
+        g.set_title(var)
+        # p = plot_graph(embedding, var, to_plot[var])
+        # pp.savefig(p)
+    plt.savefig(f"pile_{output_file}.pdf")
     pp.close()

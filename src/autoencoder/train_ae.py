@@ -1,5 +1,3 @@
-import wandb
-from datetime import datetime as dt
 from tqdm import tqdm
 from os.path import exists
 import matplotlib
@@ -9,8 +7,9 @@ import torch.nn as nn
 from torch.optim import Adam, lr_scheduler
 from torchvision import transforms as transforms
 from monai.losses.ssim_loss import SSIMLoss
-
 from utils_ae import *
+
+import pandas as pd
 
 
 matplotlib.use('Agg')
@@ -24,6 +23,7 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
 
     ssim_func = SSIMLoss(spatial_dims=3).to(device)
     loss_list, ssim_list, bottleneck = [], [], torch.tensor(0)
+    # cases_ids = []   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     log, colour = (f"Model {model_name} - ep {epoch+1}/{num_epochs} - Train",
                    "yellow") if train else (f"Model {model_name} - ep {epoch+1}/{num_epochs} - Val", "blue")
@@ -31,7 +31,7 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
 
     with torch.set_grad_enabled(train):
         for idx, batch in enumerate(tqdm(dataloader, desc=log, colour=colour)):
-            imgs, _ = batch
+            imgs, caseid = batch
 
             images = imgs.to(device)
             reconst, bottleneck, distrib = model(images)
@@ -50,6 +50,8 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
             val_loss = np.mean(loss_list)
             val_ssim = np.mean(ssim_list)
             num_features = np.prod(bottleneck.shape[1:])
+            
+            # cases_ids.append(caseid.item())  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
             if train:
                 optimizer.zero_grad()
@@ -59,12 +61,19 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
             if quick and idx == 5:
                 break
 
+
+
     val_loss = np.mean(loss_list)
     val_ssim = np.mean(ssim_list)
     num_features = np.prod(bottleneck.shape[1:])
 
     metric_results = {'loss': val_loss,
                       'ssim': val_ssim, "num_features": num_features}
+    
+    # if not train: #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    #     print("exporting SSIMS")
+    #     list_ssims = {"cases": cases_ids, "ssims":ssim_list}
+    #     pd.DataFrame(list_ssims).to_csv(f"outputs/{model._type}.csv", index=False)
 
     return metric_results
 
@@ -121,13 +130,9 @@ def main(config):
         best_test_loss = export_model(
             net, model_path, epoch, test_epoch_metrics, best_test_loss)
 
-        # wandb.log(test_epoch_metrics)
-
 
 if __name__ == "__main__":
 
     config = parse_arguments("ae")
-    now = dt.now().strftime("%m%d_%H%M%S")
-
     main(config)
 

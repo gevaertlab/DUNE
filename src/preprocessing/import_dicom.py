@@ -42,7 +42,7 @@ def process(case):
 if __name__ == "__main__":
     cases = ls_dir(DATA_FOLDER)
     with multiprocessing.Pool(10) as p:
-        r = list(tqdm(p.imap(process, cases), total = len(cases), colour='cyan'))
+        r = list(tqdm(p.imap(process, cases), total=len(cases), colour='cyan'))
 
 
 

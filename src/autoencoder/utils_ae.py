@@ -150,7 +150,7 @@ def import_model(type_ae, modalities, features, num_blocks, min_dims, device, **
 
     # Initialize a model of our autoEncoder class on the device
     assert type_ae.lower() in ["ae", "gae", "unet", "oldae",
-                               "oldaeu", "u_vae", "vae3d", "rnet"]
+                               "oldaeu", "uvae", "vae3d", "rnet"]
     attn = config['attention']
     dropout = config['dropout']
 

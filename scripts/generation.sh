@@ -29,10 +29,9 @@ export mod=( \
 
 )
 
-model=transmUNET
+model=transmUNET_rest
 architecture=unet
-keep_single=False
-output=wb3_$model
+
 
 # SCRIPT
 echo -e "\n${COL}Generating modality = ${mod[SLURM_ARRAY_TASK_ID]}${NC}"

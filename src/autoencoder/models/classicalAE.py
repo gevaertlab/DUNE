@@ -5,6 +5,7 @@ import nibabel as nib
 import torchio as tio
 import numpy as np
 
+
 class BaseAE(nn.Module):
     def __init__(self, in_channels, init_features, num_blocks, type_ae, dropout, attention=False):
         super(BaseAE, self).__init__()
@@ -42,6 +43,7 @@ class BaseAE(nn.Module):
 
         # FINAL CONVOLUTION
         self.last_conv = nn.Conv3d(feature_list[-1], self.num_mod, 1, 1, 0)
+
 
     def forward(self, x):
         # ENCODING

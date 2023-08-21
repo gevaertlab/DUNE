@@ -1,20 +1,17 @@
 #!/usr/bin/bash
-#SBATCH --job-name=AE
-#SBATCH --output=logs/AE%a.out
-#SBATCH --error=logs/AE%a.out
+#SBATCH --job-name=UVAE
+#SBATCH --output=logs/UVAE%a.out
+#SBATCH --error=logs/UVAE%a.out
 #SBATCH --time=48:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=8
 #SBATCH --nodes=1
-#SBATCH --mem=64G
+#SBATCH --mem=256G
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=tbarba@stanford.edu
 #SBATCH --array=0-0
-#SBATCH -C GPU_MEM:32GB
-
-
-
+##SBATCH -C GPU_MEM:32GB
 
 # INIT
 source ~/.bashrc
@@ -24,13 +21,12 @@ conda activate multimodal
 COL='\033[1;35m'
 NC='\033[0m' # No Color
 
-export mod=( \
-# "norm/AE_selection_attn" \
-# "norm/VAE3D_selection" \
-# "norm/AE_selection" \
-"test/AE_sel2" \
-)   
-
+export mod=(
+    # "norm/AE_selection_attn" \
+    # "norm/VAE3D_selection" \
+    "norm/UVAE_sel2"
+    # "test/SCHIZO_rec" \
+)
 
 # SCRIPT
 echo -e "\n${COL}\nProcessing model = ${mod[SLURM_ARRAY_TASK_ID]}${NC}"

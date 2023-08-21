@@ -1,9 +1,0 @@
-/var/spool/slurmd/job14303/slurm_script: line 19: nvidia-smi: command not found
-
-[1;34mExtracting features = [0m
-
-[1;34mMultivariate analysis for model = [0m
-usage: multivariate.py [-h] [-c CONFIG_FILE] [-o OUTPUT_NAME] [-f FEATURES]
-                       [-m OTHER_MODEL [OTHER_MODEL ...]] [-k KEEP_SINGLE]
-multivariate.py: error: argument -c/--config_file: expected one argument
-/var/spool/slurmd/job14303/slurm_script: line 48: -f: command not found

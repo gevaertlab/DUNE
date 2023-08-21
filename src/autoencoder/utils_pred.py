@@ -89,6 +89,9 @@ def init_survival_predictor(var, restore=False, path=None):
         hyperparams = {
             "n_estimators": np.arange(200, 500, 100),
             "min_samples_split": np.arange(2, 10)}
+        # hyperparams = {
+        #     "n_estimators": [200],
+        #     "min_samples_split": [3]}
 
     return mod, hyperparams
 
@@ -101,6 +104,8 @@ def init_classifier(var, restore=False, path=None):
         # hyperparams = {"alpha":np.logspace(-4,1, 30)}
         mod = LogisticRegression(penalty="l2", C=0.014, max_iter=500 )
         hyperparams = {"C": np.logspace(-4, 1, 30)}
+        # mod = LogisticRegression(penalty="l2", C=0.014, max_iter=200)
+        # hyperparams = {"C": np.logspace(-4, 1, 5)}
 
     return mod, hyperparams
 
@@ -111,7 +116,7 @@ def init_regressor(var, restore=False, path=None):
 
     else:
         mod = Ridge(alpha=0.014)
-        hyperparams = {"alpha": np.logspace(-4, 1, 30)}
+        hyperparams = {"alpha": np.logspace(-4, 1, 15)}
         
     return mod, hyperparams
 

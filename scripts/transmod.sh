@@ -5,9 +5,9 @@
 #SBATCH --time=48:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=4
 #SBATCH --nodes=1
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 #SBATCH -C GPU_MEM:32GB
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=tbarba@stanford.edu
@@ -24,7 +24,7 @@ COL='\033[1;35m'
 NC='\033[0m' # No Color
 
 export mod=( \
-    "transmod/transmUNET" \
+    "transmod/transmUNET_rest" \
 )   
 
 

@@ -81,7 +81,8 @@ def export_roc_curve():
         )
     else:
         gt = label_binarize(ground_truth, classes=list(set(ground_truth)))
-        colors = cycle(["aqua", "darkorange", "darkturquoise"])
+        colors = cycle(["aqua", "forestgreen", "darkturquoise",
+                       "gold", "darkorange", "orangered"])
         for class_id, color in zip(range(num_classes), colors):
             RocCurveDisplay.from_predictions(
                 gt[:, class_id],
@@ -123,7 +124,6 @@ def export_km_curves():
     ax.set_title(var)
     ax.text(x=0, y=0.12, s=f"p={pval:.3f}")
     fig.tight_layout()
-    fig.savefig(join(output_dir, f"test.pdf"))
 
     plt.close()
 
@@ -159,13 +159,32 @@ def export_scatter():
     ax.set_ylabel("prediction")
     ax.set_title(var)
 
+    ax.set_ylim(-5, 5)
+    ax.set_xlim(-5, 5)
+
     plt.close()
 
     return fig
 
 
+def export_results(var, pred_probas, decision_functions):
+
+    if not pred_probas:
+        pred_probas = np.nan
+        decision_functions = np.nan
+
+    df = pd.DataFrame(
+        {f"{var}__gt": ground_truth,
+         f"{var}__pred": predictions,
+         f"{var}__pb": pred_probas,
+         f"{var}__df": decision_functions},
+         )
+
+    return df
+
+
 def export_model(mod, metric):
-        joblib.dump(mod, "RF_survival")
+    joblib.dump(mod, "RF_survival")
 
 
 def run_split(X_train, y_train, X_test, y_test):
@@ -218,6 +237,7 @@ if __name__ == '__main__':
     model_path = config['model_path']
     output_dir = join(config['model_path'], "multivariate")
     output_file = join(output_dir, f"{config['output_name']}.csv")
+    all_var_predictions_file = join(output_dir, f"{config['output_name']}_PREDICTIONS.csv.gz")
     output_plots = join(output_dir, f"{config['output_name']}_plots.pdf")
     merged = create_fulldataset(**config)
 
@@ -231,6 +251,7 @@ if __name__ == '__main__':
 
     # Create empty results
     results_df = pd.DataFrame()
+    allvar_predictions = pd.DataFrame()
     pp = PdfPages(output_plots)
 
     for _, var in enumerate(bar := tqdm(variables, colour="yellow")):
@@ -239,6 +260,7 @@ if __name__ == '__main__':
         restore_models = config["load_models"]
         predictions, pred_probas, decision_functions, ground_truth = [], [], [], []
         performances = []
+        
         # identifiers = []
 
         # Create subdataset
@@ -257,7 +279,6 @@ if __name__ == '__main__':
             y_train = labels[train_index]
             X_test = features[test_index]
             y_test = labels[test_index]
-
 
             mod, results = run_split(X_train, y_train, X_test, y_test)
             ground_truth.extend(y_test)
@@ -281,7 +302,12 @@ if __name__ == '__main__':
                 elif task == "regression":
                     pp.savefig(export_scatter())
                 elif task == "survival":
-                    export_model(mod, "survival")
+                    # export_model(mod, "survival")
                     pp.savefig(export_km_curves())
+
+                var_predictions = export_results(var, pred_probas, decision_functions)
+                allvar_predictions = pd.concat([allvar_predictions, var_predictions], axis=1)
+                allvar_predictions["mod"] = config["output_name"]
+                allvar_predictions.set_index("mod").to_csv(all_var_predictions_file, index=True)
 
     pp.close()
