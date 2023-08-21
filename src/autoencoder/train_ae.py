@@ -23,7 +23,6 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
 
     ssim_func = SSIMLoss(spatial_dims=3).to(device)
     loss_list, ssim_list, bottleneck = [], [], torch.tensor(0)
-    # cases_ids = []   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     log, colour = (f"Model {model_name} - ep {epoch+1}/{num_epochs} - Train",
                    "yellow") if train else (f"Model {model_name} - ep {epoch+1}/{num_epochs} - Val", "blue")
@@ -51,7 +50,6 @@ def train_loop(model, bet, dataloader, optimizer, device, epoch, train, **config
             val_ssim = np.mean(ssim_list)
             num_features = np.prod(bottleneck.shape[1:])
             
-            # cases_ids.append(caseid.item())  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
             if train:
                 optimizer.zero_grad()
