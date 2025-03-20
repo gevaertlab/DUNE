@@ -32,8 +32,8 @@ The pipeline consists of the following sequential stages:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/brainmri-feature-extraction.git
-cd brainmri-feature-extraction
+git clone https://github.com/gevaertlab/DUNE.git
+cd DUNE
 
 # Install dependencies
 pip install -r requirements.txt
@@ -84,7 +84,7 @@ model:
 ## Project Structure
 
 ```
-.
+DUNE
 ├── data
 │   ├── models           # Pre-trained model weights
 │   └── templates        # Registration templates (MNI, OASIS)
@@ -167,6 +167,6 @@ If you use DUNE in your research, please consider citing:
   author = {Barba, Thomas and Bagley, Bryce A. and Steyaert, Sandra and Carrillo-Perez, Francisco and Sadée, Christoph and Iv, Michael and Gevaert, Olivier},
   title = {DUNE: a versatile neuroimaging encoder captures brain complexity across three major diseases: cancer, dementia and schizophrenia},
   year = {2025},
-  url = {https://github.com/gevaertlab/BrainMR_AE_datafusion}
+  url = {https://www.medrxiv.org/content/10.1101/2025.02.24.25322787v1.full}
 }
 ```
