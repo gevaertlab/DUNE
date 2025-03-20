@@ -107,10 +107,10 @@ DUNE
 
 DUNE was developed and validated using the following datasets:
 
-- **UK Biobank (UKB)**: Healthy volunteers (T1, FLAIR)
-- **UPENN**: University of Pennsylvania glioblastoma dataset (T1Gd, FLAIR)
-- **UCSF**: UCSF preoperative diffuse glioma MRI dataset (T1Gd, FLAIR)
-- **TCGA**: TCGA-LGG and TCGA-GBM datasets for external validation
+- **UK Biobank (UKB)**: Healthy volunteers
+- **UPENN**: University of Pennsylvania glioblastoma dataset
+- **UCSF**: UCSF preoperative diffuse glioma MRI dataset
+- **TCGA**: TCGA-LGG and TCGA-GBM datasets 
 - **ADNI**: Alzheimer's Disease Neuroimaging Initiative dataset
 - **SchizConnect**: COBRE and MCIC schizophrenia datasets
 
@@ -125,26 +125,6 @@ DUNE's feature extraction is powered by a UNet-based autoencoder architecture wi
 This unsupervised approach learns to capture both obvious and subtle imaging features, creating a numerical "fingerprint" of each scan that preserves important structural information while dramatically reducing dimensionality. By removing skip connections from the traditional UNet architecture, DUNE forces all information through the bottleneck, producing more informative embeddings despite lower reconstruction quality.
 
 The model was trained on 3,814 MRI scans including both healthy volunteers from UK Biobank and patients with gliomas to ensure it can effectively extract features from both normal and pathological brain structures.
-
-## Validated Clinical Applications
-
-DUNE has been validated to successfully extract meaningful features that can predict:
-
-### In Healthy Volunteers:
-- Volumetric brain measurements
-- Demographic parameters (age, sex)
-- Cardiovascular disease (AUROC=0.80)
-- Alcohol consumption (AUROC=0.99)
-- Genetic traits like APOE4 allele status (AUROC=0.67)
-
-### In Disease Cohorts:
-- Alzheimer's dementia diagnosis (AUROC=0.92)
-- Schizophrenia diagnosis (AUROC=0.64)
-- Glioma IDH molecular status (AUROC=0.92)
-- Glioma patient survival (C-index=0.608)
-- MGMT promoter methylation status (AUROC=0.77)
-
-The model performs as well as or better than previous task-oriented models that process raw imaging data directly, while offering greater flexibility and efficiency.
 
 ## Dependencies
 
