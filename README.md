@@ -26,6 +26,13 @@ The pipeline consists of the following sequential stages:
 - Nibabel
 - Click
 
+### ANTs Installation
+
+DUNE requires ANTs (Advanced Normalization Tools) for brain image preprocessing. ANTs is not installable via pip and requires separate installation:
+
+- Installation instructions are available on the [ANTs GitHub repository](https://github.com/ANTsX/ANTs)
+- Ensure the ANTs binaries are in your PATH before running DUNE
+
 ### Setup
 
 ```bash
@@ -97,6 +104,21 @@ The pipeline produces a simplified output structure:
    └── logs/                              # Processing logs (unless --no-logs is used)
    ```
 
+### Feature Files Structure
+
+Each generated feature file is a CSV containing 3,072 features extracted from the bottleneck layer of the DUNE autoencoder. The files are structured as follows:
+
+- The first column contains the sequence identifier
+- The remaining columns (3,072) contain the extracted features
+
+Example of a feature file structure:
+
+| sequence_id        | feature_0 | feature_1 | feature_2 | ... | feature_3071 |
+| ------------------ | --------- | --------- | --------- | --- | ------------ |
+| patient001-T1_POST | 0.0821    | -0.1427   | 0.2984    | ... | 0.0193       |
+
+These low-dimensional embeddings capture essential brain structure information that can be used for downstream machine learning tasks like classification, regression, or clustering.
+
 ### Configuration
 
 The pipeline can be customized through a YAML configuration file:
@@ -131,13 +153,13 @@ output:
 
 ## Command Line Options
 
-| Option | Description |
-|--------|-------------|
-| `--config`, `-c` | Path to configuration file |
-| `--verbose`, `-v` | Enable verbose output |
-| `--skip-brain-extraction`, `-s` | Skip brain extraction step |
-| `--keep-preprocessed`, `-p` | Keep preprocessed NIfTI files in output |
-| `--no-logs` | Disable writing log files |
+| Option                          | Description                             |
+| ------------------------------- | --------------------------------------- |
+| `--config`, `-c`                | Path to configuration file              |
+| `--verbose`, `-v`               | Enable verbose output                   |
+| `--skip-brain-extraction`, `-s` | Skip brain extraction step              |
+| `--keep-preprocessed`, `-p`     | Keep preprocessed NIfTI files in output |
+| `--no-logs`                     | Disable writing log files               |
 
 ## Project Structure
 

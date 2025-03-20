@@ -321,6 +321,8 @@ class FeatureExtractor:
 
             # Create and save features DataFrame
             features_df = pd.DataFrame.from_dict(features_dict, orient='index')
+            features_df.columns = [
+                f'feature_{i}' for i in range(len(features_df.columns))]
             output_file.parent.mkdir(parents=True, exist_ok=True)
             features_df.to_csv(output_file, index_label="eid__sequence")
 
