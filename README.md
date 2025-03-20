@@ -10,11 +10,9 @@ DUNE (Deep feature extraction by UNet-based Neuroimaging-oriented autoEncoder) i
 
 The pipeline consists of the following sequential stages:
 
-1. **DICOM to NIfTI Conversion**: Transforms medical DICOM images into the NIfTI format for analysis
-2. **Preprocessing**: Prepares images through brain extraction, bias field correction, and spatial standardization
+1. **DICOM to NIfTI Conversion**: Transforms medical DICOM images into the NIfTI format for analysis (skipped if NIfTI files are provided directly)
+2. **Preprocessing**: Prepares images through brain extraction (optional if already done), bias field correction, and spatial standardization
 3. **Feature Extraction**: Uses a UNet-based autoencoder (without skip connections) to extract low-dimensional embeddings
-4. **Feature Grouping**: Combines features from multiple MRI sequences into unified case-level representations
-5. **Clinical Inference**: Utilizes extracted embeddings with simple machine learning models to predict clinical parameters
 
 ## Installation
 
@@ -55,8 +53,46 @@ python -m src.main init /path/to/workspace
 ### Process a Case
 
 ```bash
+# Process a DICOM folder
 python -m src.main process /path/to/dicom/folder /path/to/output --config config.yaml
+
+# Process a NIfTI file with brain extraction
+python -m src.main process /path/to/image.nii.gz /path/to/output --config config.yaml
+
+# Process a NIfTI file skipping brain extraction (if already performed)
+python -m src.main process /path/to/image.nii.gz /path/to/output --skip-brain-extraction
+
+# Keep preprocessed files in the output
+python -m src.main process /path/to/image.nii.gz /path/to/output --keep-preprocessed
+
+# Process a folder containing multiple NIfTI files
+python -m src.main process /path/to/nifti/folder /path/to/output --config config.yaml
 ```
+
+### Output Structure
+
+The pipeline now produces a simplified output structure:
+
+1. **For a single file input (e.g., my_image.nii.gz)**:
+   ```
+   output_dir/
+   ├── my_image_features.csv              # Extracted features
+   ├── my_image_preprocessed.nii.gz       # (Optional) Preprocessed image if --keep-preprocessed is used
+   └── logs/                              # Processing logs
+   ```
+
+2. **For a directory input (e.g., case_dir/)**:
+   ```
+   output_dir/
+   ├── case_dir/
+   │   ├── features/
+   │   │   ├── sequence1_features.csv     # Features for sequence 1
+   │   │   └── sequence2_features.csv     # Features for sequence 2
+   │   ├── preprocessed/                  # (Optional) Only if --keep-preprocessed is used
+   │   │   ├── sequence1_preprocessed.nii.gz
+   │   │   └── sequence2_preprocessed.nii.gz
+   └── logs/                              # Processing logs
+   ```
 
 ### Configuration
 
@@ -75,6 +111,18 @@ preprocessing:
       threshold: 0.5
     bias_correction:
       iterations: 4
+  # Option to skip brain extraction if already performed
+  skip_brain_extraction: false
+  # Option to keep preprocessed files in the output
+  keep_preprocessed: false
+
+# Support for direct NIfTI input
+input:
+  support_nifti: true
+
+# Output structure options
+output:
+  simplified_structure: true
 
 model:
   weights_file: "best_model.pt"
@@ -92,16 +140,26 @@ DUNE
 │   └── preprocessing    # ANTs-based preprocessing scripts
 ├── src
 │   ├── pipeline         # Core pipeline components
-│   │   ├── dicom.py     # DICOM conversion
+│   │   ├── dicom.py     # DICOM conversion and NIfTI handling
 │   │   ├── preprocessing.py # Image preprocessing
-│   │   ├── feature_extraction.py # Feature extraction with BrainAE model
-│   │   └── feature_grouping.py # Feature grouping
+│   │   └── feature_extraction.py # Feature extraction with BrainAE model
 │   ├── utils            # Utility modules
 │   │   ├── file_handling.py # File operations
 │   │   └── logger.py    # Logging functionality
 │   └── main.py          # CLI interface and pipeline orchestration
 └── config.yaml          # Default configuration
 ```
+
+## Input Formats
+
+DUNE supports two primary input formats:
+
+1. **DICOM directories**: Folders containing DICOM files (.dcm) from MRI scanners
+2. **NIfTI files**: Directly process .nii or .nii.gz files
+
+When processing NIfTI files, you can specify:
+- Whether the brain extraction step should be performed or skipped using the `--skip-brain-extraction` flag
+- Whether to keep preprocessed images in the output using the `--keep-preprocessed` flag
 
 ## Datasets Used
 
@@ -125,18 +183,6 @@ DUNE's feature extraction is powered by a UNet-based autoencoder architecture wi
 This unsupervised approach learns to capture both obvious and subtle imaging features, creating a numerical "fingerprint" of each scan that preserves important structural information while dramatically reducing dimensionality. By removing skip connections from the traditional UNet architecture, DUNE forces all information through the bottleneck, producing more informative embeddings despite lower reconstruction quality.
 
 The model was trained on 3,814 MRI scans including both healthy volunteers from UK Biobank and patients with gliomas to ensure it can effectively extract features from both normal and pathological brain structures.
-
-## Dependencies
-
-- `nibabel`: For reading and writing NIfTI files
-- `pydicom`: For DICOM file operations
-- `torch`: Deep learning framework
-- `torchio`: Medical image preprocessing and augmentation
-- `dicom2nifti`: DICOM to NIfTI conversion
-- `pandas`: Data manipulation
-- `ANTs`: Advanced image registration and normalization
-- `scikit-learn`: For machine learning models using the extracted features
-
 
 ## Citation
 

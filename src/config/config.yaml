@@ -11,6 +11,18 @@ preprocessing:
       threshold: 0.5
     bias_correction:
       iterations: 4
+  # Nouvelle option pour sauter l'extraction du cerveau si déjà fait
+  skip_brain_extraction: false
+  # Nouvelle option pour conserver les fichiers préprocessés
+  keep_preprocessed: false
+
+# Support pour les fichiers NIfTI
+input:
+  support_nifti: true
+
+# Options de sortie
+output:
+  simplified_structure: true
 
 model:
   weights_file: "best_model.pt"

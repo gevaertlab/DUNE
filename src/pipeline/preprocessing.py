@@ -117,13 +117,15 @@ class Preprocessor:
             )
             return False
 
-    def process_file(self, input_file: Path, output_dir: Path) -> Optional[Path]:
+
+    def process_file(self, input_file: Path, output_dir: Path, skip_brain_extraction: bool = False) -> Optional[Path]:
         """
         Apply all preprocessing steps to a NIfTI file.
 
         Args:
             input_file (Path): Input NIfTI file to process
             output_dir (Path): Directory for output files
+            skip_brain_extraction (bool): If True, skip brain extraction step
 
         Returns:
             Optional[Path]: Path to the processed file if successful, None otherwise
@@ -141,14 +143,20 @@ class Preprocessor:
             brain_output = temp_dir / f"{sequence_name}_brain.nii.gz"
             bias_output = temp_dir / f"{sequence_name}_bias.nii.gz"
 
-            # 1. Brain extraction
-            if not self._run_processing_step(
-                "Brain Extraction",
-                self.scripts['brain_extract'],
-                input_file,
-                brain_output
-            ):
-                raise Exception("Brain extraction failed")
+            # 1. Brain extraction (skip if requested)
+            if skip_brain_extraction:
+                self.logger.logger.info("Skipping brain extraction as requested")
+                # Copy input file to brain_output since we're skipping that step
+                import shutil
+                shutil.copy(input_file, brain_output)
+            else:
+                if not self._run_processing_step(
+                    "Brain Extraction",
+                    self.scripts['brain_extract'],
+                    input_file,
+                    brain_output
+                ):
+                    raise Exception("Brain extraction failed")
 
             # 2. Bias field correction
             if not self._run_processing_step(
@@ -186,11 +194,14 @@ class Preprocessor:
                 "input_file": str(input_file),
                 "output_file": str(final_path),
                 "processing_steps": [
-                    "brain_extraction",
                     "bias_correction",
                     "standardization"
                 ]
             }
+
+            # Ajouter l'étape de brain extraction seulement si elle a été effectuée
+            if not skip_brain_extraction:
+                metadata["processing_steps"].insert(0, "brain_extraction")
 
             # Sauvegardons les métadonnées dans le répertoire de sortie
             self.file_handler.save_processing_metadata(

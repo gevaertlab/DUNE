@@ -95,43 +95,69 @@ def load_and_preprocess_nifti(file_path):
     return torch.tensor(img_data)
 
 
-def extract_features(model, input_path, output_path):
-    """Extract features from NIfTI files and save to CSV."""
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
-    model.eval()
+def extract_features(self, input_files: Dict[str, Path], output_file: Path) -> Optional[Path]:
+    """
+    Extract features from a set of preprocessed NIfTI files.
+    Simplified version that processes one file at a time.
 
-    input_path = Path(input_path)
-    features_dict = {}
+    Args:
+        input_files (Dict[str, Path]): Dictionary mapping sequence names to file paths
+        output_file (Path): Path where features will be saved
 
-    # Handle both single file and directory inputs
-    if input_path.is_file():
-        files = [input_path]
-    else:
-        files = list(input_path.glob("*.nii.gz"))
+    Returns:
+        Optional[Path]: Path to the features CSV file if successful, None otherwise
+    """
+    # We expect only one file in most cases
+    sequence_name = list(input_files.keys())[0]
+    self.logger.log_step_start("Feature extraction", sequence_name)
 
-    print(f"Processing {len(files)} files...")
+    try:
+        features_dict = {}
 
-    with torch.no_grad():
-        for file in files:
-            try:
-                print(f"Processing {file.name}...")
-                img_tensor = load_and_preprocess_nifti(file)
-                img_tensor = img_tensor.to(device)
+        with torch.no_grad():
+            for seq_name, file_path in input_files.items():
+                # Preprocess image
+                img_tensor = self._preprocess_image(file_path)
+                if img_tensor is None:
+                    self.logger.log_error(
+                        "Image preprocessing", seq_name, "Failed to preprocess image")
+                    continue
 
-                _, bottleneck, _ = model(img_tensor)
+                # Extract features
+                _, bottleneck, _ = self.model(img_tensor)
                 features = bottleneck.cpu().numpy().reshape(-1)
 
-                features_dict[file.stem] = features
+                # Store features
+                features_dict[seq_name] = features
 
-            except Exception as e:
-                print(f"Error processing {file.name}: {str(e)}")
+        if not features_dict:
+            raise ValueError("No features were successfully extracted")
 
-    # Create and save features DataFrame
-    features_df = pd.DataFrame.from_dict(features_dict, orient='index')
-    features_df.to_csv(output_path, index_label="eid__sequence")
-    print(f"Features saved to {output_path}")
+        # Create and save features DataFrame
+        features_df = pd.DataFrame.from_dict(features_dict, orient='index')
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        features_df.to_csv(output_file, index_label="sequence_id")
 
+        # Save minimal metadata
+        metadata = {
+            "input_file": str(list(input_files.values())[0]),
+            "output_file": str(output_file),
+            "feature_dimensions": features_df.shape,
+            "model": "BrainAE"
+        }
+
+        # Use feature name as metadata filename
+        metadata_file = output_file.with_suffix('.json')
+        import json
+        with open(metadata_file, 'w') as f:
+            json.dump(metadata, f, indent=2)
+
+        self.logger.log_step_complete("Feature extraction", sequence_name)
+        return output_file
+
+    except Exception as e:
+        self.logger.log_error("Feature extraction", "all sequences", e)
+        return None
 
 def main():
     parser = argparse.ArgumentParser(
