@@ -54,10 +54,10 @@ python -m src.main init /path/to/workspace
 
 ```bash
 # Process a DICOM folder
-python -m src.main process /path/to/dicom/folder /path/to/output --config config.yaml
+python -m src.main process /path/to/dicom/folder /path/to/output
 
 # Process a NIfTI file with brain extraction
-python -m src.main process /path/to/image.nii.gz /path/to/output --config config.yaml
+python -m src.main process /path/to/image.nii.gz /path/to/output
 
 # Process a NIfTI file skipping brain extraction (if already performed)
 python -m src.main process /path/to/image.nii.gz /path/to/output --skip-brain-extraction
@@ -65,20 +65,23 @@ python -m src.main process /path/to/image.nii.gz /path/to/output --skip-brain-ex
 # Keep preprocessed files in the output
 python -m src.main process /path/to/image.nii.gz /path/to/output --keep-preprocessed
 
+# Process without creating log files
+python -m src.main process /path/to/image.nii.gz /path/to/output --no-logs
+
 # Process a folder containing multiple NIfTI files
-python -m src.main process /path/to/nifti/folder /path/to/output --config config.yaml
+python -m src.main process /path/to/nifti/folder /path/to/output
 ```
 
 ### Output Structure
 
-The pipeline now produces a simplified output structure:
+The pipeline produces a simplified output structure:
 
 1. **For a single file input (e.g., my_image.nii.gz)**:
    ```
    output_dir/
    ├── my_image_features.csv              # Extracted features
    ├── my_image_preprocessed.nii.gz       # (Optional) Preprocessed image if --keep-preprocessed is used
-   └── logs/                              # Processing logs
+   └── logs/                              # Processing logs (unless --no-logs is used)
    ```
 
 2. **For a directory input (e.g., case_dir/)**:
@@ -88,10 +91,10 @@ The pipeline now produces a simplified output structure:
    │   ├── features/
    │   │   ├── sequence1_features.csv     # Features for sequence 1
    │   │   └── sequence2_features.csv     # Features for sequence 2
-   │   ├── preprocessed/                  # (Optional) Only if --keep-preprocessed is used
-   │   │   ├── sequence1_preprocessed.nii.gz
-   │   │   └── sequence2_preprocessed.nii.gz
-   └── logs/                              # Processing logs
+   │   └── preprocessed/                  # (Optional) Only if --keep-preprocessed is used
+   │       ├── sequence1_preprocessed.nii.gz
+   │       └── sequence2_preprocessed.nii.gz
+   └── logs/                              # Processing logs (unless --no-logs is used)
    ```
 
 ### Configuration
@@ -99,35 +102,42 @@ The pipeline now produces a simplified output structure:
 The pipeline can be customized through a YAML configuration file:
 
 ```yaml
+# Paths to resources
 paths:
   scripts:
     preprocessing: "scripts/preprocessing"
   templates: "data/templates"
   models: "data/models"
 
+# Preprocessing options
 preprocessing:
   parameters:
     brain_extraction:
       threshold: 0.5
     bias_correction:
       iterations: 4
-  # Option to skip brain extraction if already performed
   skip_brain_extraction: false
-  # Option to keep preprocessed files in the output
   keep_preprocessed: false
 
-# Support for direct NIfTI input
-input:
-  support_nifti: true
-
-# Output structure options
-output:
-  simplified_structure: true
-
+# Model options
 model:
   weights_file: "best_model.pt"
   input_size: [256, 256, 256]
+
+# Output options
+output:
+  enable_logs: true
 ```
+
+## Command Line Options
+
+| Option | Description |
+|--------|-------------|
+| `--config`, `-c` | Path to configuration file |
+| `--verbose`, `-v` | Enable verbose output |
+| `--skip-brain-extraction`, `-s` | Skip brain extraction step |
+| `--keep-preprocessed`, `-p` | Keep preprocessed NIfTI files in output |
+| `--no-logs` | Disable writing log files |
 
 ## Project Structure
 
@@ -150,28 +160,6 @@ DUNE
 └── config.yaml          # Default configuration
 ```
 
-## Input Formats
-
-DUNE supports two primary input formats:
-
-1. **DICOM directories**: Folders containing DICOM files (.dcm) from MRI scanners
-2. **NIfTI files**: Directly process .nii or .nii.gz files
-
-When processing NIfTI files, you can specify:
-- Whether the brain extraction step should be performed or skipped using the `--skip-brain-extraction` flag
-- Whether to keep preprocessed images in the output using the `--keep-preprocessed` flag
-
-## Datasets Used
-
-DUNE was developed and validated using the following datasets:
-
-- **UK Biobank (UKB)**: Healthy volunteers
-- **UPENN**: University of Pennsylvania glioblastoma dataset
-- **UCSF**: UCSF preoperative diffuse glioma MRI dataset
-- **TCGA**: TCGA-LGG and TCGA-GBM datasets 
-- **ADNI**: Alzheimer's Disease Neuroimaging Initiative dataset
-- **SchizConnect**: COBRE and MCIC schizophrenia datasets
-
 ## The DUNE Model
 
 DUNE's feature extraction is powered by a UNet-based autoencoder architecture without skip connections (U-AE):
@@ -180,9 +168,7 @@ DUNE's feature extraction is powered by a UNet-based autoencoder architecture wi
 - **Bottleneck**: Creates a compact latent representation of the brain structure (low-dimensional embeddings)
 - **Decoder**: Reconstructs the original image from the latent representation
 
-This unsupervised approach learns to capture both obvious and subtle imaging features, creating a numerical "fingerprint" of each scan that preserves important structural information while dramatically reducing dimensionality. By removing skip connections from the traditional UNet architecture, DUNE forces all information through the bottleneck, producing more informative embeddings despite lower reconstruction quality.
-
-The model was trained on 3,814 MRI scans including both healthy volunteers from UK Biobank and patients with gliomas to ensure it can effectively extract features from both normal and pathological brain structures.
+This unsupervised approach learns to capture both obvious and subtle imaging features, creating a numerical "fingerprint" of each scan that preserves important structural information while dramatically reducing dimensionality.
 
 ## Citation
 

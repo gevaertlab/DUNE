@@ -1,29 +1,32 @@
 # src/config/config.yaml
+# Chemins des ressources
 paths:
   scripts:
     preprocessing: "scripts/preprocessing"
   templates: "data/templates"
   models: "data/models"
 
+# Options de prétraitement
 preprocessing:
+  # Paramètres pour les scripts de prétraitement
   parameters:
     brain_extraction:
       threshold: 0.5
     bias_correction:
       iterations: 4
-  # Nouvelle option pour sauter l'extraction du cerveau si déjà fait
+  
+  # Si true, ignore l'étape d'extraction du cerveau
   skip_brain_extraction: false
-  # Nouvelle option pour conserver les fichiers préprocessés
+  
+  # Si true, conserve les fichiers préprocessés dans le dossier de sortie
   keep_preprocessed: false
 
-# Support pour les fichiers NIfTI
-input:
-  support_nifti: true
-
-# Options de sortie
-output:
-  simplified_structure: true
-
+# Options de modèle
 model:
   weights_file: "best_model.pt"
   input_size: [256, 256, 256]
+
+# Options de sortie
+output:
+  # Activer/désactiver les fichiers de log
+  enable_logs: true

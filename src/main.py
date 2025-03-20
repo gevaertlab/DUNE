@@ -2,30 +2,33 @@
 import click
 from pathlib import Path
 import yaml
+import logging 
 from typing import Optional
 from src.pipeline.dicom import DicomConverter
 from src.pipeline.preprocessing import Preprocessor
 from src.pipeline.feature_extraction import FeatureExtractor
-from src.pipeline.feature_grouping import FeatureGrouper
 from src.utils.logger import PipelineLogger
 from src.utils.file_handling import FileHandler
 
-
 # src/main.py
 class Pipeline:
-    def __init__(self, base_dir: Path, config_path: Optional[Path] = None):
+
+    def __init__(self, base_dir: Path, config_path: Optional[Path] = None, enable_logs: bool = True):
         """
         Initialize the pipeline with all its components.
 
         Args:
             base_dir (Path): Base directory for all outputs
             config_path (Optional[Path]): Path to configuration file
+            enable_logs (bool): Whether to create log files
         """
         self.base_dir = base_dir
         self.config = self._load_config(config_path)
 
-        # Initialize utilities
-        self.logger = PipelineLogger(base_dir / "logs")
+        # Initialize utilities with log setting
+        logs_dir = base_dir / "logs" if enable_logs else None
+        self.logger = PipelineLogger(logs_dir if logs_dir else Path("/tmp"),
+                                    enable_logs=enable_logs)
         self.file_handler = FileHandler(base_dir)
 
         # Initialize pipeline components
@@ -34,9 +37,6 @@ class Pipeline:
             self.logger, self.file_handler, self.config)
         self.feature_extractor = FeatureExtractor(
             self.logger, self.file_handler, self.config)
-
-        # Nous n'utilisons plus le feature_grouper
-        # self.feature_grouper = FeatureGrouper(self.logger, self.file_handler)
 
 
     def _load_config(self, config_path: Optional[Path]) -> dict:
@@ -53,17 +53,14 @@ class Pipeline:
             'preprocessing': {
                 'scripts_dir': Path('scripts/preprocessing').absolute(),
                 'templates_dir': Path('data/templates').absolute(),
-                'skip_brain_extraction': False,  # Option de saut d'extraction du cerveau
-                'keep_preprocessed': False       # Option pour conserver les fichiers préprocessés
+                'skip_brain_extraction': False,
+                'keep_preprocessed': False
             },
             'model': {
                 'weights_path': Path('data/models/best_model.pt').absolute()
             },
-            'input': {
-                'support_nifti': True  # Option pour indiquer la prise en charge des fichiers NIfTI
-            },
             'output': {
-                'simplified_structure': True  # Nouvelle option pour la structure simplifiée
+                'enable_logs': True
             }
         }
 
@@ -96,10 +93,13 @@ class Pipeline:
 
                 return merged_config
             except Exception as e:
-                self.logger.logger.error(f"Error loading config file: {str(e)}")
+                if hasattr(self, 'logger') and self.logger:
+                    self.logger.logger.error(
+                        f"Error loading config file: {str(e)}")
                 return default_config
 
         return default_config
+        
 
     def process_case(self, input_path: Path, skip_brain_extraction: bool = False, keep_preprocessed: bool = False) -> bool:
         """
@@ -115,7 +115,13 @@ class Pipeline:
         """
         # Get case ID from input path
         if input_path.suffix in ['.nii', '.gz'] or input_path.suffixes == ['.nii', '.gz']:
-            case_id = input_path.stem.split('.')[0]  # Remove all extensions
+            # Pour les fichiers NIfTI, utiliser le nom complet (sans l'extension)
+            if len(input_path.suffixes) > 1 and input_path.suffixes[-2] == '.nii' and input_path.suffixes[-1] == '.gz':
+                # Cas de .nii.gz
+                case_id = input_path.name.replace('.nii.gz', '')
+            else:
+                # Cas de .nii
+                case_id = input_path.name.replace('.nii', '')
             is_single_file = True
         else:
             # Directory with DICOM files or multiple NIfTI files
@@ -160,8 +166,11 @@ class Pipeline:
                     # Input is a directory with NIfTI files
                     nifti_files = {}
                     for nifti_path in nifti_glob:
-                        seq_name = nifti_path.stem.split(
-                            '.')[0]  # Remove extensions
+                        # Utiliser le nom complet du fichier sans extension
+                        if nifti_path.suffixes and nifti_path.suffixes[-1] == '.gz' and len(nifti_path.suffixes) > 1:
+                            seq_name = nifti_path.name.replace('.nii.gz', '')
+                        else:
+                            seq_name = nifti_path.name.replace('.nii', '')
                         nifti_files[seq_name] = nifti_path
                 else:
                     # Input is a DICOM directory, convert to NIfTI
@@ -251,9 +260,10 @@ def cli():
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.option('--skip-brain-extraction', '-s', is_flag=True, help='Skip brain extraction step (use if input is already brain-extracted)')
 @click.option('--keep-preprocessed', '-p', is_flag=True, help='Keep preprocessed NIfTI files in the output')
+@click.option('--no-logs', is_flag=True, help='Disable writing log files (still shows console output)')
 def process(input_path: str, output_path: str, config: Optional[str] = None,
             verbose: bool = False, skip_brain_extraction: bool = False,
-            keep_preprocessed: bool = False):
+            keep_preprocessed: bool = False, no_logs: bool = False):
     """
     Process a case or directory of cases through the pipeline.
 
@@ -264,8 +274,11 @@ def process(input_path: str, output_path: str, config: Optional[str] = None,
     output_path = Path(output_path)
     config_path = Path(config) if config else None
 
-    # Initialize pipeline
-    pipeline = Pipeline(output_path, config_path)
+    # Set up logging level
+    log_level = logging.DEBUG if verbose else logging.INFO
+
+    # Initialize pipeline with log settings
+    pipeline = Pipeline(output_path, config_path, enable_logs=not no_logs)
 
     # Process single file or directory
     if input_path.is_file():
@@ -284,7 +297,6 @@ def process(input_path: str, output_path: str, config: Optional[str] = None,
                               keep_preprocessed=keep_preprocessed)
     else:
         click.echo(f"Error: Input path {input_path} does not exist")
-
 
 @cli.command()
 @click.argument('output_path', type=click.Path())
