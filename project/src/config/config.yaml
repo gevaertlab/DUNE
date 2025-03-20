@@ -1,0 +1,17 @@
+# src/config/config.yaml
+paths:
+  scripts:
+    preprocessing: "scripts/preprocessing"
+  templates: "data/templates"
+  models: "data/models"
+
+preprocessing:
+  parameters:
+    brain_extraction:
+      threshold: 0.5
+    bias_correction:
+      iterations: 4
+
+model:
+  weights_file: "best_model.pt"
+  input_size: [256, 256, 256]
