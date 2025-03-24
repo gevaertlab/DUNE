@@ -47,11 +47,11 @@ class DicomConverter:
             if not self._verify_dicom_files(dicom_files):
                 raise ValueError("Invalid DICOM files")
 
-            # Créer les répertoires temporaires et de sortie
+            # Create temporary and output directories
             temp_dir = output_dir / "temp"
             temp_dir.mkdir(parents=True, exist_ok=True)
 
-            # Effectuer la conversion
+            # Convert
             self.logger.logger.info(
                 f"Starting conversion for {len(dicom_files)} files...")
             try:
@@ -75,12 +75,12 @@ class DicomConverter:
             self.logger.logger.info(
                 f"Found {len(nifti_files)} converted NIfTI files")
 
-            # Création du chemin de sortie correct en utilisant le répertoire 'nifti'
+            # Create output path
             final_path = output_dir / "nifti" / f"{sequence_id}.nii.gz"
             final_path.parent.mkdir(parents=True, exist_ok=True)
             nifti_files[0].rename(final_path)
 
-            # Vérifier l'intégrité du fichier
+            # Check file integrity
             if not self.file_handler.verify_file_integrity(final_path):
                 raise ValueError("Created NIfTI file is corrupted")
 
@@ -116,11 +116,11 @@ class DicomConverter:
 
         results = {}
         try:
-            # Vérifier que le répertoire du cas existe
+            # Check that the case directory exists
             if not case_path.exists():
                 raise FileNotFoundError(f"Case directory not found: {case_path}")
 
-            # Lister tous les fichiers DICOM
+            # List all DICOM files
             dicom_files = list(case_path.glob("**/*.dcm"))
             self.logger.logger.info(
                 f"Found {len(dicom_files)} DICOM files in {case_path}")
@@ -128,14 +128,14 @@ class DicomConverter:
             if not dicom_files:
                 raise FileNotFoundError(f"No DICOM files found in {case_path}")
 
-            # Créer un répertoire temporaire pour la sortie
+            # Create temporary output directory
             temp_dir = output_base / "temp"
             temp_dir.mkdir(parents=True, exist_ok=True)
 
             # Effectuer la conversion
             self.logger.logger.info(f"Converting DICOM files to NIfTI...")
 
-            # Convertir directement tout le répertoire DICOM
+            # Convert the DICOM directory
             try:
                 dicom2nifti.convert_directory(
                     str(case_path),
@@ -148,7 +148,7 @@ class DicomConverter:
                     f"Conversion error details: {str(conv_error)}")
                 raise
 
-            # Récupérer les fichiers NIfTI générés
+            # Get the created NifTI files
             nifti_files = list(temp_dir.glob("*.nii.gz"))
             self.logger.logger.info(
                 f"Found {len(nifti_files)} converted NIfTI files")
@@ -157,7 +157,7 @@ class DicomConverter:
                 raise FileNotFoundError(
                     "No NIfTI files were created during conversion")
 
-            # Plutôt que de les déplacer, on les utilise directement depuis le dossier temporaire
+            # Use NIFTIs from the temporary folder
             for nifti_file in nifti_files:
                 seq_name = nifti_file.stem.split('.')[0]  # Remove extensions
                 results[seq_name] = nifti_file

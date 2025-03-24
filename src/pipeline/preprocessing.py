@@ -199,11 +199,11 @@ class Preprocessor:
                 ]
             }
 
-            # Ajouter l'étape de brain extraction seulement si elle a été effectuée
+            # Brain extraction if needed
             if not skip_brain_extraction:
                 metadata["processing_steps"].insert(0, "brain_extraction")
 
-            # Sauvegardons les métadonnées dans le répertoire de sortie
+            # Export metadata
             self.file_handler.save_processing_metadata(
                 output_dir,
                 metadata

@@ -57,10 +57,13 @@ class Pipeline:
                 'keep_preprocessed': False
             },
             'model': {
-                'weights_path': Path('data/models/best_model.pt').absolute()
+                'weights_path': Path('data/models/U-AE.pt').absolute()
             },
             'output': {
                 'enable_logs': True
+            },
+            'pipeline': {
+                'features_only': False
             }
         }
 
@@ -101,7 +104,8 @@ class Pipeline:
         return default_config
         
 
-    def process_case(self, input_path: Path, skip_brain_extraction: bool = False, keep_preprocessed: bool = False) -> bool:
+    def process_case(self, input_path: Path, skip_brain_extraction: bool = False,
+                    keep_preprocessed: bool = False, features_only: bool = False) -> bool:
         """
         Process a single case through the pipeline.
 
@@ -109,18 +113,19 @@ class Pipeline:
             input_path (Path): Path to the case directory containing DICOM files or to a NIfTI file
             skip_brain_extraction (bool): If True, skip the brain extraction step
             keep_preprocessed (bool): If True, keep the preprocessed NIfTI files in the output
+            features_only (bool): If True, skip DICOM conversion and preprocessing steps
 
         Returns:
             bool: True if processing was successful, False otherwise
         """
         # Get case ID from input path
         if input_path.suffix in ['.nii', '.gz'] or input_path.suffixes == ['.nii', '.gz']:
-            # Pour les fichiers NIfTI, utiliser le nom complet (sans l'extension)
+            # For NIfTI files, use the complete name (no extension)
             if len(input_path.suffixes) > 1 and input_path.suffixes[-2] == '.nii' and input_path.suffixes[-1] == '.gz':
-                # Cas de .nii.gz
+                # Case of.nii.gz
                 case_id = input_path.name.replace('.nii.gz', '')
             else:
-                # Cas de .nii
+                # Case of.nii
                 case_id = input_path.name.replace('.nii', '')
             is_single_file = True
         else:
@@ -153,63 +158,87 @@ class Pipeline:
                 else:
                     preprocessed_dir = None
 
-            # Handle different input types
-            if is_single_file:
-                # Input is a single NIfTI file
-                # We don't copy the input file anymore
-                nifti_files = {case_id: input_path}
-            else:
-                # Check if input is a directory with NIfTI files
-                nifti_glob = list(input_path.glob('*.nii.gz')) + \
-                    list(input_path.glob('*.nii'))
-                if nifti_glob:
+            # Handle feature extraction only mode
+            if features_only:
+                self.logger.log_step_start("Feature extraction only", case_id)
+
+                # Assume input is already preprocessed NIfTI file(s)
+                if is_single_file:
+                    # Input is a single NIfTI file
+                    preprocessed_files = {case_id: input_path}
+                else:
                     # Input is a directory with NIfTI files
-                    nifti_files = {}
+                    preprocessed_files = {}
+                    nifti_glob = list(input_path.glob('*.nii.gz')) + \
+                        list(input_path.glob('*.nii'))
                     for nifti_path in nifti_glob:
-                        # Utiliser le nom complet du fichier sans extension
+                        # Use the complete file name without extension
                         if nifti_path.suffixes and nifti_path.suffixes[-1] == '.gz' and len(nifti_path.suffixes) > 1:
                             seq_name = nifti_path.name.replace('.nii.gz', '')
                         else:
                             seq_name = nifti_path.name.replace('.nii', '')
-                        nifti_files[seq_name] = nifti_path
+                        preprocessed_files[seq_name] = nifti_path
+
+                if not preprocessed_files:
+                    raise Exception("No valid preprocessed NIfTI files found")
+            else:
+                # Handle different input types
+                if is_single_file:
+                    # Input is a single NIfTI file
+                    # We don't copy the input file anymore
+                    nifti_files = {case_id: input_path}
                 else:
-                    # Input is a DICOM directory, convert to NIfTI
-                    nifti_files = self.dicom_converter.process_case(
-                        input_path, self.base_dir / "temp")
-                    # We will clean up temp files at the end
+                    # Check if input is a directory with NIfTI files
+                    nifti_glob = list(input_path.glob('*.nii.gz')) + \
+                        list(input_path.glob('*.nii'))
+                    if nifti_glob:
+                        # Input is a directory with NIfTI files
+                        nifti_files = {}
+                        for nifti_path in nifti_glob:
+                            # Use the complete file name without extension
+                            if nifti_path.suffixes and nifti_path.suffixes[-1] == '.gz' and len(nifti_path.suffixes) > 1:
+                                seq_name = nifti_path.name.replace('.nii.gz', '')
+                            else:
+                                seq_name = nifti_path.name.replace('.nii', '')
+                            nifti_files[seq_name] = nifti_path
+                    else:
+                        # Input is a DICOM directory, convert to NIfTI
+                        nifti_files = self.dicom_converter.process_case(
+                            input_path, self.base_dir / "temp")
+                        # We will clean up temp files at the end
 
-            if not nifti_files:
-                raise Exception(
-                    "No valid input files found or DICOM conversion failed")
+                if not nifti_files:
+                    raise Exception(
+                        "No valid input files found or DICOM conversion failed")
 
-            # 2. Preprocessing
-            preprocessed_files = {}
-            for seq_name, nifti_path in nifti_files.items():
-                if nifti_path:
-                    # Create a temporary directory for preprocessing
-                    temp_preprocessed_dir = self.base_dir / "temp_preprocessed"
-                    temp_preprocessed_dir.mkdir(parents=True, exist_ok=True)
+                # 2. Preprocessing
+                preprocessed_files = {}
+                for seq_name, nifti_path in nifti_files.items():
+                    if nifti_path:
+                        # Create a temporary directory for preprocessing
+                        temp_preprocessed_dir = self.base_dir / "temp_preprocessed"
+                        temp_preprocessed_dir.mkdir(parents=True, exist_ok=True)
 
-                    processed = self.preprocessor.process_file(
-                        nifti_path,
-                        temp_preprocessed_dir,
-                        skip_brain_extraction=skip_brain_extraction
-                    )
+                        processed = self.preprocessor.process_file(
+                            nifti_path,
+                            temp_preprocessed_dir,
+                            skip_brain_extraction=skip_brain_extraction
+                        )
 
-                    if processed:
-                        # If we need to keep preprocessed files, copy to output dir
-                        if keep_preprocessed and preprocessed_dir:
-                            import shutil
-                            # Create a properly named output file
-                            dest_file = preprocessed_dir / \
-                                f"{seq_name}_preprocessed.nii.gz"
-                            shutil.copy(processed, dest_file)
-                            preprocessed_files[seq_name] = dest_file
-                        else:
-                            preprocessed_files[seq_name] = processed
+                        if processed:
+                            # If we need to keep preprocessed files, copy to output dir
+                            if keep_preprocessed and preprocessed_dir:
+                                import shutil
+                                # Create a properly named output file
+                                dest_file = preprocessed_dir / \
+                                    f"{seq_name}_preprocessed.nii.gz"
+                                shutil.copy(processed, dest_file)
+                                preprocessed_files[seq_name] = dest_file
+                            else:
+                                preprocessed_files[seq_name] = processed
 
-            if not preprocessed_files:
-                raise Exception("Preprocessing failed for all sequences")
+                if not preprocessed_files:
+                    raise Exception("Preprocessing failed for all sequences")
 
             # 3. Feature extraction - save features directly to output directory
             for seq_name, preprocessed_file in preprocessed_files.items():
@@ -246,7 +275,6 @@ class Pipeline:
 
             return False
         
-        
 @click.group()
 def cli():
     """Neuroimaging pipeline for feature extraction from MRI sequences."""
@@ -261,9 +289,11 @@ def cli():
 @click.option('--skip-brain-extraction', '-s', is_flag=True, help='Skip brain extraction step (use if input is already brain-extracted)')
 @click.option('--keep-preprocessed', '-p', is_flag=True, help='Keep preprocessed NIfTI files in the output')
 @click.option('--no-logs', is_flag=True, help='Disable writing log files (still shows console output)')
+@click.option('--features-only', '-f', is_flag=True, help='Only perform feature extraction (input must be preprocessed NIfTI files)')
 def process(input_path: str, output_path: str, config: Optional[str] = None,
             verbose: bool = False, skip_brain_extraction: bool = False,
-            keep_preprocessed: bool = False, no_logs: bool = False):
+            keep_preprocessed: bool = False, no_logs: bool = False,
+            features_only: bool = False):
     """
     Process a case or directory of cases through the pipeline.
 
@@ -286,7 +316,8 @@ def process(input_path: str, output_path: str, config: Optional[str] = None,
         if input_path.suffix in ['.nii', '.gz'] or input_path.suffixes == ['.nii', '.gz']:
             pipeline.process_case(input_path,
                                   skip_brain_extraction=skip_brain_extraction,
-                                  keep_preprocessed=keep_preprocessed)
+                                  keep_preprocessed=keep_preprocessed,
+                                  features_only=features_only)
         else:
             click.echo(
                 f"Error: Input file {input_path} is not a NIfTI file (.nii or .nii.gz)")
@@ -294,7 +325,8 @@ def process(input_path: str, output_path: str, config: Optional[str] = None,
         # Process directory as a single case
         pipeline.process_case(input_path,
                               skip_brain_extraction=skip_brain_extraction,
-                              keep_preprocessed=keep_preprocessed)
+                              keep_preprocessed=keep_preprocessed,
+                              features_only=features_only)
     else:
         click.echo(f"Error: Input path {input_path} does not exist")
 

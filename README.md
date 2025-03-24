@@ -14,6 +14,8 @@ The pipeline consists of the following sequential stages:
 2. **Preprocessing**: Prepares images through brain extraction (optional if already done), bias field correction, and spatial standardization
 3. **Feature Extraction**: Uses a UNet-based autoencoder (without skip connections) to extract low-dimensional embeddings
 
+Each stage can be run independently based on your specific needs.
+
 ## Installation
 
 ### Prerequisites
@@ -77,6 +79,9 @@ python -m src.main process /path/to/image.nii.gz /path/to/output --no-logs
 
 # Process a folder containing multiple NIfTI files
 python -m src.main process /path/to/nifti/folder /path/to/output
+
+# Only perform feature extraction (skip DICOM conversion and preprocessing)
+python -m src.main process /path/to/preprocessed.nii.gz /path/to/output --features-only
 ```
 
 ### Output Structure
@@ -143,23 +148,61 @@ preprocessing:
 
 # Model options
 model:
-  weights_file: "best_model.pt"
+  weights_file: "U-AE.pt"
   input_size: [256, 256, 256]
 
 # Output options
 output:
   enable_logs: true
+
+# Pipeline control options
+pipeline:
+  features_only: false  # If true, only performs feature extraction
+```
+
+## Alternative Model Architectures
+
+This repository also contains alternative autoencoder architectures that were evaluated in our paper:
+
+1. **U-AE** (default): UNet without skip connections - produces the most informative embeddings
+2. **UNET**: UNet with skip connections - best for image reconstruction
+3. **U-VAE**: Variational UNet without skip connections
+4. **VAE**: Fully connected variational autoencoder
+
+To use an alternative architecture, specify it in your configuration file:
+
+```yaml
+model:
+  architecture: "UNET"  # Options: "U-AE", "UNET", "U-VAE", "VAE"
+  weights_path: "data/models/UNET.pt"
+```
+Or when running the feature extraction directly:
+
+```bash
+python src/pipeline/feature_extraction.py input.nii.gz output.csv --architecture UNET
 ```
 
 ## Command Line Options
 
-| Option                          | Description                             |
-| ------------------------------- | --------------------------------------- |
-| `--config`, `-c`                | Path to configuration file              |
-| `--verbose`, `-v`               | Enable verbose output                   |
-| `--skip-brain-extraction`, `-s` | Skip brain extraction step              |
-| `--keep-preprocessed`, `-p`     | Keep preprocessed NIfTI files in output |
-| `--no-logs`                     | Disable writing log files               |
+| Option                          | Description                                       |
+| ------------------------------- | ------------------------------------------------- |
+| `--config`, `-c`                | Path to configuration file                        |
+| `--verbose`, `-v`               | Enable verbose output                             |
+| `--skip-brain-extraction`, `-s` | Skip brain extraction step                        |
+| `--keep-preprocessed`, `-p`     | Keep preprocessed NIfTI files in output           |
+| `--no-logs`                     | Disable writing log files                         |
+| `--features-only`, `-f`         | Only perform feature extraction                   |
+
+## Pipeline Flexibility
+
+DUNE offers flexibility to handle different workflow scenarios:
+
+1. **Complete Pipeline**: Convert DICOM to NIfTI, preprocess images, and extract features
+2. **Partial Processing**: Start with NIfTI files and apply preprocessing and feature extraction
+3. **Minimal Preprocessing**: Skip brain extraction if your images are already skull-stripped
+4. **Feature Extraction Only**: If you already have fully preprocessed NIfTI files, you can extract features directly
+
+This adaptability allows DUNE to fit into existing neuroimaging workflows and accommodate different data preparation stages.
 
 ## Project Structure
 

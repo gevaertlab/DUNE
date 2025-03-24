@@ -1,32 +1,37 @@
 # src/config/config.yaml
-# Chemins des ressources
+# Resource paths
 paths:
   scripts:
     preprocessing: "scripts/preprocessing"
   templates: "data/templates"
   models: "data/models"
 
-# Options de prétraitement
+# Preprocessing options
 preprocessing:
-  # Paramètres pour les scripts de prétraitement
+  # Parameters for preprocessing scripts
   parameters:
     brain_extraction:
       threshold: 0.5
     bias_correction:
       iterations: 4
   
-  # Si true, ignore l'étape d'extraction du cerveau
+  # If true, skips the brain extraction step
   skip_brain_extraction: false
   
-  # Si true, conserve les fichiers préprocessés dans le dossier de sortie
+  # If true, keeps preprocessed files in the output folder
   keep_preprocessed: false
 
-# Options de modèle
+# Model options
 model:
-  weights_file: "best_model.pt"
+  weights_file: "U-AE.pt"
   input_size: [256, 256, 256]
 
-# Options de sortie
+# Output options
 output:
-  # Activer/désactiver les fichiers de log
+  # Enable/disable log files
   enable_logs: true
+
+# Pipeline control options
+pipeline:
+  # If true, only performs feature extraction (skips conversion and preprocessing)
+  features_only: false
