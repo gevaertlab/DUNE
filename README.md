@@ -241,7 +241,7 @@ If you use DUNE in your research, please consider citing:
 
 ```
 @article{barba2025dune,
-  author = {Barba, Thomas and Bagley, Bryce A. and Steyaert, Sandra and Carrillo-Perez, Francisco and Sadée, Christoph and Iv, Michael and Gevaert, Olivier},
+  author = {Barba T, Bagley BA, Steyaert S, Carrillo-Perez F, Sadée C, Iv M, GevaertO},
   title = {DUNE: a versatile neuroimaging encoder captures brain complexity across three major diseases: cancer, dementia and schizophrenia},
   year = {2025},
   url = {https://www.medrxiv.org/content/10.1101/2025.02.24.25322787v1.full}
